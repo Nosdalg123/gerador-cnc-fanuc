@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gerador CNC Torno</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <img class="logo" src="assets/logo-alumasa.png" alt="Alumasa - Alumínio e Plástico" width="150" height="38">
+  <div>
+    <h1>Gerador CNC Torno</h1>
+    <div class="sub">Fanuc 0i · Macro B · padrão da ferramentaria · ML-600L</div>
+  </div>
+  <span class="ver" id="verTag" title="Versão do gerador (histórico em CHANGELOG.md)"></span>
+  <nav role="tablist">
+    <button id="nav-gerador" role="tab" aria-selected="true">Gerador</button>
+    <button id="nav-ferr" role="tab" aria-selected="false">Ferramentas</button>
+    <button id="nav-cfg" role="tab" aria-selected="false">Configurações</button>
+    <button id="nav-tema" title="Alternar tema claro/escuro">Tema</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ===== GERADOR ===== -->
+  <section id="view-gerador">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h2>1 · Peça e programa</h2>
+          <div class="row">
+            <div class="field full">
+              <label for="tipo">Tipo de peça</label>
+              <select id="tipo"></select>
+            </div>
+            <div class="field full">
+              <div class="namebox">
+                <div class="grow">
+                  <label for="nome">Nome do programa<button type="button" class="info" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></label>
+                  <input id="nome" autocomplete="off" spellcheck="false">
+                </div>
+                <label class="chk"><input type="checkbox" id="nomeManual"> editar manual</label>
+              </div>
+              <div class="dica">Aparece no cabeçalho como &lt;NOME.txt&gt; e é o nome do arquivo baixado. Autor, data e pressão da placa ficam em Configurações.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>2 · Medidas</h2>
+          <div class="row" id="campos"></div>
+          <div class="pvbox" id="preview" hidden></div>
+        </div>
+
+        <div class="card">
+          <h2>3 · Ferramentas<button type="button" class="info" data-alvo="#ferrNota" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></h2>
+          <div class="dica" id="ferrNota" style="margin:0 0 8px">Aparecem só as ferramentas que o processo usa (ex.: broca só com furo, barra só com mandrilamento). Vc, RPM, avanços, incrementos e sentido de giro vêm do banco. Para mudar, edite na aba Ferramentas. No comando, o operador ainda altera tudo no bloco de variáveis.</div>
+          <div id="ferrBox"></div>
+        </div>
+
+        <div class="card" id="incCard">
+          <h2>4 · Incrementos de corte</h2>
+          <div class="derived" id="incResumo" style="margin-top:0"></div>
+          <div class="row" id="incBox" hidden style="margin-top:10px"></div>
+          <div class="incbar">
+            <div class="note" id="incNota"></div>
+            <div class="incbtns">
+              <button class="btn sm" id="incEdit" type="button" aria-expanded="false" aria-controls="incBox">Editar incrementos</button>
+              <button class="btn sm" id="incReset" type="button" hidden>Voltar ao padrão da ferramenta</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card saida">
+        <div class="msgs" id="msgs"></div>
+        <div class="stk">
+        <div class="ladosel" id="ladoSel" role="tablist" aria-label="Lado da peça" hidden></div>
+        <div class="tabs" role="tablist">
+          <button role="tab" data-out="code" aria-selected="true">Código CNC</button>
+          <button role="tab" data-out="sim" aria-selected="false">Simulador</button>
+          <button role="tab" data-out="est" aria-selected="false">Estratégia</button>
+          <button role="tab" data-out="dic" aria-selected="false">Dicionário de variáveis</button>
+        </div>
+        </div>
+        <div id="out-code">
+          <div class="toolbar">
+            <button class="btn primary" id="copiar">Copiar código</button>
+            <button class="btn" id="baixar">Baixar .txt</button>
+            <button class="btn" id="baixar2" hidden>Baixar os 2 lados</button>
+            <span class="note" id="copiado" style="align-self:center"></span>
+          </div>
+          <pre class="code" id="codigo"></pre>
+        </div>
+
+        <div id="out-sim" hidden>
+          <div class="simgrid">
+            <div>
+              <div class="simcanvas"><canvas id="simCanvas" aria-label="Simulação do corte em meia seção XZ"></canvas></div>
+              <div class="slider">
+                <input type="range" id="simSlider" min="0" max="1000" value="0" step="1" aria-label="Posição no ciclo">
+                <div class="marks" id="simMarks"></div>
+              </div>
+              <div class="simbar">
+                <button class="btn" id="simReset" title="Voltar ao início" aria-label="Voltar ao início">⏮</button>
+                <button class="btn" id="simPrevLine" title="Linha anterior do G-code" aria-label="Linha anterior">⏪</button>
+                <button class="btn" id="simPrevSeg" title="Movimento anterior (←)" aria-label="Movimento anterior">◀</button>
+                <button class="btn primary" id="simPlay" title="Executar (espaço)" aria-label="Executar">▶</button>
+                <button class="btn" id="simNextSeg" title="Próximo movimento (→)" aria-label="Próximo movimento">▶|</button>
+                <button class="btn" id="simNextLine" title="Próxima linha do G-code" aria-label="Próxima linha">⏩</button>
+                <select id="simSpeed" aria-label="Velocidade da simulação">
+                  <option value="1">1× tempo real</option>
+                  <option value="5">5×</option>
+                  <option value="10" selected>10×</option>
+                  <option value="25">25×</option>
+                  <option value="60">60×</option>
+                  <option value="150">150×</option>
+                  <option value="400">400×</option>
+                </select>
+                <label class="chk inline"><input type="checkbox" id="simTrace" checked> trajeto</label>
+                <label class="chk inline"><input type="checkbox" id="simToolShow" checked> pastilha</label>
+                <label class="chk inline"><input type="checkbox" id="simFollow"> seguir</label>
+                <button class="btn sm" id="simFit">Vista geral</button>
+                <button class="btn sm" id="simFitProfile">Zoom no perfil</button>
+              </div>
+              <div class="simread">
+                <span class="mono" id="simPos">X0 Z0</span>
+                <span class="sim-badge rapid" id="simMode">RÁPIDO (G0)</span>
+                <span class="chip" id="simLabel">—</span>
+                <span class="mono" id="simTime">0:00 / 0:00</span>
+                <button type="button" class="info" data-alvo="#simAjuda" aria-expanded="false" aria-label="Como usar o simulador" title="Como usar o simulador">i</button>
+              </div>
+              <div class="simhelp dica" id="simAjuda">Roda do mouse = zoom, arrastar = mover a vista. Espaço = executar/pausar, ← → = movimento a movimento. Clique numa linha do código para ir até ela. Tracejado roxo/laranja = rápido; verde = corte.</div>
+            </div>
+            <div>
+              <div id="simStats" class="derived" style="margin-top:0"></div>
+              <div id="simCode" style="margin-top:10px" aria-label="Código com a linha em execução destacada"></div>
+              <div class="alerts" id="simAlerts"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="out-est" class="est" hidden></div>
+        <div id="out-dic" hidden><div class="tablewrap"><table id="tbDic"></table></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CONFIGURAÇÕES ===== -->
+  <section id="view-cfg" hidden>
+    <div class="card">
+      <h2>Programa</h2>
+      <div class="row">
+        <div class="field"><label for="autor">Autor</label><input id="autor" autocomplete="off"><div class="dica show">Vai no cabeçalho do programa, ex.: (FERRAMENTARIA - OUT/2026).</div></div>
+        <div class="field"><label for="data">Data</label><input id="data" autocomplete="off" placeholder="automática"><div class="dica show" id="dataDica"></div></div>
+        <div class="field"><label for="pressao">Pressão da placa</label><select id="pressao"><option value="">Padrão da máquina (sem comando)</option><option value="M34">Nível 1 (M34)</option><option value="M35">Nível 2 (M35)</option></select>
+          <div class="dica show">M34/M35 escolhem o nível de pressão da placa em todos os programas. Sem comando, vale o último nível selecionado na máquina.</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Máquina e placa (só simulação)</h2>
+      <div class="row" id="maqCard">
+        <div class="field"><label for="m_chuckD">Ø externo da placa</label><div class="unit"><input id="m_chuckD" data-m="chuckD" type="number" step="any" min="0"><span>mm</span></div></div>
+        <div class="field"><label for="m_xMax">Curso em X (Ø máx.)</label><div class="unit"><input id="m_xMax" data-m="xMax" type="number" step="any" min="0"><span>mm</span></div></div>
+        <div class="field"><label for="m_zMax">Curso em +Z</label><div class="unit"><input id="m_zMax" data-m="zMax" type="number" step="any" min="0"><span>mm</span></div></div>
+        <div class="field"><label for="m_rapido">Velocidade de rápido</label><div class="unit"><input id="m_rapido" data-m="rapido" type="number" step="any" min="1"><span>mm/min</span></div></div>
+        <div class="field" style="align-self:end"><button class="btn sm" id="m_reset" type="button">Restaurar padrões</button></div>
+      </div>
+      <div class="note" style="margin-top:8px">Valores provisórios: confirme no manual da ML-600L e ajuste. Eles não entram no programa, só nos alertas e no tempo estimado. O comprimento preso na placa é pedido em "2 · Medidas" (grupo Fixação na placa).</div>
+    </div>
+    <div class="card">
+      <h2>Aparência</h2>
+      <label class="chk inline"><input type="checkbox" id="cfgDicas"> Mostrar todas as explicações dos campos (senão, só pelo botão “i” de cada um)</label>
+    </div>
+    <div class="card">
+      <h2>Versão</h2>
+      <div class="note">Versão <b id="verTxt"></b>. O histórico das mudanças está em CHANGELOG.md e uma cópia de cada versão fica na pasta versoes/.</div>
+    </div>
+  </section>
+  <!-- ===== FERRAMENTAS ===== -->
+  <section id="view-ferr" hidden>
+    <div class="card">
+      <h2>Banco de ferramentas</h2>
+      <div class="toolbar">
+        <button class="btn primary" id="ferrNova">Nova ferramenta</button>
+        <button class="btn" id="ferrExp">Exportar (.json)</button>
+        <button class="btn" id="ferrImp">Importar (.json)</button>
+        <input type="file" id="ferrFile" accept=".json,application/json" hidden>
+      </div>
+      <div class="tablewrap"><table id="tbFerr"></table></div>
+      <p class="note">O banco fica salvo neste navegador. Use Exportar para ter cópia de segurança ou para levar a outro computador. Os valores iniciais vieram dos programas de exemplo; confirme antes de usar em produção.</p>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlgFerr">
+  <form method="dialog" id="frmFerr">
+    <h3 id="dlgTitulo">Ferramenta</h3>
+    <div class="row">
+      <div class="field full"><label>Nome / descrição</label><input name="nome" required autocomplete="off"></div>
+      <div class="field"><label>Nº da ferramenta (T, 4 dígitos)</label><input name="t" required pattern="[0-9]{3,4}" placeholder="0101" autocomplete="off"></div>
+      <div class="field full"><label>Tipo da ferramenta</label>
+        <input type="hidden" name="tipo" value="externa">
+        <div class="tipo-grid" id="tipoGrid" role="radiogroup" aria-label="Tipo da ferramenta"></div></div>
+      <div class="group-title">Pastilha (usada no desenho da simulação)</div>
+      <div class="field" data-tipos="externa faceamento interna encaixe furacao rosca outra"><label>Pastilha</label><input name="pastilha" placeholder="ex.: WNMG 080408" autocomplete="off"></div>
+      <div class="field" data-tipos="externa faceamento interna rosca outra"><label>Raio de ponta (mm)</label><input name="raio" type="number" step="any" min="0"></div>
+      <div class="field" data-tipos="externa faceamento interna"><label>Ângulo da ponta (°) — externa</label><input name="angulo" type="number" step="any" min="20" max="120" placeholder="80"></div>
+      <div class="field" data-tipos="encaixe"><label>Largura do canal (mm) — encaixe</label><input name="largura" type="number" step="any" min="0"></div>
+      <div class="field" data-tipos="furacao"><label>Diâmetro da broca (mm) — furação</label><input name="diametro" type="number" step="any" min="0"></div>
+      <div class="group-title">Parâmetros de corte</div>
+      <div class="field"><label>Modo de rotação</label>
+        <select name="modo"><option value="G96">G96 · Vc constante</option><option value="G97">G97 · RPM fixo</option></select></div>
+      <div class="field"><label>Sentido de giro</label>
+        <select name="sentido"><option value="4">M4</option><option value="3">M3</option></select></div>
+      <div class="field"><label data-lbl-furacao="Vc (m/min) - 0 se for RPM fixo" data-lbl-padrao="Vc (m/min)">Vc (m/min)</label><input name="vc" type="number" step="any" min="0"></div>
+      <div class="field"><label data-lbl-furacao="RPM fixo da broca" data-lbl-padrao="Limite de RPM (G50)">Limite de RPM (G50) / RPM fixo</label><input name="rpm" type="number" step="any" min="0"></div>
+      <div class="field"><label>Avanço de corte (mm/rot)</label><input name="avDesb" type="number" step="any" min="0"></div>
+      <div class="field" data-tipos="externa faceamento interna encaixe rosca outra"><label data-lbl-encaixe="Avanço de rampa (mm/rot)" data-lbl-padrao="Avanço aprox./acabamento (mm/rot)">Avanço aprox./acabamento/rampa (mm/rot)</label><input name="avAcab" type="number" step="any" min="0"></div>
+      <div class="field" data-tipos="externa faceamento interna"><label>Incremento faceamento (mm)</label><input name="incFace" type="number" step="any" min="0"></div>
+      <div class="field" data-tipos="externa faceamento interna furacao"><label data-lbl-furacao="Bicada (mm por descida antes de recuar)" data-lbl-padrao="Incremento torneamento (mm, no raio)">Incremento torneamento (mm, no raio)</label><input name="incTorn" type="number" step="any" min="0"></div>
+      <div class="field" data-tipos="encaixe"><label>Incremento do encaixe (mm, profundidade por camada)</label><input name="incCanal" type="number" step="any" min="0"></div>
+      <div class="field" data-tipos="externa faceamento interna"><label>Acabamento do faceamento (sobremetal em Z, mm)</label><input name="acabFace" type="number" step="any" min="0" placeholder="0 = sem acabamento"></div>
+      <div class="field" data-tipos="externa faceamento interna"><label>Acabamento da cilindragem (sobremetal no Ø, mm)</label><input name="acabTorn" type="number" step="any" min="0" placeholder="0 = sem acabamento"></div>
+      <div class="field full"><label>Observações</label><textarea name="obs" rows="2"></textarea></div>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn" id="dlgCancel">Cancelar</button>
+      <button type="submit" class="btn primary" value="ok">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="autoria">Desenvolvido por Gladson Bernardo</div>
+
+<script src="version.js"></script>
+<script src="core.js"></script>
+<script src="sim.js"></script>
+<script src="seed.js"></script>
+<script src="simview.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

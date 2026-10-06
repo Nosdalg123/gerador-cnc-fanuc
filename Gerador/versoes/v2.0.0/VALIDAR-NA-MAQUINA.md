@@ -1,0 +1,28 @@
+# Itens para validar na máquina (ML-600L)
+
+Tudo o que o gerador faz foi conferido contra os programas validados da casa quando havia exemplo, e pelo simulador 2D. O que **não tem exemplo da casa** ou depende da máquina está listado aqui. Rode o primeiro programa de cada tipo **a seco / em ar** (sem material) antes de cortar.
+
+## Antes de qualquer programa novo
+- **Curso, Ø da placa e velocidade de rápido da ML-600L:** os valores do card "Máquina e placa" são provisórios. O simulador só alerta de colisão com a placa e de curso com base neles.
+- **Ferramentas do banco:** as de partida vieram dos exemplos; pastilha e raio de ponta estão em branco. O sobremetal de acabamento da semente W é 0 (a casa usa 0,1 no Ø e 0,08 em Z na cabeça da espina).
+- **Pressão da placa (M34/M35):** padrão sem comando; ajustar em Configurações se precisar.
+- **Fixação:** o comprimento preso (padrão 25; 10 e 8 no alimentador) gera erro se a usinagem passar do trecho livre. Confira o valor real.
+
+## Por geometria
+| Item | O que conferir |
+|---|---|
+| Matriz sólida / tubular / espina | Conferidas com os programas da casa. `IF[#11LE#13]` e `IF[#2-#17LT[#18*2]]` em vez de 2 e 4,7 fixos; M9 incluído no fim do encaixe da espina; encaixe da espina começa o G74 um incremento abaixo do Ø externo. |
+| BA / BAT | Usa a estrutura da matriz sólida (folga 0,3 e raio 3 do exemplo `BA.E.BAT`); confirmar se o programa real tem alguma diferença além do nome e do comentário da folga. |
+| Porta-matriz | Fórmula do ângulo `FUP[TAN × ΔØ]` (6 mm no exemplo); o interno parte de um furo que o bloco já tem. |
+| Alimentador | Os dois exemplos têm Ø interno menor diferente (140 e 130): aqui há um valor só. O faceamento do lado 2 passa por cima do furo (corta no ar); o da casa pára antes. Os dois lados trabalham uma região comum (peça fina). |
+| G71/G72 interno | O mandrilamento sai em G71 interno (U negativo) + G70, blocos N3–N4. O G72 interno (transversal) não tem exemplo da casa. |
+| Bruto com furo | `G1901` (coluna com orifício) só para furo passante uniforme; furo escalonado ou cego fica no `G1900` com comentário. |
+| Furação | A semente T-MAX tem avanço 0,02 (da casa): confirmar a unidade (mm/rot ou outra). No simulador o tempo da furação fica enorme por isso. |
+| Canal externo | Passo em Z entre descidas = 80% da largura da ferramenta. Chanfro/raio no pé de um degrau que encosta num canal não foi validado. |
+| **Canal interno** (1.8.0) | Sentido do G75 interno (P/Q/R e retorno), folga de 1 mm no raio na aproximação (`-2` no Ø), recuo `G0Z[#88+1]`, e se a haste da barra de canal passa pelo menor furo do caminho (o gerador não verifica a haste). |
+| **Rosca** (1.9.0) | Não há programa de rosca da casa. Conferir: `G76P010060Q100R0.1` (1 passada de acabamento, sem chanfro de saída, 60°), nº de passadas e 1ª profundidade (altura ÷ √N), entrada Z = 2 × passo e X ± 4, altura 0,61343 × passo (apostila; o exemplo do manual usa ≈ 0,65), sentido de giro, RPM (máx. 5000 ÷ passo), semente T0505/800 RPM, e se o cilindro deve ser torneado décimos abaixo do Ø nominal. A rosca interna fura em Ø nominal − 1,0825 × passo. |
+
+## O que o simulador não mostra
+- O **filete da rosca** (só percurso e tempo das passadas).
+- A haste/porta-ferramenta (só a pastilha); folga de haste em furos pequenos e canais internos fica por conta do operador.
+- Interferência da placa no perfil externo além do que o card "Máquina e placa" descreve.

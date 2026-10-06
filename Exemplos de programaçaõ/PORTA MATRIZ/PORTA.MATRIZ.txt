@@ -1,0 +1,85 @@
+%
+<PORTA.MATRIZ.txt> 
+(samoel - agosto/2024) 
+ 
+ 
+(FERRAMENTAS)
+#100=0101(DESBASTE EXTERNO)
+ 
+(PARAMETROS) 
+#1=315(diametro bruto sobremetal)
+#16=2(comprimento sobremetal)
+#2=259(diametro inicio angulo) 
+#3=10(valor do angulo em graus)
+#4=293(diametro fim angulo e encaixe)
+#5=64(comprimento final encaixe) 
+#12=2(valor raio encaixe)
+#6=308.5(diametro apos encaixe)
+#7=64(comprimento final apos encaixe)
+#8=300(velocidade de corte faceamento) 
+#9=300(velocidade de corte torneamento)
+#13=1200(limite RPM) 
+#10=.35(avanco faceamento) 
+#11=.35(avanco torneamento)
+#14=1(incremento faceamento) 
+#15=2(incremento torneamento Raio) 
+(#16 ultima) 
+ 
+ 
+(calculos) 
+#119=#4-#2(D-d)
+#120=TAN[#3]*#119(calculo comprimento z angulo)
+(formula a=tan alpha*b)
+#125=FUP[#120](fix up) 
+ 
+#121=#12*2(R*2=dx) 
+#122=#6-#121(X inicio R.)
+#123=#5+#12(Z fim R.)
+#124=#14*1000(calc.incr.face)
+ 
+ 
+G1900D#1L140.K0. 
+(desbaste externo) 
+G21G90G40G80 
+G28U0
+G0Z400 
+T#100
+G54
+G96S#8M4 
+G50S#13
+M8 
+ 
+(aproximacao)
+IF[#16LE#14]GOTO100
+G0Z#16 
+X#1
+GOTO110
+N100 
+G0Z0 
+X#1
+N110 
+(faceamento) 
+G75X-1Z0P999999Q#124F#10 
+ 
+ 
+G96S#9M4 
+ 
+ 
+(perfil externo) 
+G71U#15R1
+G71P1Q2U0W0F#11
+ 
+N1G0X#2(i.ang.)
+Z0 
+G1X#4Z-#125(ang.)
+ 
+Z-#5(Z fim enc.) 
+X#122(ini.R.)
+G3X#6Z-#123R#12
+Z-#7 
+N2G0X#1
+ 
+ 
+M9 
+M30
+%

@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prévia · Montagem da peça simples</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.pp{display:grid;grid-template-columns:minmax(330px,440px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:960px){.pp{grid-template-columns:1fr}}
+@media (min-width:961px){.pp-dir{position:sticky;top:calc(var(--hh,0px) + 8px)}}
+.pp-seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.pp-seg button{border:0;background:var(--field);color:var(--ink);padding:5px 14px;cursor:pointer;font:inherit;font-size:13px}
+.pp-seg button + button{border-left:1px solid var(--line)}
+.pp-seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.pp-grp{font-size:12px;font-weight:650;color:var(--accent);margin:12px 0 6px}
+.pp-grp:first-of-type{margin-top:0}
+.pp-pal{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px}
+.pp-el{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;border:1px solid var(--line);background:var(--field);color:var(--muted);border-radius:10px;padding:7px 4px 5px;cursor:pointer;font:inherit;font-size:12px;line-height:1.15;text-align:center}
+.pp-el svg,.pp-ic{stroke:currentColor;fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.pp-el svg{width:54px;height:38px}
+.pp-el svg .wk,.pp-ic .wk{fill:currentColor;fill-opacity:.14;stroke-width:1.5}
+.pp-el svg .cv,.pp-ic .cv{fill:var(--field);stroke-width:1.5}
+.pp-el:hover:not(:disabled){border-color:var(--accent);color:var(--ink)}
+.pp-el:hover:not(:disabled) svg{color:var(--accent)}
+.pp-el:disabled{opacity:.5;cursor:default}
+.pp-el small{position:absolute;top:2px;right:4px;font-size:9px;color:var(--muted)}
+.pp-list{display:grid;gap:0}
+.pp-row{display:grid;grid-template-columns:20px 28px 1fr auto;gap:8px;align-items:center;padding:6px 4px;border-top:1px solid var(--line);cursor:pointer}
+.pp-row:first-child{border-top:0}
+.pp-row:hover{background:var(--chip)}
+.pp-row .n{font-size:12px;color:var(--muted);text-align:center}
+.pp-ic{width:28px;height:20px;color:var(--muted)}
+.pp-row .t{font-size:14px}
+.pp-row .t small{color:var(--muted);margin-left:4px}
+.pp-btn{display:flex;gap:3px}
+.pp-btn .btn{padding:1px 8px;font-size:13px}
+.pp-vazio{color:var(--muted);font-size:13px;padding:6px 4px}
+.pp-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+.pp-fields label{font-size:12px}
+.pp-nota{font-size:12px;color:var(--muted);margin-top:8px}
+.pp-pv{width:100%;height:auto;display:block;background:var(--sim-bg);border:1px solid var(--line);border-radius:8px}
+.dwg.w2{aspect-ratio:340/230;max-width:460px}
+.dwg.w2 .dwg-f{width:19cqw;min-width:0}
+.dwg.w2 .dwg-f .ltr{width:5.5cqw;min-width:0;font-size:3.4cqw}
+.dwg.w2 .dwg-f input{font-size:3.5cqw;padding:3px 1px}
+.dwg text{fill:var(--muted);font-size:10px;font-family:inherit}
+.dwg .piece{stroke-linejoin:round}
+.dwg .cav{fill:var(--panel);stroke:var(--ink);stroke-width:1.5;stroke-linejoin:round}
+.dlg-el{width:min(560px,94vw)}
+.dlg-el .dwg{margin:4px auto 0}
+.dlg-el .sub{margin:2px 0 8px;font-size:13px;color:var(--muted)}
+.dlg-pv{margin-top:12px}
+.dlg-pv .l{font-size:12px;color:var(--muted);margin-bottom:3px}
+.proto{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:14px}
+</style>
+</head>
+<body>
+<header>
+  <img class="logo" src="assets/logo-alumasa.png" alt="Alumasa" width="150" height="38">
+  <div><h1>Prévia · Montagem da peça simples</h1><div class="sub">protótipo para aprovação — o gerador atual continua igual</div></div>
+  <nav class="topnav"><button onclick="location.href='index.html'">Voltar ao gerador</button><button id="tema">Tema</button></nav>
+</header>
+<main>
+  <div class="proto">Prévia navegável: escolha um elemento, preencha as cotas no desenho e ele entra na peça. O gráfico à direita é o mesmo do gerador (usa a geometria e as validações reais); os trechos criados aqui são os mesmos do gerador atual.</div>
+  <div class="pp">
+    <div>
+      <div class="card">
+        <h2>1 · Bloco e lados</h2>
+        <div class="pp-fields" id="blocoCampos"></div>
+        <div class="pp-fields" style="margin-top:10px">
+          <div class="field" style="grid-column:1/-1"><label>Lados a usinar</label>
+            <div class="pp-seg" id="segLados"><button data-v="1">1 lado</button><button data-v="2">2 lados (vira a peça)</button></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2 · Elementos<button type="button" class="info" data-alvo="#palDica" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></h2>
+        <div class="dica" id="palDica" style="margin:0 0 8px">Clique no elemento: abre uma janela com o desenho e as cotas para digitar. Ele entra no fim da lista do lado escolhido; depois dá para editar (clique na linha), mover ou remover.</div>
+        <div class="pp-grp">Perfil externo</div><div class="pp-pal" id="palExt"></div>
+        <div class="pp-grp">Interno (furo e mandrilamento)</div><div class="pp-pal" id="palInt"></div>
+        <div class="pp-grp">Bloco já furado</div><div class="pp-pal" id="palBr"></div>
+      </div>
+
+      <div class="card">
+        <div class="pv-head"><h2 style="margin:0">3 · Peça montada</h2><div class="pp-seg" id="segLado" hidden></div></div>
+        <div id="listas"></div>
+      </div>
+    </div>
+
+    <div class="pp-dir">
+      <div class="card">
+        <div class="msgs" id="msgs"></div>
+        <div class="pv-head"><div class="pv-leg" id="pvLeg">Meia seção da peça</div><div class="pp-seg" id="segLado2" hidden></div></div>
+        <div id="grafico"></div>
+        <div class="pp-nota" id="resumo"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<dialog id="dlg" class="dlg-el">
+  <form method="dialog" id="frm">
+    <h3 id="dlgT">Elemento</h3>
+    <div class="sub" id="dlgSub"></div>
+    <div class="dwg w2" id="dlgDwg"></div>
+    <div class="row" style="margin-top:8px"><div class="field full" id="dlgCanto" hidden></div></div>
+    <div class="dlg-pv"><div class="l">Como fica na peça</div><div id="dlgPv"></div></div>
+    <div class="msg err" id="dlgErr" style="margin-top:10px" hidden></div>
+    <div class="dlg-actions">
+      <button type="button" class="btn" id="dlgCancel">Cancelar</button>
+      <button type="submit" class="btn primary" id="dlgOk">Adicionar à peça</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="version.js"></script>
+<script src="core.js"></script>
+<script src="sim.js"></script>
+<script src="seed.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  var clone = function (x) { return JSON.parse(JSON.stringify(x)); };
+  var fmt = CNC.fmt, g = CNC.GERADORES.peca_simples;
+  try { document.documentElement.setAttribute('data-theme', localStorage.getItem('cnc.theme.v2') || 'alumasa'); } catch (e) { }
+  var TEMAS = ['light', 'dark', 'alumasa'];
+  $('#tema').onclick = function () {
+    var cur = document.documentElement.getAttribute('data-theme') || 'alumasa';
+    var nx = TEMAS[(TEMAS.indexOf(cur) + 1) % 3]; document.documentElement.setAttribute('data-theme', nx);
+    try { localStorage.setItem('cnc.theme.v2', nx); } catch (e) { }
+  };
+  function medeCab() { document.documentElement.style.setProperty('--hh', $('header').offsetHeight + 'px'); }
+  medeCab(); addEventListener('resize', medeCab);
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('button.info'); if (!b) return; e.preventDefault();
+    var a = $(b.dataset.alvo); if (a) b.setAttribute('aria-expanded', a.classList.toggle('show'));
+  });
+
+  /* ---------- dados da prévia (mesmo formato do gerador) ---------- */
+  var campo = function (id) { return g.campos.filter(function (c) { return c.id === id; })[0]; };
+  var FM = { ext: g.formas, int: campo('internos1').formas, br: campo('brutoInt').formas };
+  var st = {
+    dBruto: 62, lBruto: 102, lPeca: 100, lados: '1', sobre1: 1, lado: 1,
+    trechos1: clone(campo('trechos1').def), trechos2: clone(campo('trechos2').def),
+    internos1: [{ tipo: 'furo', a: 18, b: 70 }, { tipo: 'icil', a: 24, b: 30 }], internos2: [], brutoInt: []
+  };
+  var SEED = window.CNC_SEED_TOOLS, seed = function (k) { return SEED.filter(function (s) { return s.seedKey === k; })[0]; };
+  var TOOLS = { t1: seed('w0101'), t2: seed('enc0303'), t3: seed('tmax0303'), t4: seed('int0606') };
+
+  /* ---------- elementos: nome, resumo, desenho com cotas ---------- */
+  var AX = 190, F = 240;
+  function tk(x, y, v) { return v ? 'M' + x + ' ' + (y - 4) + 'V' + (y + 4) : 'M' + (x - 4) + ' ' + y + 'H' + (x + 4); }
+  function dH(x1, x2, y, ya, yb) { return '<path class="ext" d="M' + x1 + ' ' + ya + 'V' + (y - 5) + 'M' + x2 + ' ' + yb + 'V' + (y - 5) + '"/><path class="dim" d="M' + x1 + ' ' + y + 'H' + x2 + tk(x1, y, 1) + tk(x2, y, 1) + '"/>'; }
+  function dV(y1, y2, x, xa, xb) { return '<path class="ext" d="M' + xa + ' ' + y1 + 'H' + (xa > x ? x + 5 : x - 5) + 'M' + xb + ' ' + y2 + 'H' + (xb > x ? x + 5 : x - 5) + '"/><path class="dim" d="M' + x + ' ' + y1 + 'V' + y2 + tk(x, y1, 0) + tk(x, y2, 0) + '"/>'; }
+  var ld = function (d) { return '<path class="lead" d="' + d + '"/>'; };
+  var ex = function (d) { return '<path class="ext" d="' + d + '"/>'; };
+  var BLK = '<polygon class="piece" points="96,190 96,72 240,72 240,190"/>';
+  var cav = function (p) { return p.charAt(0) === 'M' ? '<path class="cav" d="' + p + '"/>' : '<polygon class="cav" points="' + p + '"/>'; };
+  var DW = {
+    cil: function () { return { svg: '<polygon class="piece" points="96,190 96,78 240,78 240,190"/>' + dV(78, 190, 74, 96, 96) + dH(96, 240, 52, 78, 78), box: { a: [36, 134], b: [168, 26] } }; },
+    cone: function () { return { svg: '<polygon class="piece" points="96,190 96,124 240,84 240,190"/>' + dV(84, 190, 262, 240, 240) + dV(124, 190, 74, 96, 96) + dH(96, 240, 52, 124, 84), box: { a: [304, 137], b: [36, 157], c: [168, 26] } }; },
+    chanfro: function (it) {
+      return it.canto === 'int'
+        ? { svg: '<polygon class="piece" points="96,190 96,78 170,78 170,100 188,118 240,118 240,190"/>' + ex('M170 100V118H188') + dH(170, 188, 52, 78, 118), box: { a: [179, 26] } }
+        : { svg: '<polygon class="piece" points="96,190 96,78 210,78 240,108 240,190"/>' + ex('M210 78H240V108') + dH(210, 240, 52, 78, 78), box: { a: [225, 26] } };
+    },
+    raio: function (it) {
+      return it.canto === 'int'
+        ? { svg: '<path class="piece" d="M96 190V78H170V92A26 26 0 0 0 196 118H240V190Z"/>' + ex('M170 92V118H196') + dH(170, 196, 52, 78, 118), box: { a: [183, 26] } }
+        : { svg: '<path class="piece" d="M96 190V78H198A42 42 0 0 1 240 120V190Z"/>' + ex('M198 78H240V120') + dH(198, 240, 52, 78, 78), box: { a: [219, 26] } };
+    },
+    canal: function () { return { svg: '<polygon class="piece" points="96,190 96,78 146,78 146,130 190,130 190,78 240,78 240,190"/>' + dV(130, 190, 74, 146, 146) + dH(190, 240, 52, 78, 78) + dH(146, 190, 52, 78, 78) + ld('M246 40L222 52M160 40L166 52'), box: { a: [36, 160], b: [262, 26], c: [150, 26] } }; },
+    furo: function () { return { svg: BLK + cav('240,190 240,130 150,130 130,190') + dV(130, 190, 262, 240, 240) + dH(150, 240, 44, 130, 72), box: { a: [304, 160], b: [195, 20] } }; },
+    icil: function () { return { svg: BLK + cav('240,190 240,120 140,120 140,190') + dV(120, 190, 262, 240, 240) + dH(140, 240, 44, 120, 72), box: { a: [304, 155], b: [190, 20] } }; },
+    icone: function () { return { svg: BLK + cav('240,190 240,112 130,138 130,190') + dV(112, 190, 262, 240, 240) + dV(138, 190, 74, 130, 130) + dH(130, 240, 44, 138, 72), box: { a: [304, 151], b: [36, 164], c: [185, 20] } }; },
+    ichanfro: function (it) {
+      return it.canto === 'fundo'
+        ? { svg: BLK + cav('240,190 240,130 168,130 150,148 150,190') + ex('M150 148V130H168') + dH(150, 168, 44, 130, 130), box: { a: [159, 20] } }
+        : { svg: BLK + cav('240,190 240,106 222,130 150,130 150,190') + ex('M222 130H240V106') + dH(222, 240, 44, 130, 106), box: { a: [231, 20] } };
+    },
+    iraio: function (it) {
+      return it.canto === 'fundo'
+        ? { svg: BLK + cav('M240 190V130H180A30 30 0 0 0 150 160V190Z') + ex('M180 130H150V160') + dH(150, 180, 44, 160, 130), box: { a: [165, 20] } }
+        : { svg: BLK + cav('M240 190V100A30 30 0 0 0 210 130H150V190Z') + ex('M210 130H240V100') + dH(210, 240, 44, 130, 100), box: { a: [225, 20] } };
+    }
+  };
+  DW.bcil = DW.icil;
+
+  // pictogramas da paleta (face a direita)
+  var IC = {
+    cil: '<rect class="wk" x="12" y="10" width="40" height="24"/>',
+    cone: '<polygon class="wk" points="12,34 12,18 52,8 52,34"/>',
+    chanfro: '<polygon class="wk" points="12,34 12,10 40,10 52,22 52,34"/>',
+    raio: '<path class="wk" d="M12 34V10H34A18 18 0 0 1 52 28V34Z"/>',
+    canal: '<polygon class="wk" points="12,34 12,10 26,10 26,24 38,24 38,10 52,10 52,34"/>',
+    rosca: '<polygon class="wk" points="12,34 12,16 19,10 26,16 33,10 40,16 47,10 52,13 52,34"/>',
+    furo: '<rect class="wk" x="8" y="6" width="48" height="32"/><polygon class="cv" points="56,38 56,24 30,24 24,38"/>',
+    icil: '<rect class="wk" x="8" y="6" width="48" height="32"/><polygon class="cv" points="56,38 56,22 26,22 26,38"/>',
+    icone: '<rect class="wk" x="8" y="6" width="48" height="32"/><polygon class="cv" points="56,38 56,16 26,26 26,38"/>',
+    ichanfro: '<rect class="wk" x="8" y="6" width="48" height="32"/><polygon class="cv" points="56,38 56,16 48,24 26,24 26,38"/>',
+    iraio: '<rect class="wk" x="8" y="6" width="48" height="32"/><path class="cv" d="M56 38V16A8 8 0 0 0 48 24H26V38Z"/>',
+    icanal: '<rect class="wk" x="8" y="6" width="48" height="32"/><polygon class="cv" points="56,38 56,24 40,24 40,16 32,16 32,24 26,24 26,38"/>',
+    irosca: '<rect class="wk" x="8" y="6" width="48" height="32"/><polygon class="cv" points="56,38 56,22 50,16 44,22 38,16 32,22 26,22 26,38"/>',
+    bcil: '<rect class="wk" x="8" y="6" width="48" height="32"/><polygon class="cv" points="56,38 56,22 8,22 8,38"/>'
+  };
+  var EL = {
+    cil: { g: 'ext', l: 'trechos', nome: 'Cilindro', d: { a: 40, b: 20 }, dica: 'Ø do cilindro e quanto ele avança em Z a partir do trecho anterior (o primeiro começa na face, Z0).' },
+    cone: { g: 'ext', l: 'trechos', nome: 'Cone', d: { a: 40, b: 60, c: 10 }, dica: 'Ø inicial (lado da face), Ø final (lado do fundo) e o comprimento em Z.' },
+    chanfro: { g: 'ext', l: 'trechos', nome: 'Chanfro', d: { a: 1, canto: 'ext' }, dica: 'Chanfro a 45° no canto escolhido; C é o cateto.' },
+    raio: { g: 'ext', l: 'trechos', nome: 'Raio', d: { a: 1, canto: 'ext' }, dica: 'Arredondamento do canto escolhido.' },
+    canal: { g: 'ext', l: 'trechos', nome: 'Canal', d: { a: 50, b: 43, c: 4.5 }, dica: 'Ø do fundo, distância da face (Z0) até a parede mais próxima da face e largura do canal (maior ou igual à da ferramenta).' },
+    rosca: { g: 'ext', soon: true, nome: 'Rosca' },
+    furo: { g: 'int', l: 'internos', nome: 'Furo (broca)', d: { a: 18, b: 70 }, dica: 'Furo feito com broca no centro: Ø e profundidade a partir da face.' },
+    icil: { g: 'int', l: 'internos', nome: 'Cilindro interno', d: { a: 24, b: 30 }, dica: 'Mandrilamento: Ø e comprimento a partir da face. Perfil escalonado = vários cilindros internos, um depois do outro.' },
+    icone: { g: 'int', l: 'internos', nome: 'Cone interno', d: { a: 24, b: 18, c: 20 }, dica: 'Ø na boca (lado da face), Ø no fundo e comprimento.' },
+    ichanfro: { g: 'int', l: 'internos', nome: 'Chanfro interno', d: { a: 1, canto: 'boca' }, dica: 'Chanfro a 45° na entrada do furo ou no fundo.' },
+    iraio: { g: 'int', l: 'internos', nome: 'Raio interno', d: { a: 1, canto: 'boca' }, dica: 'Arredondamento na entrada do furo ou no fundo.' },
+    icanal: { g: 'int', soon: true, nome: 'Canal interno' },
+    irosca: { g: 'int', soon: true, nome: 'Rosca interna' },
+    bcil: { g: 'br', l: 'brutoInt', nome: 'Diâmetro existente', d: { a: 30, b: 102 }, dica: 'Furo que o bloco já traz (um depois do outro, da face onde o furo começa). Comprimento igual ao do bloco = furo passante: a broca é dispensada.' }
+  };
+  var ROT = { a: 0, b: 1, c: 2 }, LET = ['A', 'B', 'C'];
+  function rotulos(tp) { return (FM[EL[tp].g][tp] || {}).rot || []; }
+  function cantos(tp) { var f = FM[EL[tp].g][tp]; return f && f.canto ? (f.cantos || [['ext', 'Canto externo (quina)'], ['int', 'Canto interno (pé do degrau)']]) : null; }
+  function resumo(it) {
+    var n = EL[it.tipo].nome, a = it.a, b = it.b, c = it.c, cn = function (v) { return (cantos(it.tipo) || []).filter(function (o) { return o[0] === (it.canto || cantos(it.tipo)[0][0]); }).map(function (o) { return o[1]; })[0] || ''; };
+    switch (it.tipo) {
+      case 'cil': case 'icil': return n + ' Ø' + fmt(a) + ' × ' + fmt(b);
+      case 'bcil': return n + ' Ø' + fmt(a) + ' × ' + fmt(b);
+      case 'cone': case 'icone': return n + ' Ø' + fmt(a) + ' → Ø' + fmt(b) + ' × ' + fmt(c);
+      case 'chanfro': case 'ichanfro': return n + ' ' + fmt(a) + ' × 45° <small>' + esc(cn()) + '</small>';
+      case 'raio': case 'iraio': return n + ' R' + fmt(a) + ' <small>' + esc(cn()) + '</small>';
+      case 'canal': return n + ' Ø' + fmt(a) + ' · Z' + fmt(b) + ' · larg. ' + fmt(c);
+      case 'furo': return n + ' Ø' + fmt(a) + ' prof. ' + fmt(b);
+    }
+    return n;
+  }
+
+  /* ---------- gráfico (mesmo desenho do gerador, a partir da cena do simulador) ---------- */
+  function buildF(s) {
+    var f = {}; g.campos.forEach(function (c) { f[c.id] = c.tipo === 'trechos' ? clone(c.def) : c.tipo === 'select' ? String(c.def) : Number(c.def); });
+    f.dBruto = +s.dBruto; f.lBruto = +s.lBruto; f.lPeca = +s.lPeca; f.lados = s.lados; f.sobre1 = +s.sobre1;
+    ['1', '2'].forEach(function (k) {
+      f['trechos' + k] = clone(s['trechos' + k]); f['internos' + k] = clone(s['internos' + k]);
+      var e = s['trechos' + k].length > 0, i = s['internos' + k].length > 0;
+      f['usin' + k] = e && i ? 'ambos' : i ? 'int' : 'ext';   // o que usinar sai do que foi montado
+    });
+    f.brutoInt = clone(s.brutoInt); f.brutoIntLado = '1'; f.pressao = '';
+    return f;
+  }
+  function rodar(s) {
+    var f = buildF(s), tl = Object.assign({}, TOOLS), fr = s['internos' + s.lado].concat(s.internos1, s.internos2).filter(function (x) { return x.tipo === 'furo'; })[0];
+    if (fr && Number(fr.a) > 0) tl.t3 = Object.assign({}, TOOLS.t3, { diametro: Number(fr.a) });   // na prévia a broca acompanha o Ø do furo
+    var r = g.gerar(f, tl, { nome: 'PREVIA', autor: 'PREVIA', data: 'PREVIA' });
+    var cur = r.lados ? r.lados[Math.min(s.lado, r.lados.length) - 1] : r;
+    return { r: r, cur: cur };
+  }
+  function previewSvg(cena, W, H) {
+    if (!cena || !cena.protect) return '';
+    var P = cena.protect, m = 20, zmin = 0, rmax = 0;
+    P.forEach(function (p) { zmin = Math.min(zmin, p[0]); rmax = Math.max(rmax, p[1]); });
+    var per = cena.bruto && cena.bruto.perfil;
+    if (per) per.forEach(function (s) { rmax = Math.max(rmax, s.d / 2, (s.d1 != null ? s.d1 : s.d) / 2); });
+    rmax = Math.max(rmax, cena.bruto.d / 2);
+    var zmax = Math.max(0, cena.bruto.z0), span = zmax - zmin, sc = Math.min((W - 2 * m) / span, (H - 2 * m - 10) / rmax);
+    var X = function (z) { return (m + (z - zmin) * sc).toFixed(1); }, Y = function (r) { return (H - m - r * sc).toFixed(1); };
+    var pts = P.map(function (p) { return X(p[0]) + ',' + Y(p[1]); }).join(' '), bruto;
+    if (per) bruto = per.map(function (q) { return X(q.z0) + ',' + Y(q.d / 2) + ' ' + X(q.z1) + ',' + Y((q.d1 != null ? q.d1 : q.d) / 2); }).join(' ');
+    else bruto = X(cena.bruto.z0) + ',' + Y(0) + ' ' + X(cena.bruto.z0) + ',' + Y(cena.bruto.d / 2) + ' ' + X(cena.bruto.z1) + ',' + Y(cena.bruto.d / 2) + ' ' + X(cena.bruto.z1) + ',' + Y(0);
+    var cv = '', hs = cena.holes || [];
+    hs.forEach(function (hp) { cv += '<polygon class="pv-hole" points="' + hp.map(function (p) { return X(p[0]) + ',' + Y(p[1]); }).join(' ') + '"/>'; });
+    (cena.interiores || []).forEach(function (ip, q) {
+      var d = '';
+      for (var s2 = 0; s2 < ip.length - 1; s2++) {
+        var a = ip[s2], b = ip[s2 + 1], mz = (a[0] + b[0]) / 2, mr = (a[1] + b[1]) / 2, dentro = false;
+        if (a[0] > 0.0001 && b[0] > 0.0001) continue;
+        hs.forEach(function (hp, q2) { if (q2 !== q && CNCSim.inPoly(hp, mz, mr)) dentro = true; });
+        if (!dentro) d += 'M' + X(a[0]) + ' ' + Y(a[1]) + 'L' + X(b[0]) + ' ' + Y(b[1]);
+      }
+      if (d) cv += '<path class="pv-int" d="' + d + '"/>';
+    });
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="pp-pv" role="img" aria-label="Meia seção da peça"><polyline class="pv-bruto" points="' + bruto + '"/><polygon class="pv-piece" points="' + pts + '"/>' + cv +
+      '<line class="pv-axis" x1="' + (m - 10) + '" y1="' + Y(0) + '" x2="' + (W - m + 10) + '" y2="' + Y(0) + '"/>' +
+      '<text class="pv-t" x="' + X(0) + '" y="' + (H - 5) + '" text-anchor="middle">Z0 (face)</text><text class="pv-t" x="' + X(zmin) + '" y="' + (H - 5) + '" text-anchor="middle">fundo</text>' +
+      '<text class="pv-t" x="' + m + '" y="13">Ø ' + fmt(2 * rmax) + ' (bruto)</text></svg>';
+  }
+
+  /* ---------- tela ---------- */
+  function lista(tp, lado) { var l = EL[tp].l; return l === 'brutoInt' ? st.brutoInt : st[l + (lado || st.lado)]; }
+  function seg(el, itens, atual, fn) {
+    el.innerHTML = itens.map(function (x) { return '<button type="button" data-v="' + x[0] + '" aria-pressed="' + (String(atual) === String(x[0])) + '">' + x[1] + '</button>'; }).join('');
+    $$('button', el).forEach(function (b) { b.onclick = function () { fn(b.dataset.v); }; });
+  }
+  function pal(el, grupo) {
+    el.innerHTML = Object.keys(EL).filter(function (k) { return EL[k].g === grupo; }).map(function (k) {
+      var e = EL[k];
+      return '<button type="button" class="pp-el" data-t="' + k + '"' + (e.soon ? ' disabled title="Em breve"' : '') + '><svg viewBox="0 0 64 44" aria-hidden="true">' + IC[k] + '</svg>' + esc(e.nome) + (e.soon ? '<small>em breve</small>' : '') + '</button>';
+    }).join('');
+    $$('button', el).forEach(function (b) { b.onclick = function () { abre(b.dataset.t, -1); }; });
+  }
+  function bloco() {
+    var campos = [['dBruto', 'Ø bruto', 'mm'], ['lBruto', 'Comprimento bruto', 'mm'], ['lPeca', 'Comprimento final da peça', 'mm']];
+    if (st.lados === '2') campos.push(['sobre1', 'Sobremetal em Z no lado 1', 'mm']);
+    $('#blocoCampos').innerHTML = campos.map(function (c) {
+      return '<div class="field"><label for="b_' + c[0] + '">' + c[1] + '</label><div class="unit"><input id="b_' + c[0] + '" data-k="' + c[0] + '" type="number" step="any" value="' + esc(st[c[0]]) + '"><span>' + c[2] + '</span></div></div>';
+    }).join('');
+    $$('#blocoCampos input').forEach(function (i) { i.oninput = function () { st[i.dataset.k] = i.value; grafico(); }; });
+  }
+  function listas() {
+    var h = '';
+    [['ext', 'Perfil externo'], ['int', 'Interno'], ['br', 'Furo existente no bloco']].forEach(function (G) {
+      var tp0 = Object.keys(EL).filter(function (k) { return EL[k].g === G[0] && !EL[k].soon; })[0], arr = lista(tp0);
+      if (G[0] === 'br' && !arr.length) return;
+      h += '<div class="pp-grp">' + G[1] + (G[0] === 'br' ? '' : ' · lado ' + st.lado) + '</div><div class="pp-list">';
+      if (!arr.length) h += '<div class="pp-vazio">Nenhum elemento. Escolha na paleta acima.</div>';
+      arr.forEach(function (it, i) {
+        h += '<div class="pp-row" data-g="' + G[0] + '" data-i="' + i + '"><span class="n">' + (i + 1) + '</span><svg class="pp-ic" viewBox="0 0 64 44" aria-hidden="true">' + IC[it.tipo] + '</svg><span class="t">' + resumo(it) + '</span>' +
+          '<span class="pp-btn"><button type="button" class="btn sm" data-a="up" title="Subir"' + (i ? '' : ' disabled') + '>↑</button><button type="button" class="btn sm" data-a="down" title="Descer"' + (i < arr.length - 1 ? '' : ' disabled') + '>↓</button><button type="button" class="btn sm danger" data-a="del" title="Remover">×</button></span></div>';
+      });
+      h += '</div>';
+    });
+    $('#listas').innerHTML = h;
+    $$('#listas .pp-row').forEach(function (row) {
+      var G = row.dataset.g, i = +row.dataset.i, arr = lista(Object.keys(EL).filter(function (k) { return EL[k].g === G && !EL[k].soon; })[0]);
+      row.onclick = function (e) {
+        var b = e.target.closest('button[data-a]');
+        if (!b) { abre(arr[i].tipo, i); return; }
+        if (b.dataset.a === 'del') arr.splice(i, 1);
+        else if (b.dataset.a === 'up' && i > 0) { var t = arr[i]; arr[i] = arr[i - 1]; arr[i - 1] = t; }
+        else if (b.dataset.a === 'down' && i < arr.length - 1) { var t2 = arr[i]; arr[i] = arr[i + 1]; arr[i + 1] = t2; }
+        tudo();
+      };
+    });
+  }
+  function grafico() {
+    var o = rodar(st), r = o.r;
+    $('#msgs').innerHTML = (r.erros || []).map(function (m) { return '<div class="msg err">' + esc(m) + '</div>'; }).join('') + (r.avisos || []).map(function (m) { return '<div class="msg warn">' + esc(m) + '</div>'; }).join('');
+    if (o.cur && o.cur.cena) { $('#grafico').innerHTML = previewSvg(o.cur.cena, 640, 300); $('#grafico').dataset.ok = '1'; }
+    else if (!$('#grafico').dataset.ok) $('#grafico').innerHTML = '';
+    var linhas = o.cur && o.cur.code ? o.cur.code.split('\n').length : 0;
+    $('#resumo').textContent = (r.erros && r.erros.length) ? 'Corrija os itens em vermelho para gerar o programa (o desenho mostra o último estado válido).' : 'Programa gerado: ' + linhas + ' linhas' + (r.lados ? ' (lado ' + st.lado + ')' : '') + '. Linha tracejada = bloco bruto.';
+  }
+  function tudo() {
+    seg($('#segLados'), [['1', '1 lado'], ['2', '2 lados (vira a peça)']], st.lados, function (v) { st.lados = v; if (v === '1') st.lado = 1; tudo(); });
+    ['#segLado', '#segLado2'].forEach(function (id) {
+      var el = $(id); el.hidden = st.lados !== '2';
+      if (!el.hidden) seg(el, [[1, 'Lado 1'], [2, 'Lado 2']], st.lado, function (v) { st.lado = +v; tudo(); });
+    });
+    bloco(); listas(); grafico();
+  }
+
+  /* ---------- janela do elemento ---------- */
+  var cur = null;   // {tp, idx, it}
+  function desenhoDlg() {
+    var tp = cur.tp, it = cur.it, d = DW[tp](it), n = rotulos(tp).length, h = '<svg viewBox="0 0 340 230" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><line class="axis" x1="60" y1="190" x2="326" y2="190"/>' + d.svg +
+      '<text x="240" y="214" text-anchor="middle">face (Z0)</text><text x="96" y="214" text-anchor="middle">fundo</text></svg>';
+    ['a', 'b', 'c'].slice(0, n).forEach(function (k, q) {
+      var pos = d.box[k]; if (!pos) return;
+      h += '<label class="dwg-f" style="left:' + (pos[0] / 340 * 100) + '%;top:' + (pos[1] / 230 * 100) + '%" title="' + esc(rotulos(tp)[q]) + '"><span class="ltr">' + LET[q] + '</span><input data-k="' + k + '" type="number" step="any" inputmode="decimal" aria-label="' + esc(LET[q] + ' - ' + rotulos(tp)[q]) + '" value="' + esc(it[k] == null ? '' : it[k]) + '"></label>';
+    });
+    $('#dlgDwg').innerHTML = h;
+    $$('#dlgDwg input').forEach(function (i) { i.oninput = function () { cur.it[i.dataset.k] = i.value; miniPv(); }; });
+  }
+  function legenda() {
+    var tp = cur.tp, rot = rotulos(tp);
+    $('#dlgSub').textContent = rot.map(function (r, q) { return LET[q] + ' = ' + r; }).join(' · ') + '. ' + (EL[tp].dica || '');
+  }
+  function miniPv() {
+    var tmp = clone(st), tp = cur.tp, arr = EL[tp].l === 'brutoInt' ? tmp.brutoInt : tmp[EL[tp].l + st.lado];
+    if (cur.idx >= 0) arr[cur.idx] = clone(cur.it); else arr.push(clone(cur.it));
+    var o = rodar(tmp), er = (o.r.erros || [])[0], cena = o.cur && o.cur.cena;
+    if (!cena) { var base = clone(st), ba = EL[tp].l === 'brutoInt' ? base.brutoInt : base[EL[tp].l + st.lado]; if (cur.idx >= 0) ba.splice(cur.idx, 1); var o2 = rodar(base); cena = o2.cur && o2.cur.cena; }   // com erro: mostra a peça sem este elemento
+    $('#dlgPv').innerHTML = (cena ? previewSvg(cena, 520, 170) : '') + (er ? '<div class="msg err" style="margin-top:6px">' + esc(er) + '</div>' : '');
+  }
+  // novo elemento ja vem coerente com o anterior (o Ø externo so cresce para o fundo; o interno so diminui)
+  function inicial(tp, arr) {
+    var ult = null, n = function (v) { return Number(v) > 0 ? Number(v) : null; };
+    arr.forEach(function (x) { var d = x.tipo === 'cil' || x.tipo === 'icil' ? n(x.a) : x.tipo === 'cone' ? n(x.b) : x.tipo === 'icone' ? n(x.b) : null; if (d) ult = d; });
+    if (!ult) return {};
+    if (tp === 'cil') return { a: ult };
+    if (tp === 'cone') return { a: ult, b: ult + 10 };
+    if (tp === 'icil') return { a: ult };
+    if (tp === 'icone') return { a: ult, b: Math.max(1, ult - 6) };
+    return {};
+  }
+  function abre(tp, idx) {
+    var arr = lista(tp), it = idx >= 0 ? clone(arr[idx]) : Object.assign({ tipo: tp }, clone(EL[tp].d), inicial(tp, arr));
+    cur = { tp: tp, idx: idx, it: it };
+    $('#dlgT').textContent = EL[tp].nome + (EL[tp].g === 'br' ? '' : ' · lado ' + st.lado) + (idx >= 0 ? ' (editar)' : '');
+    $('#dlgOk').textContent = idx >= 0 ? 'Salvar' : 'Adicionar à peça';
+    var cs = cantos(tp), box = $('#dlgCanto');
+    box.hidden = !cs;
+    if (cs) {
+      it.canto = it.canto || cs[0][0];
+      box.innerHTML = '<label>Canto</label><select>' + cs.map(function (o) { return '<option value="' + o[0] + '"' + (it.canto === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>';
+      $('select', box).onchange = function () { cur.it.canto = this.value; desenhoDlg(); miniPv(); };
+    }
+    legenda(); desenhoDlg(); miniPv();
+    $('#dlgErr').hidden = true;
+    $('#dlg').showModal();
+    var f1 = $('#dlgDwg input'); if (f1) { f1.focus(); f1.select(); }
+  }
+  $('#dlgCancel').onclick = function () { $('#dlg').close(); };
+  $('#frm').onsubmit = function (e) {
+    var it = cur.it, n = rotulos(cur.tp).length, ok = true;
+    ['a', 'b', 'c'].slice(0, n).forEach(function (k) { var v = Number(it[k]); if (it[k] === '' || it[k] == null || !isFinite(v) || v < 0) ok = false; });
+    if (!ok) { e.preventDefault(); $('#dlgErr').textContent = 'Preencha todas as cotas do desenho com números.'; $('#dlgErr').hidden = false; return; }
+    var arr = lista(cur.tp);
+    if (cur.idx >= 0) arr[cur.idx] = clone(it); else arr.push(clone(it));
+    tudo();
+  };
+
+  ['ext', 'int', 'br'].forEach(function (G) { pal($({ ext: '#palExt', int: '#palInt', br: '#palBr' }[G]), G); });
+  tudo();
+  window.__pp = { st: st, abre: abre, rodar: rodar, DW: DW, EL: EL };
+})();
+</script>
+</body>
+</html>

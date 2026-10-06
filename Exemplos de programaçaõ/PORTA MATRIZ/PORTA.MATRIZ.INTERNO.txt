@@ -1,0 +1,57 @@
+%
+<PORTA.MATRIZ.INTERNO.txt>
+(Samoel setembro/2024)
+
+
+(FERRAMENTA)
+#100=0606(desbaste interno)
+
+(MEDIDAS FINAIS)
+#1=190(diametro sobremetal)
+#2=200(diametro final)
+#3=150(comprimento em z)
+#5=3(valor do raio)
+
+(PARAMETROS)
+#11=1(incremento de corte (raio))
+#12=4(sentido de giro)
+#13=280(velocidade de corte)
+#14=.3(avanco desbaste)
+#16=.2 (avanco acabamento)
+#15=2000 (limite RPM)
+
+
+
+(CALCULOS)
+#19=999999
+#101=#5*2(calc.R*2)
+#102=#101+#2(calc.D.R.)
+
+G21G90G40G80
+G28U0
+G0Z400
+T#100
+G54
+G96S#13M#12
+G50S#15
+G0Z5
+X#1(D. int. S. Metal)
+G71U#11R1
+G71P1Q2U0W0F#14
+N1G0X#102
+Z0
+G2X#2Z-#5R#5
+G1Z-#3
+N2G0X#1
+
+
+G70P1Q2F#16
+
+G0Z100
+
+
+
+
+
+M30
+%

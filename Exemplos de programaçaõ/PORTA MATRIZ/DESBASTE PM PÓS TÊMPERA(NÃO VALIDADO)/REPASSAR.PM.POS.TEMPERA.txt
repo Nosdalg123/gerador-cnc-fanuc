@@ -1,0 +1,104 @@
+%
+<REPASSAR.PM.POS.TEMPERA.txt>
+(Samoel - agosto 26) 
+ 
+#1=220(primeiro diametro com sobremetal) 
+#2=226(diametro final do corpo)
+#3=81(comprimento primeiro rebaixo c/ sobremetal)
+#4=214(segundo diametro com sobremetal)
+#5=218(diametro final do encaixe)
+#6=150(comprimento total)
+#7=10(comprimento do encaixe)
+#8=.5(sobremetal para acabamento no diametro)
+#9=.03(sobremetal para acabamento no comprimento)
+#10=.3(avanco desbaste)
+#11=.2(avanco acabamento)
+#12=1(incremento de corte) 
+#13=4(Raio 1 - face) 
+#14=2(Raio 2 - encaixe)
+#15=1.2(Raio do inserto) 
+#100=0202(ferramenta de desbaste interno)
+#101=120(velocidade de corte)
+#102=120(limite RPM) 
+G1900D#2K0L#6
+(usar "GOTO70" para pular para acabamento) 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+G21G90G40G80 
+G28U0
+G0Z300 
+T#100
+G54
+G96S#101M4 
+G50S#102 
+G0Z25
+ 
+G0X#1
+Z2 
+M8 
+G71U#12R1
+G71P1Q2U-#8W#9F#10 
+N1G0X#2
+N2G1Z-#3 
+M9 
+ 
+ 
+ 
+G0X#4
+Z-[#3-1](R1-1mm seg.)
+M8 
+G71U#12R1
+G71P3Q4U-#8W#9F#10 
+N3G0X#5
+N4G1Z-[#6+#15](Ct+Ri)
+M9 
+ 
+ 
+ 
+G0X[#5-#8](D.e.-Sm)
+Z-[#3-1](Cr1-1mm Seg.) 
+M8 
+G71U#12R1
+G71P5Q6U-#8W#9F#10 
+N5G0X#2
+N6G1Z-[#6-#7](Ct-Ce) 
+M9 
+ 
+ 
+ 
+GOTO71 
+N70(acabamento)
+ 
+ 
+ 
+G21G90G40G80 
+G28U0
+G0Z300 
+T#100
+G54
+G96S#101M4 
+G50S#102 
+G0Z25
+N71
+ 
+G0Z#15 
+X[[#13*2]+#2](R1*2+Dc) 
+G1Z0F#11 
+G2X#2Z-#13R#13 
+G1Z-[#6-#7](Ct-Ce) 
+X[[#14*2]+#5](R2*2+De) 
+G2X#5Z-[[#6-#7]+#14]R#14 
+G1Z-[#6+#15](Ct+Ri)
+X[#5+#15](De-Ri) 
+G0X[#5-10](De-10mm seg)
+G0Z25
+ 
+M30
+%

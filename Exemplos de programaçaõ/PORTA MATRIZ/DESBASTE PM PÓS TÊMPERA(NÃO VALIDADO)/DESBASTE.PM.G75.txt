@@ -1,0 +1,73 @@
+%
+<DESBASTE.PM.G75.txt>
+(samoel - julho/26)
+ 
+(MEDIDAS FINAIS) 
+#1=226(diametro final) 
+#2=220(primeiro diametro inicial)
+#4=212(diametro intermediario) 
+#3=140(comprimento final)
+#5=78(comprimento intermediario) 
+ 
+ 
+(PARAMETROS) 
+#11=.9(INCREMENTO DE CORTE)
+#16=3(VALOR DO RAIO) 
+#12=4(SENTIDO DE GIRO) 
+#13=25(VELOCIDADE DE CORTE)
+#10=.2(AVANCO CORTE ACABAMENTO)
+#14=.3(AVANCO CORTE DESBASTE)
+#15=700(LIMITE DE RPM) 
+#20=0808(NUMERO DA FERRAMENTA) 
+ 
+ 
+(CALCULOS) 
+#19=999999 
+#101=#11*1000(CALCULO INCREMENTO DE CORTE) 
+#102=#16*2 
+#103=#1+#102 
+ 
+G1900D#1L#3K0
+ 
+ 
+ 
+ 
+ 
+ 
+G21G90G40G80 
+G28U0
+G0Z400 
+T#20 
+G54
+G96S#13M#12
+G50S#15
+G0Z25
+X#2
+Z2 
+M8 
+ 
+ 
+ 
+G75X#1Z-#5P#19Q#101R.001F#14 
+ 
+X#4
+Z-#5 
+G75X#1Z-#3P#19Q#101R.001F#14 
+M9 
+ 
+N70
+ 
+G0Z2 
+X#1
+G1Z-#3F#10 
+G0X#4
+Z2 
+ 
+G0Z2 
+X#103
+G1Z0F.1
+G2X#1Z-#16R#16 
+G0Z100 
+ 
+M30
+%
