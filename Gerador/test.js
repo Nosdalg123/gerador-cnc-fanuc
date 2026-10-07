@@ -262,3 +262,5 @@ if(verbose){ for (const [g,f,tl] of [['espina_cabeca',fc,{t1:{...t1,...acab}}],[
   chk(run('PS erro: rosca interna menor que o furo','peca_simples',big({internos1:[{tipo:'furo',a:34,b:60},{tipo:'irosca',a:36,b:20,c:2}]}),{t1,t2,t3,t4,t7}));
   console.log('== CANTOS com rosca:',C.psCantos(re,51).map(c=>c.alvo+'/'+c.onde+' z='+c.z).join(' | '));
 }
+// ---- v2.2.0: modulo Simulacao (leitor de programa pronto) ----
+require('./testprog.js');

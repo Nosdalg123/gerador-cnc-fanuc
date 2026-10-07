@@ -15,6 +15,7 @@
     <button id="nav-gerador" role="tab" aria-selected="true"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h10M4 19h16"/><path d="M17 9l3 3-3 3"/></svg>Gerador</button>
     <button id="nav-desenho" role="tab" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10l4-5h8l4 5v10z"/><path d="M9 20v-6h6v6"/></svg>Desenho da peça</button>
     <button id="nav-ferr" role="tab" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l4 4-8 8H6v-4z"/><path d="M13 7l4 4"/></svg>Ferramentas</button>
+    <button id="nav-sim" role="tab" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M10 8.5l5.5 3.5-5.5 3.5z"/></svg>Simulação</button>
   </nav>
 </aside>
 <div class="content">
@@ -105,7 +106,7 @@
         <div id="out-sim" hidden>
           <div class="simgrid">
             <div>
-              <div class="simcanvas"><canvas id="simCanvas" aria-label="Simulação do corte em meia seção XZ"></canvas></div>
+              <div class="simcanvas"><canvas id="simCanvas" class="simcv" aria-label="Simulação do corte em meia seção XZ"></canvas></div>
               <div class="slider">
                 <input type="range" id="simSlider" min="0" max="1000" value="0" step="1" aria-label="Posição no ciclo">
                 <div class="marks" id="simMarks"></div>
@@ -143,7 +144,7 @@
             </div>
             <div>
               <div id="simStats" class="derived" style="margin-top:0"></div>
-              <div id="simCode" style="margin-top:10px" aria-label="Código com a linha em execução destacada"></div>
+              <div id="simCode" class="simcode" style="margin-top:10px" aria-label="Código com a linha em execução destacada"></div>
               <div class="alerts" id="simAlerts"></div>
             </div>
           </div>
@@ -197,6 +198,92 @@
           <div class="pv-head"><div class="pv-leg">Meia seção da peça</div><div class="pp-seg" id="dsLado2" hidden></div></div>
           <div id="dsGraf"></div>
           <div class="pp-nota" id="dsResumo"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- ===== SIMULAÇÃO (programa colado) ===== -->
+  <section id="view-sim" hidden>
+    <div class="ps">
+      <div class="ps-esq">
+        <div class="card">
+          <h2>1 · Programa<button type="button" class="info" data-alvo="#psDica" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></h2>
+          <div class="dica" id="psDica" style="margin:0 0 8px">Cole aqui um programa Fanuc já pronto (do gerador, da casa ou de outro lugar). O sistema lê as variáveis (#), IF/GOTO, subprogramas e os ciclos G71, G72, G70, G74, G75, G76 e G83, descobre as ferramentas usadas (comando T) e simula o corte. Nada é enviado para fora do computador.</div>
+          <textarea id="psTexto" class="ps-texto" spellcheck="false" wrap="off" autocomplete="off" placeholder="Cole o programa CNC aqui (Ctrl+V)…"></textarea>
+          <div class="toolbar" style="margin:10px 0 6px">
+            <button class="btn primary" id="psColar" type="button">Colar da área de transferência</button>
+            <button class="btn" id="psAbrir" type="button">Abrir arquivo…</button>
+            <button class="btn" id="psExemplo" type="button">Exemplo</button>
+            <button class="btn danger" id="psLimpar" type="button">Limpar</button>
+            <input type="file" id="psFile" accept=".txt,.nc,.cnc,.tap,.mpf,.ngc,.min,text/plain" hidden>
+          </div>
+          <div class="note" id="psResumo"></div>
+          <div class="msgs" id="psMsgs" style="margin-top:8px"></div>
+        </div>
+        <div class="card">
+          <h2>2 · Ferramentas do programa<button type="button" class="info" data-alvo="#psFerrDica" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></h2>
+          <div class="dica" id="psFerrDica" style="margin:0 0 8px">Cada comando T do programa aparece aqui. Escolha ao lado a ferramenta do banco que está montada naquela posição: o desenho mostra o formato que o simulador usa (a cruz é a ponta programada). A escolha fica salva para o mesmo código T. Rotação, Vc e avanço vêm do próprio programa.</div>
+          <div id="psFerr"></div>
+        </div>
+        <div class="card">
+          <h2>3 · Bruto e fixação<button type="button" class="info" data-alvo="#psBrutoDica" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></h2>
+          <div class="dica" id="psBrutoDica" style="margin:0 0 8px">Campos vazios usam o valor lido do programa (G1900/G1901 ou os movimentos); o valor lido aparece em cinza dentro do campo. Digite para sobrescrever. O Z0 do programa é a face da peça; o comprimento livre vai de Z0 até a face das castanhas.</div>
+          <div class="row" id="psBruto">
+            <div class="field"><label for="psD">Ø do bruto</label><div class="unit"><input id="psD" data-b="d" type="number" step="any" min="0" inputmode="decimal"><span>mm</span></div></div>
+            <div class="field"><label for="psSobre">Sobremetal na face (Z)</label><div class="unit"><input id="psSobre" data-b="sobre" type="number" step="any" min="0" inputmode="decimal"><span>mm</span></div></div>
+            <div class="field"><label for="psLivre">Comprimento livre (Z0 até a placa)</label><div class="unit"><input id="psLivre" data-b="livre" type="number" step="any" min="0" inputmode="decimal"><span>mm</span></div></div>
+            <div class="field"><label for="psGrip">Preso na placa</label><div class="unit"><input id="psGrip" data-b="grip" type="number" step="any" min="0" inputmode="decimal"><span>mm</span></div></div>
+            <div class="field full"><label for="psFuro">Furo já existente no bruto (Ø) — vazio = maciço</label><div class="unit"><input id="psFuro" data-b="furoD" type="number" step="any" min="0" inputmode="decimal"><span>mm</span></div></div>
+          </div>
+          <div class="toolbar" style="margin:10px 0 0"><button class="btn sm" id="psBrutoAuto" type="button">Voltar tudo ao automático</button></div>
+          <div class="note" style="margin-top:8px">Ø da placa, cursos e velocidade de rápido: Configurações → Máquina e placa.</div>
+        </div>
+      </div>
+      <div class="ps-dir">
+        <div class="card">
+          <h2>Simulação do corte<span class="note" id="psTitulo" style="text-transform:none;letter-spacing:0;font-weight:400;margin-left:8px"></span></h2>
+          <div class="simcanvas"><canvas id="psCanvas" class="simcv" aria-label="Simulação do programa colado em meia seção XZ"></canvas></div>
+          <div class="slider">
+            <input type="range" id="psSlider" min="0" max="1000" value="0" step="1" aria-label="Posição no ciclo">
+            <div class="marks" id="psMarks"></div>
+          </div>
+          <div class="simbar">
+            <button class="btn" id="psReset" title="Voltar ao início" aria-label="Voltar ao início">⏮</button>
+            <button class="btn" id="psPrevLine" title="Linha anterior do G-code" aria-label="Linha anterior">⏪</button>
+            <button class="btn" id="psPrevSeg" title="Movimento anterior (←)" aria-label="Movimento anterior">◀</button>
+            <button class="btn primary" id="psPlay" title="Executar (espaço)" aria-label="Executar">▶</button>
+            <button class="btn" id="psNextSeg" title="Próximo movimento (→)" aria-label="Próximo movimento">▶|</button>
+            <button class="btn" id="psNextLine" title="Próxima linha do G-code" aria-label="Próxima linha">⏩</button>
+            <select id="psSpeed" aria-label="Velocidade da simulação">
+              <option value="1">1× tempo real</option>
+              <option value="5">5×</option>
+              <option value="10" selected>10×</option>
+              <option value="25">25×</option>
+              <option value="60">60×</option>
+              <option value="150">150×</option>
+              <option value="400">400×</option>
+            </select>
+            <label class="chk inline"><input type="checkbox" id="psTrace" checked> trajeto</label>
+            <label class="chk inline"><input type="checkbox" id="psToolShow" checked> pastilha</label>
+            <label class="chk inline"><input type="checkbox" id="psFollow"> seguir</label>
+            <button class="btn sm" id="psFit">Vista geral</button>
+            <button class="btn sm" id="psFitProfile">Zoom no corte</button>
+          </div>
+          <div class="simread">
+            <span class="mono" id="psPos">X0 Z0</span>
+            <span class="sim-badge rapid" id="psMode">RÁPIDO (G0)</span>
+            <span class="chip" id="psLabel">—</span>
+            <span class="mono" id="psTime">0:00 / 0:00</span>
+            <button type="button" class="info" data-alvo="#psAjuda" aria-expanded="false" aria-label="Como usar o simulador" title="Como usar o simulador">i</button>
+          </div>
+          <div class="simhelp dica" id="psAjuda">Roda do mouse = zoom, arrastar = mover a vista. Espaço = executar/pausar, ← → = movimento a movimento. Clique numa linha do programa para ir até ela. Tracejado = rápido; verde = corte. Aqui não há peça acabada para comparar: o simulador mostra o que o programa remove e avisa colisão com a placa, rápido dentro do material e fora de curso.</div>
+          <div class="ps-sub">
+            <div id="psCode" class="simcode" aria-label="Programa com a linha em execução destacada"></div>
+            <div>
+              <div id="psStats" class="derived" style="margin-top:0"></div>
+              <div class="alerts" id="psAlerts"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -307,8 +394,10 @@
 <script src="version.js"></script>
 <script src="core.js"></script>
 <script src="sim.js"></script>
+<script src="progsim.js"></script>
 <script src="seed.js"></script>
 <script src="simview.js"></script>
+<script src="progview.js"></script>
 <script src="pecaview.js"></script>
 <script src="desenho.js"></script>
 <script src="app.js"></script>

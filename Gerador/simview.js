@@ -2,6 +2,8 @@
 (function () {
   'use strict';
   var $ = function (s) { return document.querySelector(s); };
+  function create(P) { // P = prefixo dos ids da janela (sim = Gerador, ps = modulo Simulacao)
+  function ID(n) { return '#' + P + n; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function fx(v, d) { return (Math.round(v * Math.pow(10, d == null ? 2 : d)) / Math.pow(10, d == null ? 2 : d)).toString(); }
   function mmss(s) { s = Math.round(s); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
@@ -9,7 +11,7 @@
   var cv, ctx, mc, mctx, sim = null, res = null, codeLines = [], analysis = null;
   var view = { s: 3, ox: 0, oy: 0, follow: false };
   var st = { t: 0, playing: false, speed: 10, trace: true, tool: true, dirty: true, last: 0, raf: 0, lineShown: -2 };
-  var pending = null, buildTimer = 0, active = false;
+  var pending = null, buildTimer = 0, active = false, aviso = '';
   var cols = {};
 
   function readCols() {
@@ -75,7 +77,7 @@
     ctx.fillStyle = cols.bg; ctx.fillRect(0, 0, w, h);
     if (!sim) {
       ctx.fillStyle = cols.text; ctx.font = '14px system-ui,sans-serif';
-      ctx.fillText('Corrija os erros nas medidas para simular.', 20, 30);
+      ctx.fillText(aviso || 'Corrija os erros nas medidas para simular.', 20, 30);
       return;
     }
     var s = view.s, i, k;
@@ -178,16 +180,16 @@
 
   /* ---------- leitura / controles ---------- */
   function updateReadout(stt) {
-    $('#simPos').textContent = 'X' + fx(stt.x) + '  Z' + fx(stt.z);
-    $('#simMode').textContent = stt.type === 'f' ? 'AVANÇO F' + fx(stt.f, 3) + ' · ' + Math.round(stt.rpm) + ' RPM' : stt.type === 't' ? 'ROSCA (G76) · passo ' + fx(stt.f, 3) + ' · ' + Math.round(stt.rpm) + ' RPM' : 'RÁPIDO (G0)';
-    $('#simMode').className = 'sim-badge ' + (stt.type !== 'r' ? 'cut' : 'rapid');
-    $('#simLabel').textContent = stt.label || '—';
-    $('#simTime').textContent = mmss(st.t) + ' / ' + mmss(sim.total);
-    $('#simSlider').value = String(Math.round(st.t * 100));
+    $(ID('Pos')).textContent = 'X' + fx(stt.x) + '  Z' + fx(stt.z);
+    $(ID('Mode')).textContent = stt.type === 'f' ? 'AVANÇO F' + fx(stt.f, 3) + ' · ' + Math.round(stt.rpm) + ' RPM' : stt.type === 't' ? 'ROSCA (G76) · passo ' + fx(stt.f, 3) + ' · ' + Math.round(stt.rpm) + ' RPM' : 'RÁPIDO (G0)';
+    $(ID('Mode')).className = 'sim-badge ' + (stt.type !== 'r' ? 'cut' : 'rapid');
+    $(ID('Label')).textContent = stt.label || '—';
+    $(ID('Time')).textContent = mmss(st.t) + ' / ' + mmss(sim.total);
+    $(ID('Slider')).value = String(Math.round(st.t * 100));
     if (stt.line !== st.lineShown) { st.lineShown = stt.line; highlightLine(stt.line); }
   }
   function highlightLine(line) {
-    var box = $('#simCode'), prev = box.querySelector('.ln.on');
+    var box = $(ID('Code')), prev = box.querySelector('.ln.on');
     if (prev) prev.classList.remove('on');
     if (line < 0) return;
     var el = box.querySelector('.ln[data-i="' + line + '"]');
@@ -198,9 +200,9 @@
     }
   }
   function renderSide() {
-    var box = $('#simCode');
+    var box = $(ID('Code'));
     box.innerHTML = codeLines.map(function (l, i) { return '<div class="ln" data-i="' + i + '"><span class="no">' + (i + 1) + '</span>' + esc(l) + '</div>'; }).join('');
-    var al = $('#simAlerts'), stats = $('#simStats'), marks = $('#simMarks');
+    var al = $(ID('Alerts')), stats = $(ID('Stats')), marks = $(ID('Marks'));
     if (!analysis) { al.innerHTML = ''; stats.innerHTML = ''; marks.innerHTML = ''; return; }
     stats.innerHTML = '<span class="chip">Tempo de ciclo ≈ <b>' + mmss(analysis.total) + '</b></span>' +
       '<span class="chip">Corte <b>' + mmss(analysis.tCut) + '</b> (' + fx(analysis.dCut, 0) + ' mm)</span>' +
@@ -216,15 +218,15 @@
     marks.innerHTML = real.filter(function (a) { return a.type !== 'sobra'; }).map(function (a) {
       return '<i style="left:' + (sim.total ? 100 * a.t / sim.total : 0) + '%"></i>';
     }).join('');
-    $('#simSlider').max = String(Math.round(sim.total * 100));
+    $(ID('Slider')).max = String(Math.round(sim.total * 100));
   }
   function tituloAlerta(t) {
     return { placa: 'COLISÃO COM A PLACA', peca: 'CORTE NA PEÇA ACABADA', rapido: 'RÁPIDO NO MATERIAL', limite: 'FORA DE CURSO', sobra: 'SOBRA DE MATERIAL' }[t] || t;
   }
   function updateControls() {
-    $('#simPlay').textContent = st.playing ? '⏸' : '▶';
-    $('#simPlay').title = st.playing ? 'Pausar' : 'Executar';
-    $('#simPlay').setAttribute('aria-label', st.playing ? 'Pausar' : 'Executar');
+    $(ID('Play')).textContent = st.playing ? '⏸' : '▶';
+    $(ID('Play')).title = st.playing ? 'Pausar' : 'Executar';
+    $(ID('Play')).setAttribute('aria-label', st.playing ? 'Pausar' : 'Executar');
   }
 
   /* ---------- reproducao ---------- */
@@ -267,21 +269,21 @@
 
   /* ---------- eventos ---------- */
   function init() {
-    cv = $('#simCanvas'); ctx = cv.getContext('2d');
-    $('#simPlay').onclick = function () { st.playing ? pause() : play(); };
-    $('#simReset').onclick = function () { pause(); seek(0); };
-    $('#simPrevSeg').onclick = function () { stepSeg(-1); };
-    $('#simNextSeg').onclick = function () { stepSeg(1); };
-    $('#simPrevLine').onclick = function () { stepLine(-1); };
-    $('#simNextLine').onclick = function () { stepLine(1); };
-    $('#simSpeed').onchange = function () { st.speed = +this.value; };
-    $('#simSlider').oninput = function () { pause(); seek(+this.value / 100); };
-    $('#simTrace').onchange = function () { st.trace = this.checked; st.dirty = true; draw(); };
-    $('#simToolShow').onchange = function () { st.tool = this.checked; st.dirty = true; draw(); };
-    $('#simFollow').onchange = function () { view.follow = this.checked; if (!view.follow) { /* mantem a vista atual */ } st.dirty = true; draw(); };
-    $('#simFit').onclick = function () { $('#simFollow').checked = false; view.follow = false; fit(); draw(); };
-    $('#simFitProfile').onclick = function () { $('#simFollow').checked = false; view.follow = false; fitProfile(); draw(); };
-    $('#simCode').onclick = function (e) {
+    cv = $(ID('Canvas')); ctx = cv.getContext('2d');
+    $(ID('Play')).onclick = function () { st.playing ? pause() : play(); };
+    $(ID('Reset')).onclick = function () { pause(); seek(0); };
+    $(ID('PrevSeg')).onclick = function () { stepSeg(-1); };
+    $(ID('NextSeg')).onclick = function () { stepSeg(1); };
+    $(ID('PrevLine')).onclick = function () { stepLine(-1); };
+    $(ID('NextLine')).onclick = function () { stepLine(1); };
+    $(ID('Speed')).onchange = function () { st.speed = +this.value; };
+    $(ID('Slider')).oninput = function () { pause(); seek(+this.value / 100); };
+    $(ID('Trace')).onchange = function () { st.trace = this.checked; st.dirty = true; draw(); };
+    $(ID('ToolShow')).onchange = function () { st.tool = this.checked; st.dirty = true; draw(); };
+    $(ID('Follow')).onchange = function () { view.follow = this.checked; if (!view.follow) { /* mantem a vista atual */ } st.dirty = true; draw(); };
+    $(ID('Fit')).onclick = function () { $(ID('Follow')).checked = false; view.follow = false; fit(); draw(); };
+    $(ID('FitProfile')).onclick = function () { $(ID('Follow')).checked = false; view.follow = false; fitProfile(); draw(); };
+    $(ID('Code')).onclick = function (e) {
       var ln = e.target.closest ? e.target.closest('.ln') : null; if (!ln || !sim) return;
       var i = +ln.dataset.i, first = -1, k;
       for (k = 0; k < sim.segs.length; k++) { if (sim.segs[k].line === i) { first = sim.segs[k].t0; break; } }
@@ -299,7 +301,7 @@
     cv.addEventListener('pointerdown', function (e) { drag = { x: e.clientX, y: e.clientY, ox: view.ox, oy: view.oy }; cv.setPointerCapture(e.pointerId); });
     cv.addEventListener('pointermove', function (e) {
       if (!drag || !sim) return;
-      if (view.follow) { view.follow = false; $('#simFollow').checked = false; }
+      if (view.follow) { view.follow = false; $(ID('Follow')).checked = false; }
       view.ox = drag.ox + e.clientX - drag.x; view.oy = drag.oy + e.clientY - drag.y; draw();
     });
     cv.addEventListener('pointerup', function () { drag = null; });
@@ -315,5 +317,8 @@
     });
   }
 
-  window.SimView = { init: init, setResult: setResult, show: show, hide: hide, redraw: function () { st.dirty = true; draw(); } };
+  return { init: init, setResult: setResult, show: show, hide: hide, setAviso: function (t) { aviso = t || ''; st.dirty = true; draw(); }, redraw: function () { st.dirty = true; draw(); } };
+  }
+  window.SimView = create('sim');
+  window.SimView.create = create;
 })();

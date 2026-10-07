@@ -104,8 +104,20 @@ Quatro valores: **faceamento · desbaste**, **cilindragem · desbaste**, **facea
 - **Máquina/placa** (Configurações): valores provisórios, confirmar no manual da ML-600L.
 - Teclas: espaço = executar/pausar; ← → = movimento a movimento. Roda do mouse = zoom; arrastar = mover.
 
+## Simulação de programa pronto (v2.2.0)
+Menu **Simulação**: simula qualquer programa Fanuc colado, sem passar pelo gerador (programa da casa, de outra máquina, ou um gerado aqui e editado à mão).
+1. **Programa**: cole na caixa (Ctrl+V ou "Colar da área de transferência"), ou "Abrir arquivo…" (.txt/.nc). O botão **Exemplo** carrega um programa pequeno. O texto fica salvo no navegador.
+2. **Ferramentas do programa**: uma linha por comando `T`. Escolha a ferramenta do banco (já vem pelo mesmo código) e, nos tipos canal/rosca, a posição de uso. O desenho ao lado é o formato usado na simulação (cruz = ponta programada; esquerda = peça/placa, +Z para a direita, +X para cima). Sem ferramenta escolhida o simulador usa uma pastilha padrão de 80°.
+3. **Bruto e fixação**: deixe vazio para usar o que o programa informa (`G1900D L`, `G1901D E L` com furo) ou digite. O comprimento livre vai de Z0 até as castanhas; o Ø da placa e os cursos vêm de Configurações.
+4. A janela de simulação é a mesma do Gerador. Clique numa linha do código para ir até ela; os avisos de leitura (caixa abaixo do programa) também levam à linha.
+
+**O que o leitor entende:** variáveis `#`, expressões com `[ ]` e funções, `IF/GOTO/THEN`, `WHILE/DO/END`, `M98/M99`, `G0 G1 G2 G3` (R ou I/K), `G90/G91`, `U/W`, `G28`, `G50 S`, `G96/G97`, `G98/G99`, `G71 G72 G70`, `G74`, `G75`, `G76`, `G83/G80`, `G1900/G1901`, `T`, `M30`.
+**O que não simula (avisa):** G41/G42, G73, G12.1, eixo C, polegadas (G20 vira mm), G71 tipo II com cavidades (desbasta como tipo I), G10/G65/G66. Sem peça acabada para comparar, não há alerta de "corte na peça" nem de "sobra"; valem colisão com a placa, G0 no material e fora de curso.
+**Convenção da casa:** depois do `G71/G72` os blocos `N(P)…N(Q)` são executados de novo em movimento normal (como no gerador e nos programas da casa).
+Arquivos: `progsim.js` (leitor, sem tela, testável no Node), `progview.js` (tela), `testprog.js` (testes; inclui a comparação "gerado × lido").
+
 ## Desenvolvimento
-- `core.js` (geradores + percurso), `sim.js` (motor da simulação), `simview.js` (tela do simulador), `app.js` (interface do Gerador, Ferramentas e Configurações), `desenho.js` (operação Desenho da peça), `pecaview.js` (meia seção compartilhada), `seed.js` (ferramentas iniciais), `style.css` (visual), `version.js` (número da versão), `versionar.js` (guarda uma versão em `versoes/`).
+- `core.js` (geradores + percurso), `sim.js` (motor da simulação), `simview.js` (tela do simulador; fábrica `SimView.create`), `progsim.js` + `progview.js` (módulo Simulação), `testprog.js` (testes do módulo), `app.js` (interface do Gerador, Ferramentas e Configurações), `desenho.js` (operação Desenho da peça), `pecaview.js` (meia seção compartilhada), `seed.js` (ferramentas iniciais), `style.css` (visual), `version.js` (número da versão), `versionar.js` (guarda uma versão em `versoes/`).
 - `node test.js` roda os geradores e a análise do simulador no terminal (inclui colisão forçada); `node test.js -v` imprime o código das espinas.
 - `serve.js` + `../.claude/launch.json`: servidor local só para testar no painel de preview; não é necessário para usar.
 

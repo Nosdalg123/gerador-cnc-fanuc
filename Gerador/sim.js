@@ -146,7 +146,7 @@
         var naCav = holes.length && emLista(holes, cz, cr);
         if (this.mat0[k] && scene.protect && inPoly(scene.protect, cz, cr) && !naCav) this.prot[k] = 1;
         // "deveria estar vazia no fim": fora da peca acabada e a mais de 0,15 mm dela (ignora lascas de resolucao)
-        if (this.mat0[k] && !this.prot[k] && !(scene.ignore && inPoly(scene.ignore, cz, cr)) &&
+        if (!scene.semPerfil && this.mat0[k] && !this.prot[k] && !(scene.ignore && inPoly(scene.ignore, cz, cr)) && // semPerfil: programa colado, sem peca acabada para comparar
           (!scene.protect || distPoly(scene.protect, cz, cr) > 0.15) && (!naCav || distLista(holes, cz, cr) > 0.15)) this.clear[k] = 1;
       }
     }
@@ -161,7 +161,7 @@
       var tool = scene.tools[m.tool] || {}, rpm = 0, dur;
       if (m.t === 'r') dur = len / ((maq.rapido || 20000) / 60);
       else {
-        rpm = self.rpmAt((pos.x + m.x) / 2, tool);
+        rpm = self.rpmAt((pos.x + m.x) / 2, m.spin || tool); // m.spin: G96/G97 e S do proprio programa (modulo Simulacao)
         dur = len / Math.max(1e-6, (m.f || 0.1) * rpm / 60);
       }
       segs.push({ x0: pos.x, z0: pos.z, x1: m.x, z1: m.z, len: len, t0: t, dur: dur, type: m.t, line: m.line, tool: m.tool, label: m.label || '', f: m.f || 0, rpm: rpm });

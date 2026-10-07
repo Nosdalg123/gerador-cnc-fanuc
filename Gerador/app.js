@@ -52,17 +52,22 @@
     $('#view-ferr').hidden = v !== 'ferr';
     $('#view-cfg').hidden = v !== 'cfg';
     $('#view-desenho').hidden = v !== 'desenho';
+    $('#view-sim').hidden = v !== 'sim';
+    $('#nav-sim').setAttribute('aria-selected', v === 'sim');
     $('#nav-desenho').setAttribute('aria-selected', v === 'desenho');
     $('#nav-gerador').setAttribute('aria-selected', v === 'gerador');
     $('#nav-ferr').setAttribute('aria-selected', v === 'ferr');
     $('#nav-cfg').setAttribute('aria-selected', v === 'cfg');
+    if (v !== 'sim') ProgView.ocultar();
     if (v === 'ferr') { SimView.hide(); renderTools(); }
     else if (v === 'cfg') { SimView.hide(); buildCfg(); }
     else if (v === 'desenho') { SimView.hide(); CNCDesenhos.mostrar(); }
+    else if (v === 'sim') { SimView.hide(); ProgView.mostrar(); }
     else { fillDesenhoSel(); renderToolSelects(); render(); if (outTab === 'sim') SimView.show(); }
   }
   $('#nav-gerador').onclick = function () { showView('gerador'); };
   $('#nav-ferr').onclick = function () { showView('ferr'); };
+  $('#nav-sim').onclick = function () { showView('sim'); };
   $('#nav-desenho').onclick = function () { showView('desenho'); };
   $('#nav-cfg').onclick = function () { showView('cfg'); };
   var TEMAS = [['light', 'Claro'], ['dark', 'Escuro'], ['alumasa', 'Alumasa']];
@@ -76,7 +81,7 @@
     var i = TEMAS.map(function (x) { return x[0]; }).indexOf(temaAtual()), next = TEMAS[(i + 1) % TEMAS.length][0];
     document.documentElement.setAttribute('data-theme', next);
     try { localStorage.setItem(K_THEME, next); } catch (e) { }
-    temaRotulo(); SimView.redraw();
+    temaRotulo(); SimView.redraw(); ProgView.redraw();
   };
   try { var th = localStorage.getItem(K_THEME); if (th) document.documentElement.setAttribute('data-theme', th); } catch (e) { }
   temaRotulo();
@@ -682,6 +687,7 @@
 
   /* ---------- inicio ---------- */
   SimView.init();
+  ProgView.init({ tools: function () { return tools; }, maq: function () { return state.maq; } });
   $('main').classList.add('fixo');
   buildTipo(); buildCampos(); buildMaq(); renderToolSelects(); render();
 })();

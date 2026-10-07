@@ -2848,7 +2848,7 @@
   var PLANEJADOS = [
   ];
 
-  return { psCantos: psCantos, psCantosInt: psCantosInt, psMigra: psMigra, psRoscaD1: psRoscaD1, fmt: fmt, ascii: ascii, tcode: tcode, nomeArquivo: nomeArquivo, mesAno: mesAno, DEFAULT_MAQ: DEFAULT_MAQ, GERADORES: GERADORES, INTERNOS: INTERNOS, PLANEJADOS: PLANEJADOS };
+  return { simTool: simTool, psCantos: psCantos, psCantosInt: psCantosInt, psMigra: psMigra, psRoscaD1: psRoscaD1, fmt: fmt, ascii: ascii, tcode: tcode, nomeArquivo: nomeArquivo, mesAno: mesAno, DEFAULT_MAQ: DEFAULT_MAQ, GERADORES: GERADORES, INTERNOS: INTERNOS, PLANEJADOS: PLANEJADOS };
 });
 
 
