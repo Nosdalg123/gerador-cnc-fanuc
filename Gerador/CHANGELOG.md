@@ -8,6 +8,10 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.2.1 — 07/10/2026 — Simulação: janela em painel próprio e desenho com inserto e suporte
+- Módulo **Simulação**: a janela de simulação agora fica num **painel separado, em largura total**, abaixo dos cartões Programa, Ferramentas e Bruto (que ficam lado a lado). Canvas maior (520 px), código e alertas ao lado.
+- **Desenho da ferramenta** mostra o **inserto** (laranja, com furo de fixação nas pastilhas) e o **suporte/haste** (cinza), na mesma orientação da simulação (esquerda = peça/placa, +Z → , +X ↑), com legenda e a cruz na ponta programada. Cada tipo tem o seu: pastilha rômbica (ângulo e raio do cadastro), barra de mandrilar, canal frontal, canal externo, canal interno, rosca externa/interna e broca (corpo + haste, eixo da peça tracejado). O desenho agora fica abaixo da escolha da ferramenta, com a largura do cartão.
+
 ## 2.2.0 — 07/10/2026 — módulo Simulação (programa pronto colado)
 - **Novo item "Simulação" no menu** (ao lado de Gerador, Desenho da peça e Ferramentas): cole um programa Fanuc já pronto (ou abra o .txt) e simule sem passar pelo gerador. Três blocos: **1 · Programa** (caixa de colar, abrir arquivo, exemplo), **2 · Ferramentas do programa** e **3 · Bruto e fixação**, com a **mesma janela de simulação** do Gerador ao lado (executar, passo a passo, trajeto, pastilha, linha do código destacada, alertas, tempo de ciclo).
 - **Leitor de programa (`progsim.js`)**: lê o texto como a máquina: variáveis `#`, expressões (`[ ]`, `SQRT`, `ROUND`, `FIX`, `FUP`, `ABS`, `SIN`…, `EQ/NE/GT/LT/GE/LE`, `AND/OR/MOD`), `IF[..]GOTO`, `IF..THEN`, `WHILE..DO/END`, `GOTO N`, subprogramas `M98 P.. L../M99`, comentários, `%`, `<NOME>`, `N`, `/`. Movimentos `G0/G1/G2/G3` (R ou I/K, absoluto/incremental, `U/W`), `G28`, `G50 S`, `G96/G97`, `G98/G99`, ciclos **G71/G72 + G70, G74, G75, G76 (2 blocos) e G83/G80** e `G1900/G1901` (bruto). Os ciclos seguem os mesmos critérios do gerador: um programa gerado e depois colado remove o mesmo material (conferido nos casos do `test.js`).

@@ -107,7 +107,7 @@ Quatro valores: **faceamento · desbaste**, **cilindragem · desbaste**, **facea
 ## Simulação de programa pronto (v2.2.0)
 Menu **Simulação**: simula qualquer programa Fanuc colado, sem passar pelo gerador (programa da casa, de outra máquina, ou um gerado aqui e editado à mão).
 1. **Programa**: cole na caixa (Ctrl+V ou "Colar da área de transferência"), ou "Abrir arquivo…" (.txt/.nc). O botão **Exemplo** carrega um programa pequeno. O texto fica salvo no navegador.
-2. **Ferramentas do programa**: uma linha por comando `T`. Escolha a ferramenta do banco (já vem pelo mesmo código) e, nos tipos canal/rosca, a posição de uso. O desenho ao lado é o formato usado na simulação (cruz = ponta programada; esquerda = peça/placa, +Z para a direita, +X para cima). Sem ferramenta escolhida o simulador usa uma pastilha padrão de 80°.
+2. **Ferramentas do programa**: uma linha por comando `T`. Escolha a ferramenta do banco (já vem pelo mesmo código) e, nos tipos canal/rosca, a posição de uso. O desenho mostra o inserto e o suporte no formato usado na simulação (cruz = ponta programada; esquerda = peça/placa, +Z para a direita, +X para cima). Sem ferramenta escolhida o simulador usa uma pastilha padrão de 80°.
 3. **Bruto e fixação**: deixe vazio para usar o que o programa informa (`G1900D L`, `G1901D E L` com furo) ou digite. O comprimento livre vai de Z0 até as castanhas; o Ø da placa e os cursos vêm de Configurações.
 4. A janela de simulação é a mesma do Gerador. Clique numa linha do código para ir até ela; os avisos de leitura (caixa abaixo do programa) também levam à linha.
 

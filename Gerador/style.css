@@ -331,8 +331,12 @@ dialog h3{margin:0 0 12px}
 .dwg.pm text{font-size:12px}
 
 /* modulo Simulacao (programa colado) */
-.ps{display:grid;grid-template-columns:minmax(340px,500px) minmax(0,1fr);gap:16px;align-items:start}
-@media (max-width:1100px){.ps{grid-template-columns:1fr}}
+.ps{display:block}
+.ps-esq{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:16px;align-items:start}
+.ps-esq .card + .card{margin-top:0}
+.ps-dir{margin-top:20px;padding-top:16px;border-top:2px solid var(--line)}
+.ps-simcard{border-top:3px solid var(--accent)}
+.ps-simcard .simcv{height:520px}
 .ps-texto{display:block;height:300px;min-height:140px;resize:vertical;font:12.5px/1.5 Consolas,"Cascadia Mono",monospace;white-space:pre;overflow:auto;tab-size:4;background:var(--code-bg);color:var(--code-ink);border-radius:10px}
 .ps-msg{cursor:pointer}
 .ps-tool{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:8px}
@@ -341,18 +345,17 @@ dialog h3{margin:0 0 12px}
 .ps-tool-top{display:flex;gap:4px 10px;align-items:baseline;flex-wrap:wrap}
 .ps-t{font:700 15px Consolas,"Cascadia Mono",monospace;background:var(--accent);color:var(--accent-ink);padding:1px 9px;border-radius:6px}
 .ps-desc{font-weight:600;font-size:14px}
-.ps-tool-body{display:grid;grid-template-columns:minmax(0,1fr) 176px;gap:10px;align-items:start}
-@media (max-width:560px){.ps-tool-body{grid-template-columns:1fr}}
+.ps-tool-body{display:grid;grid-template-columns:1fr;gap:10px;align-items:start}
 .ps-tool select{margin-top:2px}
 .ps-tool label{font-size:12px;color:var(--muted);display:block;margin-top:6px}
 .ps-tool label:first-child{margin-top:0}
-.ps-svg{width:176px;height:100px;border:1px solid var(--line);border-radius:8px;background:var(--sim-bg);display:block}
-.ps-svg .f{fill:var(--sim-toolcut);fill-opacity:.78;stroke:var(--sim-text);stroke-width:1.2;stroke-linejoin:round}
+.ps-svg{width:100%;height:150px;border:1px solid var(--line);border-radius:8px;background:var(--sim-bg);display:block}
+.ps-svg .f{fill:var(--sim-toolcut);fill-opacity:.85;stroke:var(--sim-text);stroke-width:1.2;stroke-linejoin:round}
+.ps-svg .h{fill:var(--sim-chuck);fill-opacity:.55;stroke:var(--sim-text);stroke-width:1;stroke-linejoin:round}
+.ps-svg .furo{fill:var(--sim-bg);stroke:var(--sim-text);stroke-width:1}
 .ps-svg .tip{stroke:var(--sim-alert);stroke-width:1.6;fill:none}
 .ps-svg .eixo{stroke:var(--sim-axis);stroke-width:1;stroke-dasharray:6 3}
 .ps-svg text{fill:var(--sim-text);font:9.5px system-ui,sans-serif}
 .ps-svg text.m{fill:var(--sim-axis)}
 .ps-cap{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.35}
 .ps-aviso{font-size:12.5px;color:var(--warn)}
-.ps-sub{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px;margin-top:12px;align-items:start}
-@media (max-width:1180px){.ps-sub{grid-template-columns:1fr}}

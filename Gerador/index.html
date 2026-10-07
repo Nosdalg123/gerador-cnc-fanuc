@@ -240,8 +240,10 @@
         </div>
       </div>
       <div class="ps-dir">
-        <div class="card">
+        <div class="card ps-simcard">
           <h2>Simulação do corte<span class="note" id="psTitulo" style="text-transform:none;letter-spacing:0;font-weight:400;margin-left:8px"></span></h2>
+          <div class="simgrid">
+          <div>
           <div class="simcanvas"><canvas id="psCanvas" class="simcv" aria-label="Simulação do programa colado em meia seção XZ"></canvas></div>
           <div class="slider">
             <input type="range" id="psSlider" min="0" max="1000" value="0" step="1" aria-label="Posição no ciclo">
@@ -277,12 +279,12 @@
             <button type="button" class="info" data-alvo="#psAjuda" aria-expanded="false" aria-label="Como usar o simulador" title="Como usar o simulador">i</button>
           </div>
           <div class="simhelp dica" id="psAjuda">Roda do mouse = zoom, arrastar = mover a vista. Espaço = executar/pausar, ← → = movimento a movimento. Clique numa linha do programa para ir até ela. Tracejado = rápido; verde = corte. Aqui não há peça acabada para comparar: o simulador mostra o que o programa remove e avisa colisão com a placa, rápido dentro do material e fora de curso.</div>
-          <div class="ps-sub">
-            <div id="psCode" class="simcode" aria-label="Programa com a linha em execução destacada"></div>
-            <div>
-              <div id="psStats" class="derived" style="margin-top:0"></div>
-              <div class="alerts" id="psAlerts"></div>
-            </div>
+          </div>
+          <div>
+            <div id="psStats" class="derived" style="margin-top:0"></div>
+            <div id="psCode" class="simcode" style="margin-top:10px" aria-label="Programa com a linha em execução destacada"></div>
+            <div class="alerts" id="psAlerts"></div>
+          </div>
           </div>
         </div>
       </div>

@@ -110,19 +110,55 @@
       default: return (t ? '' : 'Pastilha padrão (nenhuma ferramenta escolhida) · ') + past + 'ponta ' + fx(f.ang) + '°' + (f.raio ? ' · raio ' + fx(f.raio) : '');
     }
   }
+  // pecas do desenho (inserto e suporte) no plano (z, r) da simulacao, com a ponta programada em (0,0)
+  function rect(z0, r0, z1, r1) { return [[z0, r0], [z1, r0], [z1, r1], [z0, r1]]; }
+  function espelhaR(pts) { return pts.map(function (p) { return [p[0], -p[1]]; }); }
+  function pecasFerr(f) {
+    var k = f.kind, w = Number(f.largura) || 4.5, DEG = Math.PI / 180, ins, hold, furo = null, i;
+    if (k === 'canal') { ins = rect(0, 0, 9, w); hold = rect(6, -4, 58, w + 4); }
+    else if (k === 'canalext') { ins = rect(-w, 0, 0, 9); hold = rect(-w - 4, 7, 4, 46); }
+    else if (k === 'canalint') { ins = rect(-w, -9, 0, 0); hold = rect(-w - 2, -22, 56, -7); }
+    else if (k === 'rosca' || k === 'roscaint') {
+      var hr = 8, ar = hr * Math.tan(30 * DEG);
+      ins = [[0, 0], [ar, hr], [-ar, hr]]; hold = rect(-14, hr - 1.5, 42, hr + 13);
+      if (k === 'roscaint') { ins = espelhaR(ins); hold = espelhaR(hold); }
+    } else if (k === 'broca') {
+      var rd = w / 2; // w = Ø da broca
+      ins = rect(0, 0, 40, rd); hold = rect(38, 0, 78, rd * 0.85);
+    } else { // pastilha rombica (externa) ou barra de mandrilar (interna): inserto de aresta igual, ponta com raio
+      var a = (Number(f.ang) || 80) * DEG, rn = Math.max(0, Number(f.raio) || 0), Li = 9, u2 = [Math.cos(a), Math.sin(a)], pts = [], n = 8;
+      if (rn > 0.001) {
+        var d = rn / Math.sin(a / 2), bx = 1 + u2[0], by = u2[1], bl = Math.hypot(bx, by), C = [d * bx / bl, d * by / bl], th2 = 90 * DEG + a, th1 = 270 * DEG;
+        for (i = 0; i <= n; i++) { var th = th2 + (th1 - th2) * i / n; pts.push([C[0] + rn * Math.cos(th), C[1] + rn * Math.sin(th)]); }
+      } else pts.push([0, 0]);
+      pts.push([Li, 0], [Li + Li * u2[0], Li * u2[1]], [Li * u2[0], Li * u2[1]]);
+      var zm = 1e9, rm = 1e9;
+      pts.forEach(function (p) { zm = Math.min(zm, p[0]); rm = Math.min(rm, p[1]); });
+      ins = pts.map(function (p) { return [p[0] - zm, p[1] - rm]; });
+      var hmax = Li * u2[1], r0 = hmax * 0.55;
+      hold = k === 'interna' ? rect(Li * 0.6, r0 - 4, Li * 0.6 + 70, r0 + 8) : rect(Li * 0.5, r0, Li * 0.5 + 55, r0 + 16);
+      furo = [Li * (1 + u2[0]) / 2 - zm, hmax / 2 - rm, 1.7];
+      if (k === 'interna') { ins = espelhaR(ins); hold = espelhaR(hold); furo[1] = -furo[1]; }
+    }
+    return { ins: ins, hold: hold, furo: furo };
+  }
   function svgFerr(f) {
-    var sh = CNCSim.toolShape(f), bb = sh.bb;
-    var zmin = Math.min(bb[0], 0), zmax = Math.max(bb[1], 0), rmin = Math.min(bb[2], 0), rmax = Math.max(bb[3], 0);
-    var W = 176, H = 100, m = 16, bw = Math.max(zmax - zmin, 1), bh = Math.max(rmax - rmin, 1);
-    var sc = Math.min((W - 2 * m) / bw, (H - 2 * m) / bh, 10), px = (W - bw * sc) / 2, py = (H - bh * sc) / 2;
+    var pc = pecasFerr(f), all = pc.ins.concat(pc.hold, [[0, 0]]), zmin = 1e9, zmax = -1e9, rmin = 1e9, rmax = -1e9;
+    all.forEach(function (p) { zmin = Math.min(zmin, p[0]); zmax = Math.max(zmax, p[0]); rmin = Math.min(rmin, p[1]); rmax = Math.max(rmax, p[1]); });
+    var W = 260, H = 150, mx = 14, mt = 20, mb = 24, bw = Math.max(zmax - zmin, 1), bh = Math.max(rmax - rmin, 1);
+    var sc = Math.min((W - 2 * mx) / bw, (H - mt - mb) / bh, 9), px = (W - bw * sc) / 2, py = mt + (H - mt - mb - bh * sc) / 2;
     function X(z) { return px + (z - zmin) * sc; }
-    function Y(r) { return H - py - (r - rmin) * sc; }
-    var pts = sh.pts.map(function (p) { return X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1); }).join(' ');
-    var tx = X(0), ty = Y(0), o = '<svg class="ps-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Formato da ferramenta como aparece na simulação">';
-    if (f.kind === 'broca') o += '<line class="eixo" x1="2" x2="' + (W - 2) + '" y1="' + ty.toFixed(1) + '" y2="' + ty.toFixed(1) + '"/><text class="m" x="4" y="' + (ty + 10).toFixed(1) + '">eixo da peça</text>';
-    o += '<polygon class="f" points="' + pts + '"/>';
+    function Y(r) { return H - mb - (H - mt - mb - bh * sc) / 2 - (r - rmin) * sc; }
+    function poly(pts, cls) { return '<polygon class="' + cls + '" points="' + pts.map(function (p) { return X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1); }).join(' ') + '"/>'; }
+    var tx = X(0), ty = Y(0), o = '<svg class="ps-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Inserto e suporte da ferramenta, como aparecem na simulação">';
+    if (f.kind === 'broca') o += '<line class="eixo" x1="2" x2="' + (W - 2) + '" y1="' + ty.toFixed(1) + '" y2="' + ty.toFixed(1) + '"/><text class="m" x="' + (W - 4) + '" y="' + (ty - 4).toFixed(1) + '" text-anchor="end">eixo da peça</text>';
+    o += poly(pc.hold, 'h') + poly(pc.ins, 'f');
+    if (pc.furo) o += '<circle class="furo" cx="' + X(pc.furo[0]).toFixed(1) + '" cy="' + Y(pc.furo[1]).toFixed(1) + '" r="' + (pc.furo[2] * sc).toFixed(1) + '"/>';
     o += '<path class="tip" d="M' + (tx - 6).toFixed(1) + ' ' + ty.toFixed(1) + 'H' + (tx + 6).toFixed(1) + 'M' + tx.toFixed(1) + ' ' + (ty - 6).toFixed(1) + 'V' + (ty + 6).toFixed(1) + '"/>';
-    o += '<text class="m" x="4" y="11">← peça / placa</text><text class="m" x="' + (W - 4) + '" y="' + (H - 4) + '" text-anchor="end">+Z →   ↑ +X</text>';
+    o += '<text class="m" x="4" y="12">← peça / placa</text><text class="m" x="' + (W - 4) + '" y="12" text-anchor="end">+Z →   ↑ +X</text>';
+    o += '<rect class="f" x="6" y="' + (H - 15) + '" width="10" height="8"/><text x="20" y="' + (H - 8) + '">' + (f.kind === 'broca' ? 'corpo da broca' : 'inserto') + '</text>';
+    o += '<rect class="h" x="' + (f.kind === 'broca' ? 100 : 76) + '" y="' + (H - 15) + '" width="10" height="8"/><text x="' + (f.kind === 'broca' ? 114 : 90) + '" y="' + (H - 8) + '">' + (f.kind === 'broca' ? 'haste' : 'suporte (haste)') + '</text>';
+    o += '<path class="tip" d="M' + (W - 70) + ' ' + (H - 11) + 'h8M' + (W - 66) + ' ' + (H - 15) + 'v8"/><text x="' + (W - 58) + '" y="' + (H - 8) + '">ponta</text>';
     return o + '</svg>';
   }
 

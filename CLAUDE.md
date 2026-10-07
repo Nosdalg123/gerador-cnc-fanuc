@@ -6,7 +6,7 @@ Contexto para qualquer sessão do Claude (qualquer conta). Leia isto primeiro, d
 Aplicação web local (HTML/JS puro, sem build) que gera programas Fanuc (G71/G70/G72/G75/G74/G76, macros #vars) para o torno ML-600L, a partir de parâmetros e de um desenho de peça. Inclui simulador XZ, banco de ferramentas e testes de regressão.
 
 ## Estado atual
-- **Versão 2.2.0** (07/10/2026) — plano de 6 etapas concluído em 2.0.0; 2.1.x refinou o porta-matriz; **2.2.0 criou o módulo Simulação** (cola programa pronto, lê as ferramentas T, escolhe do banco com desenho do formato e simula na janela do gerador).
+- **Versão 2.2.1** (07/10/2026) — plano de 6 etapas concluído em 2.0.0; 2.1.x refinou o porta-matriz; **2.2.0/2.2.1 criaram o módulo Simulação** (cola programa pronto, lê as ferramentas T, escolhe do banco com desenho de inserto + suporte e simula numa janela própria).
 - Geometrias: matriz sólida, matriz tubular, espina (2 lados), BA/BAT, porta-matriz (2 lados), alimentador padrão (2 lados), peça simples (desenho livre com cilindro/cone/canal externo e interno/rosca G76/chanfro/raio).
 - Operações do menu: Gerador, Desenho da peça, Ferramentas, **Simulação**; Configurações no cabeçalho.
 
@@ -29,4 +29,4 @@ Aplicação web local (HTML/JS puro, sem build) que gera programas Fanuc (G71/G7
 ## Pendências
 - Validar na máquina real tudo o que está em `Gerador/VALIDAR-NA-MAQUINA.md` (limites da ML-600L, canal interno, rosca G76, alimentador, G72 interno, T-MAX, pastilha/raio de ponta).
 - Validar na máquina também as suposições do leitor de programas (seção "Módulo Simulação" do `VALIDAR-NA-MAQUINA.md`).
-- Novas geometrias/ajustes entram como nova versão a partir de 2.2.1 / 2.3.0.
+- Novas geometrias/ajustes entram como nova versão a partir de 2.2.2 / 2.3.0.
