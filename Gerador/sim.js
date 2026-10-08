@@ -164,7 +164,7 @@
         rpm = self.rpmAt((pos.x + m.x) / 2, m.spin || tool); // m.spin: G96/G97 e S do proprio programa (modulo Simulacao)
         dur = len / Math.max(1e-6, (m.f || 0.1) * rpm / 60);
       }
-      segs.push({ x0: pos.x, z0: pos.z, x1: m.x, z1: m.z, len: len, t0: t, dur: dur, type: m.t, line: m.line, tool: m.tool, label: m.label || '', f: m.f || 0, rpm: rpm });
+      segs.push({ x0: pos.x, z0: pos.z, x1: m.x, z1: m.z, len: len, t0: t, dur: dur, type: m.t, line: m.line, tool: m.tool, label: m.label || '', f: m.f || 0, rpm: rpm, dec: m.dec || '' });
       t += dur; pos = { x: m.x, z: m.z };
     });
     this.segs = segs; this.total = t;
@@ -255,7 +255,7 @@
 
   Sim.prototype.state = function () {
     var p = this.posAt(this.t), s = p.s;
-    return { t: this.t, x: p.x, z: p.z, seg: p.seg, line: s ? s.line : -1, type: s ? s.type : 'r', tool: s ? s.tool : 'a', label: s ? s.label : '', f: s ? s.f : 0, rpm: s ? s.rpm : 0 };
+    return { t: this.t, x: p.x, z: p.z, seg: p.seg, line: s ? s.line : -1, type: s ? s.type : 'r', tool: s ? s.tool : 'a', label: s ? s.label : '', f: s ? s.f : 0, rpm: s ? s.rpm : 0, dec: s ? s.dec : '' };
   };
 
   // analise completa: tempos e alertas

@@ -187,6 +187,19 @@
     $(ID('Time')).textContent = mmss(st.t) + ' / ' + mmss(sim.total);
     $(ID('Slider')).value = String(Math.round(st.t * 100));
     if (stt.line !== st.lineShown) { st.lineShown = stt.line; highlightLine(stt.line); }
+    mostraDec(stt);
+  }
+  // faixa "programa decodificado" (so existe no modulo Simulacao): a linha em execucao com variaveis e expressoes ja calculadas, como a maquina as le
+  var DEC_VAZIO = '<span class="note">Linha em execução decodificada: aparece aqui quando a simulação anda.</span>';
+  function mostraDec(stt) {
+    var box = $(ID('Dec'));
+    if (!box) return;
+    var chave = stt.line + '|' + (stt.dec || '');
+    if (chave === st.decKey) return;
+    st.decKey = chave;
+    if (stt.line < 0 || codeLines[stt.line] == null) { box.innerHTML = DEC_VAZIO; return; }
+    box.innerHTML = '<div class="dl"><b>Linha ' + (stt.line + 1) + '</b> ' + esc(codeLines[stt.line].trim()) + '</div>' +
+      (stt.dec ? '<div class="dd"><b>→</b> ' + esc(stt.dec) + '</div>' : '');
   }
   function highlightLine(line) {
     var box = $(ID('Code')), prev = box.querySelector('.ln.on');
@@ -200,7 +213,8 @@
     }
   }
   function renderSide() {
-    var box = $(ID('Code'));
+    var box = $(ID('Code')), dc = $(ID('Dec'));
+    if (dc) { dc.innerHTML = DEC_VAZIO; st.decKey = ''; }
     box.innerHTML = codeLines.map(function (l, i) { return '<div class="ln" data-i="' + i + '"><span class="no">' + (i + 1) + '</span>' + esc(l) + '</div>'; }).join('');
     var al = $(ID('Alerts')), stats = $(ID('Stats')), marks = $(ID('Marks'));
     if (!analysis) { al.innerHTML = ''; stats.innerHTML = ''; marks.innerHTML = ''; return; }

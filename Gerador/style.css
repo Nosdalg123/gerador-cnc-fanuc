@@ -180,6 +180,11 @@ dialog h3{margin:0 0 12px}
 .simcode .ln .no{display:inline-block;width:38px;text-align:right;padding-right:10px;opacity:.45;user-select:none}
 .simcode .ln.on{background:rgba(90,162,255,.28);box-shadow:inset 3px 0 0 #5aa2ff}
 .simcode .ln:hover{background:rgba(255,255,255,.07)}
+/* faixa "programa decodificado" sob o codigo (modulo Simulacao, v2.4.0) */
+.simdec{margin-top:6px;background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:7px 12px;min-height:3.9em;font:12.5px/1.55 Consolas,"Cascadia Mono",monospace;overflow-x:auto}
+.simdec .dl{white-space:pre;opacity:.75}
+.simdec .dd{white-space:pre;color:#8fe0a8;font-weight:600}
+.simdec .note{color:inherit;opacity:.6;font-family:system-ui,"Segoe UI",sans-serif;white-space:normal}
 .alerts{display:grid;gap:6px;margin-top:10px}
 .alert-item{text-align:left;border:1px solid var(--line);border-left:4px solid var(--err);background:var(--err-bg);color:var(--ink);border-radius:8px;padding:7px 10px;cursor:pointer;font:inherit;font-size:13px}
 .alert-item b{display:block;font-size:11px;letter-spacing:.05em;color:var(--err)}

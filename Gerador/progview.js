@@ -179,13 +179,15 @@
   function agenda() { clearTimeout(timer); timer = setTimeout(ler, 350); }
 
   function linhasUteis(t) { return t.split(/\r?\n/).filter(function (l) { return l.trim() !== '' && l.trim() !== '%'; }).length; }
+  var avisosComp = []; // avisos da compensacao G41/G42 (dependem da ferramenta do banco; vem de montarCena)
   function renderMsgs() {
     var box = $('#psMsgs'), rs = $('#psResumo');
     if (!res) { if (!$('#psTexto').value.trim()) { box.innerHTML = ''; rs.textContent = 'Nenhum programa colado.'; } return; }
+    var avs = res.avisos.concat(avisosComp);
     rs.innerHTML = '<b>' + linhasUteis(res.texto) + '</b> linhas · <b>' + res.ferramentas.length + '</b> ferramenta' + (res.ferramentas.length === 1 ? '' : 's') + ' · <b>' + res.moves.length + '</b> movimentos · ' +
-      (res.erros.length ? '<b style="color:var(--err)">' + res.erros.length + ' erro' + (res.erros.length === 1 ? '' : 's') + '</b>' : '0 erros') + ' · ' + res.avisos.length + ' aviso' + (res.avisos.length === 1 ? '' : 's');
+      (res.erros.length ? '<b style="color:var(--err)">' + res.erros.length + ' erro' + (res.erros.length === 1 ? '' : 's') + '</b>' : '0 erros') + ' · ' + avs.length + ' aviso' + (avs.length === 1 ? '' : 's');
     function item(cls, m) { return '<div class="msg ' + cls + ' ps-msg" data-l="' + m.linha + '" title="Clique para ir à linha"><b>Linha ' + (m.linha + 1) + ':</b> ' + esc(m.texto) + '</div>'; }
-    box.innerHTML = res.erros.map(function (m) { return item('err', m); }).join('') + res.avisos.map(function (m) { return item('warn', m); }).join('');
+    box.innerHTML = res.erros.map(function (m) { return item('err', m); }).join('') + avs.map(function (m) { return item('warn', m); }).join('');
     $$('.ps-msg', box).forEach(function (el) { el.onclick = function () { irParaLinha(+el.dataset.l); }; });
   }
   function irParaLinha(n) {
@@ -256,11 +258,13 @@
   /* ---------- simulacao ---------- */
   function simular() {
     if (!sv) return;
-    if (!res) { sv.setResult(null); sv.setAviso($('#psTexto').value.trim() ? 'Não foi possível ler o programa.' : 'Cole um programa para simular.'); $('#psTitulo').textContent = ''; return; }
-    if (!res.moves.length) { sv.setResult(null); sv.setAviso('O programa não tem movimentos para simular.'); $('#psTitulo').textContent = ''; return; }
+    if (!res) { avisosComp = []; sv.setResult(null); sv.setAviso($('#psTexto').value.trim() ? 'Não foi possível ler o programa.' : 'Cole um programa para simular.'); $('#psTitulo').textContent = ''; return; }
+    if (!res.moves.length) { avisosComp = []; sv.setResult(null); sv.setAviso('O programa não tem movimentos para simular.'); $('#psTitulo').textContent = ''; return; }
     var cfg = { d: st.b.d, sobre: st.b.sobre, livre: st.b.livre, grip: st.b.grip, furoD: st.b.furoD, maq: api.maq(), ferr: {} };
     res.todasFerr.forEach(function (f) { var t = escolhida(f); cfg.ferr[f.codigo] = { tool: t, orient: orientDe(f, t) }; });
     var cena = CNCProg.montarCena(res, cfg), b = cena.bruto;
+    var chaveComp = JSON.stringify(cena.compAvisos);
+    if (chaveComp !== JSON.stringify(avisosComp)) { avisosComp = cena.compAvisos; renderMsgs(); }
     $('#psTitulo').textContent = 'bruto Ø' + fx(b.d) + (b.vazios ? ' furo Ø' + fx(cfg.furoD || res.sugestao.furoD) : '') + ' · livre ' + fx(-cena.chuck.zFace) + ' mm';
     sv.setResult({ cena: cena, code: res.texto });
   }

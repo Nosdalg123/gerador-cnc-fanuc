@@ -219,7 +219,7 @@
       <div class="ps-esq">
         <div class="card">
           <h2>1 · Programa<button type="button" class="info" data-alvo="#psDica" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></h2>
-          <div class="dica" id="psDica" style="margin:0 0 8px">Cole aqui um programa Fanuc já pronto (do gerador, da casa ou de outro lugar). O sistema lê as variáveis (#), IF/GOTO, subprogramas e os ciclos G71, G72, G70, G74, G75, G76 e G83, descobre as ferramentas usadas (comando T) e simula o corte. Nada é enviado para fora do computador.</div>
+          <div class="dica" id="psDica" style="margin:0 0 8px">Cole aqui um programa Fanuc já pronto (do gerador, da casa ou de outro lugar). O sistema lê as variáveis (#), expressões entre colchetes (com SIN, COS, TAN, SQRT, ABS, ROUND, FIX, FUP…), IF/GOTO, subprogramas, os ciclos G71, G72, G73, G70, G74, G75, G76 e G83 e a compensação de raio G41/G42, descobre as ferramentas usadas (comando T) e simula o corte. Embaixo do código, a faixa verde mostra a linha em execução já decodificada (variáveis e contas calculadas). Nada é enviado para fora do computador.</div>
           <textarea id="psTexto" class="ps-texto" spellcheck="false" wrap="off" autocomplete="off" placeholder="Cole o programa CNC aqui (Ctrl+V)…"></textarea>
           <div class="toolbar" style="margin:10px 0 6px">
             <button class="btn primary" id="psColar" type="button">Colar da área de transferência</button>
@@ -294,6 +294,7 @@
           <div>
             <div id="psStats" class="derived" style="margin-top:0"></div>
             <div id="psCode" class="simcode" style="margin-top:10px" aria-label="Programa com a linha em execução destacada"></div>
+            <div id="psDec" class="simdec" aria-label="Linha em execução com variáveis e expressões calculadas"></div>
             <div class="alerts" id="psAlerts"></div>
           </div>
           </div>

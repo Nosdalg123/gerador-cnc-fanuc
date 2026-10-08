@@ -1,5 +1,5 @@
 /* Leitor de programa Fanuc (torno) para o modulo Simulacao - sem dependencia de DOM.
-   Recebe o texto de um programa ja pronto (macros #var, IF/GOTO, WHILE, subprogramas, G0-G3, G28, G50, G70-G76, G83, G96/G97, T, M)
+   Recebe o texto de um programa ja pronto (macros #var, IF/GOTO, WHILE, subprogramas, G0-G3, G28, G40-G42, G50, G70-G76, G83, G96/G97, T, M)
    e devolve o percurso da ferramenta no mesmo formato que os geradores entregam ao simulador (sim.js), mais a lista de ferramentas
    usadas, avisos/erros por linha e sugestoes de bruto. Coordenadas: X = diametro, Z = eixo (como no programa).
    Os ciclos seguem os mesmos criterios dos geradores (core.js), para que um programa gerado e depois colado aqui simule igual. */
@@ -12,6 +12,18 @@
 
   function tcode(v) { return String(Math.round(Math.abs(Number(v) || 0))).padStart(4, '0').slice(-4); }
   function ErroLeitura(msg) { this.msg = msg; }
+
+  /* ---------- visor decodificado ---------- */
+  // numero como aparece no visor: sem zeros a mais e sem notacao cientifica
+  function numTxt(v) {
+    var r = Math.round(v * 10000) / 10000;
+    return r === 0 ? '0' : r.toFixed(4).replace(/\.?0+$/, '');
+  }
+  // palavra do bloco no visor: numero escrito direto fica igual; variavel ou expressao vira [valor]
+  function decPalavra(l, src, v) {
+    if (/^[-+]?(\d+\.?\d*|\.\d+)$/.test(src)) return l + src;
+    return l + '[' + (l === 'T' ? tcode(v) : numTxt(v)) + ']';
+  }
 
   /* ---------- limpeza das linhas ---------- */
   // tira comentarios "( ... )" e ";", espacos e minusculas; guarda o texto do comentario
@@ -215,16 +227,18 @@
         vi = null;
         if (l === 'T' && ch() === '#') { var mv = /^#(\d+)/.exec(s.substr(R.p)); if (mv) vi = parseInt(mv[1], 10); }
         p0 = R.p;
-        out.push({ l: l, v: unario(), varIdx: vi, p0: p0 });
+        var vv = unario();
+        out.push({ l: l, v: vv, varIdx: vi, p0: p0, src: s.slice(p0, R.p) });
         if (ch() === '.') R.p++; // "#3." (ponto depois de variavel) aparece em programas da casa
       }
       return out;
     }
 
     /* ----- estado da maquina ----- */
-    var st = { x: xHome, z: zHome, mode: 0, abs: true, f: 0, fmin: false, tool: null, modo: 'G97', vc: 0, rpm: 0, lim: 0, spinObj: null, cyc83: null, c71: null, c72: null, cRe: null, c76: null };
-    function snapshot() { return { x: st.x, z: st.z, mode: st.mode, abs: st.abs, f: st.f, fmin: st.fmin }; }
-    function restaura(s) { st.x = s.x; st.z = s.z; st.mode = s.mode; st.abs = s.abs; st.f = s.f; st.fmin = s.fmin; }
+    var st = { x: xHome, z: zHome, mode: 0, abs: true, f: 0, fmin: false, tool: null, modo: 'G97', vc: 0, rpm: 0, lim: 0, spinObj: null, cyc83: null, c71: null, c72: null, c73: null, cRe: null, c76: null, comp: 0, compOff: false };
+    var decAtual = ''; // bloco em execucao com variaveis e expressoes ja calculadas (visor decodificado)
+    function snapshot() { return { x: st.x, z: st.z, mode: st.mode, abs: st.abs, f: st.f, fmin: st.fmin, comp: st.comp }; }
+    function restaura(s) { st.x = s.x; st.z = s.z; st.mode = s.mode; st.abs = s.abs; st.f = s.f; st.fmin = s.fmin; st.comp = s.comp; }
     function spin() {
       if (!st.spinObj) st.spinObj = st.modo === 'G96' ? { modo: 'G96', vc: st.vc, rpm: st.lim } : { modo: 'G97', vc: 0, rpm: st.rpm };
       return st.spinObj;
@@ -262,7 +276,7 @@
         if (t !== 'r') aviso(i, 'Avanço de corte antes de qualquer comando T: a ferramenta ficou indefinida.', 'semT');
         if (!ferr['0000']) fichaFerr('0000', i, { com: '(sem comando T no programa)' });
       }
-      var fi = ferr[tool], m = { t: t, x: x, z: z, line: i, label: label, tool: tool, spin: spin() };
+      var fi = ferr[tool], m = { t: t, x: x, z: z, line: i, label: label, tool: tool, spin: spin(), dec: decAtual, comp: st.compOff ? 0 : st.comp };
       if (t !== 'r') m.f = f;
       moves.push(m);
       fi.nMov++;
@@ -403,12 +417,38 @@
       var iP = acha(Math.round(w.P), i), iQ = iP < 0 ? -1 : acha(Math.round(w.Q), iP);
       if (iP < 0 || iQ < 0) { erro(i, 'G70: não achei o bloco N' + (iP < 0 ? Math.round(w.P) : Math.round(w.Q)) + ' do contorno.'); return; }
       nota(i, 'g70');
-      var xA = st.x, zA = st.z, fAnt = st.f, ctx = { forcaF: true, sub: true }, j;
+      var xA = st.x, zA = st.z, fAnt = st.f, ctx = { forcaF: true, sub: true }, j, dCiclo = decAtual;
       if (w.F != null) st.f = w.F; else aviso(i, 'G70 sem F: usei o avanço em vigor.', 'g70f');
       checaS(i);
       for (j = iP; j <= iQ; j++) execSimples(B[j], j, ctx);
+      decAtual = dCiclo;
       rapido(xA, zA, i, 'RETORNO (G70)');
       st.f = w.F != null ? w.F : fAnt;
+    }
+
+    function ciclo73(w, i) { // G73: repete o contorno P..Q deslocado (desbaste paralelo ao perfil). 1o bloco: U/W = afastamento TOTAL (raio e Z), R = numero de cortes
+      var par = st.c73;
+      if (!par) { aviso(i, 'G73 sem o bloco G73 U W R antes: usei 1 corte sem afastamento.', 'sempar73'); par = { di: 0, dk: 0, d: 1 }; }
+      var iP = acha(Math.round(w.P), i), iQ = iP < 0 ? -1 : acha(Math.round(w.Q), iP);
+      if (iP < 0 || iQ < 0) { erro(i, 'G73: não achei o bloco N' + (iP < 0 ? Math.round(w.P) : Math.round(w.Q)) + ' do contorno.'); return; }
+      var cap = capturaPerfil(iP, iQ, i), f = w.F != null ? w.F : st.f, du = w.U != null ? w.U : 0, dw = w.W != null ? w.W : 0, d = par.d, lab = 'DESBASTE G73';
+      if (!(f > 0)) f = st.f;
+      var fr = f > 0 ? (st.fmin ? f / Math.max(rpmDe(spin(), st.x), 1) : f) : fRev(st.x, i);
+      if (cap.length < 2) { aviso(i, 'G73: contorno com menos de 2 movimentos; ciclo ignorado.', 'cap' + i); return; }
+      checaS(i); nota(i, 'g73');
+      var xA = st.x, zA = st.z, dirX = du !== 0 ? sinal(du) : (par.di < 0 ? -1 : 1), j;
+      if (par.di !== 0 && sinal(par.di) !== dirX) aviso(i, 'G73: o sinal de U do primeiro bloco é contrário ao U de acabamento; usei a direção do acabamento.', 'g73sinal');
+      aviso(i, 'G73: U e W do primeiro bloco foram lidos como afastamento TOTAL do perfil (padrão Fanuc), dividido em ' + d + ' corte' + (d === 1 ? '' : 's') + '. O manual da ROMI os descreve por passada: confira na máquina.', 'g73sem');
+      if (dirX > 0) nota(i, 'ext'); else { nota(i, 'int'); var fi73 = st.tool && ferr[st.tool]; if (fi73) fi73.ops.intXA = fi73.ops.intXA == null ? xA : Math.min(fi73.ops.intXA, xA); }
+      var di = Math.abs(par.di) * dirX, dk = par.dk;
+      for (j = 1; j <= d; j++) {
+        var fr_j = d > 1 ? (d - j) / (d - 1) : 1, sr = du / 2 + di * fr_j, sz = dw + dk * fr_j; // deslocamento do perfil neste corte: no raio e em Z (o ultimo fica so com o sobremetal de acabamento)
+        cap.forEach(function (p) {
+          if (p.t === 'r') rapido(p.x + 2 * sr, p.z + sz, i, lab); else avanco(p.x + 2 * sr, p.z + sz, i, lab, null, fr);
+        });
+        rapido(xA, cap[cap.length - 1].z + sz, i, lab);
+        rapido(xA, zA, i, lab);
+      }
     }
 
     function ciclo74(w, i) { // G74: passes em X (P) com avanco longo em Z ate Z (Q = bicada em Z; sem X = furacao com bicada no eixo)
@@ -522,6 +562,7 @@
       if (b.kind === 'atrib') { R = { s: b.rest, p: 0, linha: i }; atribuicoes(b); return null; }
       if (b.kind !== 'normal') return null;
       var ps = palavras(b.rest, i), w = {}, G = [], M = [], tp = null, k;
+      if (!ctx.cap) decAtual = (b.n != null ? 'N' + b.n + ' ' : '') + ps.map(function (p) { return decPalavra(p.l, p.src, p.v); }).join('');
       ps.forEach(function (p) {
         if (p.l === 'G') G.push(Math.round(p.v * 10) / 10);
         else if (p.l === 'M') M.push(Math.round(p.v));
@@ -534,12 +575,13 @@
           case 0: case 1: case 2: case 3: mov = g; st.mode = g; break;
           case 4: semMov = true; break; // pausa: X/P/U sao tempo, nao movimento
           case 28: case 30: home = true; break;
-          case 17: case 18: case 19: case 21: case 40: case 54: case 55: case 56: case 57: case 58: case 59: case 61: case 62: case 63: case 64: case 69: break;
+          case 17: case 18: case 19: case 21: case 54: case 55: case 56: case 57: case 58: case 59: case 61: case 62: case 63: case 64: case 69: break;
           case 20: aviso(i, 'G20 (polegadas): o simulador trata os valores como milímetros.', 'g20'); break;
-          case 41: case 42: aviso(i, 'G41/G42 (compensação do raio de ponta) não é simulada: vale a ponta programada.', 'g41'); break;
+          case 40: st.comp = 0; break; // cancela a compensacao do raio de ponta; o movimento deste bloco (se houver) e o de saida
+          case 41: case 42: st.comp = g; break; // o raio e a posicao da ponta vem da ferramenta do banco (aplicado em montarCena)
           case 50: g50 = true; break;
           case 53: aviso(i, 'G53 (coordenada da máquina) não é simulado.', 'g53'); break;
-          case 70: case 71: case 72: case 74: case 75: case 76: case 83: cic = g; break;
+          case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 83: cic = g; break;
           case 80: st.cyc83 = null; break;
           case 90: st.abs = true; break;
           case 91: st.abs = false; break;
@@ -571,19 +613,26 @@
       else if (home) { if (!ctx.cap) retorno(w, i, ctx); }
       else if (cic != null) {
         if (ctx.cap) return null;
-        switch (cic) {
-          case 70: ciclo70(w, i); break;
-          case 71: case 72:
-            if (w.P == null && w.Q == null) { if (cic === 71) st.c71 = { d: w.U != null ? w.U : 1, e: w.R != null ? w.R : 0.5 }; else st.c72 = { d: w.W != null ? w.W : 1, e: w.R != null ? w.R : 0.5 }; }
-            else ciclo71(w, i, cic); // como nos programas da casa, os blocos N(P)..N(Q) seguintes rodam depois em movimento normal
-            break;
-          case 74: case 75:
-            if (!temCoord(w) && w.R != null) { st.cRe = w.R; break; }
-            if (cic === 74) ciclo74(w, i); else ciclo75(w, i);
-            break;
-          case 76: ciclo76(w, i); break;
-          case 83: ciclo83(w, i, false); break;
-        }
+        if (cic !== 70) st.compOff = true; // so o G70 (acabamento) segue a compensacao; os desbastes ignoram G41/G42, como no Fanuc
+        try {
+          switch (cic) {
+            case 70: ciclo70(w, i); break;
+            case 71: case 72:
+              if (w.P == null && w.Q == null) { if (cic === 71) st.c71 = { d: w.U != null ? w.U : 1, e: w.R != null ? w.R : 0.5 }; else st.c72 = { d: w.W != null ? w.W : 1, e: w.R != null ? w.R : 0.5 }; }
+              else ciclo71(w, i, cic); // como nos programas da casa, os blocos N(P)..N(Q) seguintes rodam depois em movimento normal
+              break;
+            case 73:
+              if (w.P == null && w.Q == null) st.c73 = { di: w.U != null ? w.U : 0, dk: w.W != null ? w.W : 0, d: w.R != null ? Math.max(1, Math.round(w.R)) : 1 };
+              else ciclo73(w, i);
+              break;
+            case 74: case 75:
+              if (!temCoord(w) && w.R != null) { st.cRe = w.R; break; }
+              if (cic === 74) ciclo74(w, i); else ciclo75(w, i);
+              break;
+            case 76: ciclo76(w, i); break;
+            case 83: ciclo83(w, i, false); break;
+          }
+        } finally { st.compOff = false; }
       } else if (temCoord(w) && !g50 && !semMov) {
         if (st.cyc83 && mov == null && !ctx.cap) ciclo83(w, i, true);
         else mover(st.mode, w, i, ctx, mov == null);
@@ -705,6 +754,85 @@
     return { d: d, sobre: sobre, livre: livre, furoD: g1900 && num(g1900.e) ? Number(g1900.e) : furoAuto, foco: foco, fonteD: g1900 && num(g1900.d) ? 'G1900' : 'programa' };
   }
 
+  /* ---------- compensacao do raio de ponta (G41/G42) ---------- */
+  // O simulador posiciona a pastilha pelo canto virtual (ponta de referencia). Com G41/G42 o centro do raio de ponta fica a rn do contorno
+  // programado: G41 a esquerda e G42 a direita do sentido do percurso, no plano (z, r) com +Z a direita e +X acima (externa em cima, interna embaixo).
+  // Partida (como o tipo C do Fanuc): o centro vai ao fim do 1o bloco deslocado pela normal do 2o bloco. Saida (G40): ponto de encontro com o
+  // bloco de saida e depois reta ate o ponto programado. Canto interno = ponto de encontro das retas deslocadas; canto externo = arco de raio rn.
+  function narizDe(forma) { // raio e vetor "referencia -> centro do raio de ponta" (z, r) das pastilhas de torneamento do simulador
+    if (!forma || (forma.kind !== 'rombo' && forma.kind !== 'interna')) return null;
+    var rn = Number(forma.raio) || 0;
+    return rn > 0.001 ? { rn: rn, cz: rn, cr: forma.kind === 'interna' ? -rn : rn } : null;
+  }
+  function segComp(A, B, m, lado, saida) {
+    var dz = B[0] - A[0], dr = B[1] - A[1], len = Math.hypot(dz, dr);
+    if (len < 1e-9) return null;
+    var d = [dz / len, dr / len];
+    return { A: A, B: B, d: d, n: lado === 41 ? [-d[1], d[0]] : [d[1], -d[0]], len: len, m: m, saida: !!saida };
+  }
+  function compTrecho(segs, nz, lado, ref, out, avisa) {
+    var rn = nz.rn, cur = [ref[0] + nz.cz, ref[1] + nz.cr], S = segs.length, j, q;
+    function vai(sg, c, direto) { // leva o centro (ou, se direto, a propria ponta de referencia) ao ponto c
+      var rz = direto ? c[0] : c[0] - nz.cz, rr = direto ? c[1] : c[1] - nz.cr, mv = {};
+      Object.keys(sg.m).forEach(function (kk) { mv[kk] = sg.m[kk]; });
+      mv.x = 2 * rr; mv.z = rz; mv.label = (sg.m.label || '') + ' · G' + (sg.saida ? 40 : lado);
+      out.push(mv); ref = [rz, rr]; cur = [rz + nz.cz, rr + nz.cr];
+    }
+    function desloca(p, nrm) { return [p[0] + rn * nrm[0], p[1] + rn * nrm[1]]; }
+    vai(segs[0], desloca(segs[0].B, S > 1 ? segs[1].n : segs[0].n)); // partida
+    for (j = 1; j < S; j++) {
+      var sg = segs[j], nx = segs[j + 1];
+      if (sg.saida) { vai(sg, sg.B, true); break; }
+      if (!nx) { vai(sg, desloca(sg.B, sg.n)); break; }
+      var cr = sg.d[0] * nx.d[1] - sg.d[1] * nx.d[0], cs = sg.n[0] * nx.n[0] + sg.n[1] * nx.n[1], giro = lado === 41 ? cr : -cr, ang = Math.acos(Math.max(-1, Math.min(1, cs)));
+      var M = 1 + cs > 1e-6 ? [sg.B[0] + rn * (sg.n[0] + nx.n[0]) / (1 + cs), sg.B[1] + rn * (sg.n[1] + nx.n[1]) / (1 + cs)] : desloca(sg.B, sg.n);
+      if (ang < 6 * DEG) vai(sg, M); // quase reto (arcos em passos de 5 graus)
+      else if (giro > 0) { // canto interno: o percurso dobra para o lado da ferramenta
+        var B2 = desloca(nx.B, nx.n);
+        if ((M[0] - cur[0]) * sg.d[0] + (M[1] - cur[1]) * sg.d[1] < -1e-6 || (B2[0] - M[0]) * nx.d[0] + (B2[1] - M[1]) * nx.d[1] < -1e-6)
+          avisa(sg.m.line, 'G' + lado + ': num canto interno o movimento é menor que o raio de ponta (interferência): a ferramenta cortaria além do contorno. Confira o contorno e o raio da pastilha.', 'int' + sg.m.line);
+        vai(sg, M);
+      } else { // canto externo: arco de raio rn em volta do vertice
+        var a0 = Math.atan2(sg.n[1], sg.n[0]), da = Math.atan2(nx.n[1], nx.n[0]) - a0, np;
+        while (da > Math.PI) da -= 2 * Math.PI;
+        while (da < -Math.PI) da += 2 * Math.PI;
+        np = Math.max(1, Math.ceil(Math.abs(da) / (10 * DEG)));
+        for (q = 0; q <= np; q++) vai(sg, [sg.B[0] + rn * Math.cos(a0 + da * q / np), sg.B[1] + rn * Math.sin(a0 + da * q / np)]);
+      }
+    }
+    return ref;
+  }
+  // moves: percurso do leitor (m.comp = 0, 41 ou 42); tools: formas do simulador por codigo T. Devolve {path, avisos}
+  function compensar(moves, start, tools) {
+    if (!moves.some(function (m) { return m.comp; })) return { path: moves, avisos: [] };
+    var out = [], avisos = [], visto = {}, n = moves.length, k = 0, prog = [start.z, start.x / 2], ref = prog;
+    function avisa(linha, texto, chave) { if (visto[chave]) return; visto[chave] = 1; avisos.push({ linha: linha, texto: texto }); }
+    while (k < n) {
+      var m = moves[k], e, cancel, nz, segs, q, p0, last;
+      if (!m.comp) { out.push(m); prog = [m.z, m.x / 2]; ref = prog; k++; continue; }
+      e = k; // trecho compensado: movimentos seguidos com o mesmo G41/G42 e a mesma ferramenta; o primeiro movimento sem compensacao e a saida
+      while (e + 1 < n && moves[e + 1].comp === m.comp && moves[e + 1].tool === m.tool) e++;
+      cancel = e + 1 < n && !moves[e + 1].comp && moves[e + 1].tool === m.tool ? e + 1 : -1;
+      last = cancel >= 0 ? cancel : e;
+      nz = narizDe(tools[m.tool]);
+      if (!nz) {
+        avisa(m.line, 'G' + m.comp + ' ativo com a ferramenta T' + m.tool + ', mas ela não tem raio de ponta no banco (ou não é pastilha de torneamento): simulado sem compensação, na ponta programada.', 'sr' + m.tool);
+        for (q = k; q <= e; q++) out.push(moves[q]);
+        prog = [moves[e].z, moves[e].x / 2]; ref = prog; k = e + 1; continue;
+      }
+      segs = []; p0 = prog;
+      for (q = k; q <= last; q++) {
+        var sg = segComp(p0, [moves[q].z, moves[q].x / 2], moves[q], m.comp, q === cancel);
+        if (sg) { segs.push(sg); p0 = sg.B; }
+      }
+      if (segs.length === 1 && segs[0].saida) out.push(moves[cancel]); // so restou o movimento de saida: nada a compensar
+      else if (segs.length) ref = compTrecho(segs, nz, m.comp, ref, out, avisa);
+      prog = [moves[last].z, moves[last].x / 2];
+      k = last + 1;
+    }
+    return { path: out, avisos: avisos };
+  }
+
   /* ---------- cena para o simulador ---------- */
   // tipo de forma no simulador (sim.js toolShape) a partir da ferramenta do banco; orient = orientacao escolhida (canal/rosca)
   function kindDe(t, orient) {
@@ -737,16 +865,16 @@
       tools[f.codigo] = formaFerr(c && c.tool, c && c.orient);
     });
     if (!tools['0000']) tools['0000'] = formaFerr(null);
-    var F = sg.foco;
+    var comp = compensar(res.moves, res.start, tools), F = sg.foco;
     return {
       bruto: bruto,
       chuck: { zFace: -livre, zBack: bruto.z1 - 20, rOut: maq.chuckD / 2 },
       outline: [], hStock: 0,
       foco: { z0: Math.min(F.z0, -livre), z1: Math.max(F.z1, sobre + 5), r0: F.r0, r1: Math.max(F.r1, 5) },
       maq: maq, semPerfil: true,
-      path: res.moves, start: { x: res.start.x, z: res.start.z }, tools: tools
+      path: comp.path, compAvisos: comp.avisos, start: { x: res.start.x, z: res.start.z }, tools: tools
     };
   }
 
-  return { interpretar: interpretar, montarCena: montarCena, formaFerr: formaFerr, kindDe: kindDe, tcode: tcode };
+  return { interpretar: interpretar, montarCena: montarCena, formaFerr: formaFerr, kindDe: kindDe, tcode: tcode, compensar: compensar, numTxt: numTxt };
 });

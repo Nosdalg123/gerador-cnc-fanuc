@@ -183,5 +183,103 @@ const BASE = 'G1900D62L50K0.\nG21G90G40G80\nG28U0\nG0Z250\nT0101(DESBASTE)\nG54\
   });
 }
 
+/* ---- visor decodificado (v2.4.0): linha em execucao com variaveis e expressoes calculadas ---- */
+{
+  const R = run('#1=2\n#2=2\n#3=2\nG0Z[[#1+#2]*#3]\nM30');
+  ok(R.moves[0].dec === 'G0Z[8]', 'decodificado: G0Z[[#1+#2]*#3] -> G0Z[8]', R.moves[0].dec);
+  const R2 = run('#2=201\n#101=0101\nT#101G0X#2Z-5.F.2\nN10G0X[SQRT[16]]Z[-#2/100]\nG0X[SIN[30]*100]Z[TAN[45]]\nM30');
+  ok(R2.moves[0].dec === 'T[0101]G0X[201]Z-5.F.2', 'decodificado: variavel solta vira [valor], numero escrito fica igual, T#var vira T[0101]', R2.moves[0].dec);
+  ok(R2.moves[1].dec === 'N10 G0X[4]Z[-2.01]', 'decodificado: rotulo N, funcao e divisao', R2.moves[1].dec);
+  ok(R2.moves[2].dec === 'G0X[50]Z[1]', 'decodificado: SIN e TAN (em graus)', R2.moves[2].dec);
+  const R3 = run('#1=0\nWHILE[#1LT3]DO1\n#1=#1+1\nG0X[100+#1]Z0\nEND1\nM30');
+  ok(R3.moves.map(m => m.dec).join('|') === 'G0X[101]Z0|G0X[102]Z0|G0X[103]Z0', 'decodificado: o mesmo bloco no laco mostra o valor de cada volta', R3.moves.map(m => m.dec));
+  ok(P.numTxt(0.30000000000000004) === '0.3' && P.numTxt(100) === '100' && P.numTxt(-0.00001) === '0' && P.numTxt(1 / 3) === '0.3333' && P.numTxt(-12.5) === '-12.5', 'decodificado: formato dos numeros (sem zeros a mais)');
+  const R4 = run('#1=10\nT0101\nG96S200M4\nG0X80Z2\nG71U1R.5\nG71P10Q20U.5W.1F.2\nN10G0X[#1*2]Z2\nG1Z-20\nN20X50\nG0X80Z2\nG70P10Q20\nM30');
+  const g70 = R4.moves.filter(m => m.label === 'RETORNO (G70)')[0], cont = R4.moves.filter(m => m.line === 6);
+  ok(g70 && g70.dec === 'G70P10Q20', 'decodificado: o retorno do G70 mostra o bloco G70 (nao o ultimo do contorno)', g70 && g70.dec);
+  ok(cont.length === 2 && cont.every(m => m.dec === 'N10 G0X[20]Z2'), 'decodificado: bloco N10 do contorno, no movimento normal e dentro do G70', cont.map(m => m.dec));
+  // a cena e o estado do simulador carregam o texto decodificado
+  const sim = new S.Sim(P.montarCena(R, {}));
+  ok(sim.segs.length === 1 && sim.segs[0].dec === 'G0Z[8]', 'decodificado: o segmento do simulador leva o texto', sim.segs.map(s => s.dec));
+  sim.seek(sim.total / 2);
+  ok(sim.state().dec === 'G0Z[8]', 'decodificado: estado do simulador devolve o texto');
+}
+
+/* ---- G73: desbaste paralelo ao perfil (v2.4.0) ---- */
+{
+  const perfil = 'N100 G0 X23 Z2\nN110 G1 Z0 F.18\nN120 X25 Z-1\nN130 Z-9\nN140 X50 Z-25\nN150 Z-45\nN160 X80 Z-55';
+  const prog = (u1, r1, u2) => 'T0101\nG96S240M4\nG0 X90 Z5\nG73 ' + u1 + ' R' + r1 + '\nG73 P100 Q160 ' + u2 + ' F.2\n' + perfil + '\nG70 P100 Q160\nM30';
+  const R = run(prog('U2 W1.35', 2, 'U2 W.3'));
+  const g = R.moves.filter(m => m.label === 'DESBASTE G73');
+  ok(R.erros.length === 0, 'G73 (exemplo ROMI): sem erro', R.erros);
+  const volta = g.filter(m => near(m.x, 90) && near(m.z, 5));
+  ok(volta.length === 2, 'G73 R2 = 2 cortes (2 retornos ao ponto de partida)', volta.length);
+  ok(near(g[0].x, 29) && near(g[0].z, 3.65), '1o corte: perfil deslocado U/2+afastamento = 3 no raio e W+afastamento = 1,65 em Z', [g[0].x, g[0].z]);
+  const ini2 = g.filter(m => m.t === 'r' && near(m.x, 25) && near(m.z, 2.3))[0];
+  ok(!!ini2, 'ultimo corte: so o sobremetal de acabamento (U2 -> 1 no raio, W.3)', g.map(m => [m.x, m.z]).slice(8, 12));
+  const R3 = run(prog('U4 W3', 3, 'U2 W.3'));
+  const ini3 = R3.moves.filter(m => m.label === 'DESBASTE G73' && m.t === 'r' && m.z > 1.9 && m.x < 40).map(m => m.x);
+  ok(ini3.join(',') === '33,29,25', 'G73 R3 U4: cortes em 5, 3 e 1 mm do perfil no raio (X33, X29, X25)', ini3);
+  const R4 = run(prog('U4 W3', 1, 'U2 W.3'));
+  const ini4 = R4.moves.filter(m => m.label === 'DESBASTE G73' && m.t === 'r' && m.z > 1.9 && m.x < 40).map(m => m.x);
+  ok(ini4.join(',') === '33', 'G73 R1: corte unico com o afastamento inteiro', ini4);
+  ok(R.avisos.some(a => /afastamento TOTAL/.test(a.texto)), 'G73: aviso de que U/W foram lidos como afastamento total (a validar na maquina)');
+  // interno (exemplo ROMI): U de acabamento negativo manda a direcao do afastamento
+  const Ri = run('T0606\nG96S215M4\nG0 X27 Z6\nG73 U1 W1.2 R3\nG73 P100 Q120 U-2 W.4 F.3\nN100 G0 X72 Z2\nN110 G1 Z0 F.2\nN120 X60 Z-10\nG70 P100 Q120\nM30');
+  const gi = Ri.moves.filter(m => m.label === 'DESBASTE G73' && m.t === 'r' && m.z > 1.5 && m.x > 60).map(m => m.x);
+  ok(Ri.erros.length === 0 && gi[0] < gi[gi.length - 1] && near(gi[gi.length - 1], 70), 'G73 interno: o perfil desloca para dentro do furo e o ultimo corte para em X70 (U-2)', gi);
+  ok(Ri.avisos.some(a => /sinal de U/.test(a.texto)), 'G73 interno: aviso quando o U do 1o bloco tem sinal contrario ao do acabamento');
+  // material: G73 + G70 deixam o perfil acabado
+  const cena = P.montarCena(R, { d: 85, sobre: 3, livre: 70, grip: 25 });
+  const sim = new S.Sim(cena); sim.analyze(); sim.seek(sim.total);
+  ok(sobra(sim, -5, 13.5) === 0 && sobra(sim, -5, 11.5) === 1, 'G73+G70: cilindro Ø25 acabado (ar a 1 mm fora, material a 1 mm dentro)', [sobra(sim, -5, 13.5), sobra(sim, -5, 11.5)]);
+  ok(sobra(sim, -35, 26) === 0 && sobra(sim, -35, 24) === 1, 'G73+G70: cilindro Ø50 acabado', [sobra(sim, -35, 26), sobra(sim, -35, 24)]);
+}
+
+/* ---- G41/G42: compensacao do raio de ponta (v2.4.0) ---- */
+{
+  const ferrR = (raio, tipo) => ({ ferr: { '0101': { tool: { t: '0101', tipo: tipo || 'externa', raio, angulo: 80, vc: 200, rpm: 2000, modo: 'G96' }, orient: null } } });
+  const ref = (m, rn, interna) => ({ z: m.z + rn, r: m.x / 2 + (interna ? -rn : rn) }); // centro do raio de ponta a partir da ponta de referencia
+  const R = run('T0101\nG96S200M4\nG0 X60 Z5\nG42\nG0 X40 Z2\nG1 Z-20 F.2\nX50\nG40 G0 X100 Z5\nM30');
+  ok(R.erros.length === 0 && R.moves.map(m => m.comp).join(',') === '0,42,42,42,0', 'G42: o leitor marca os movimentos compensados e a saida (G40)', R.moves.map(m => m.comp));
+  ok(!R.avisos.some(a => /G41|G42/.test(a.texto) && /não é simulada/.test(a.texto)), 'G42: nao avisa mais que a compensacao nao e simulada');
+  const c = P.montarCena(R, Object.assign({ d: 60, sobre: 0, livre: 50 }, ferrR(0.8)));
+  const p = c.path;
+  ok(near(p[0].x, 60) && near(p[0].z, 5), 'G42: movimento antes do G42 fica como programado');
+  ok(near(p[1].x, 40) && near(p[1].z, 1.2), 'G42 partida: a ponta vai para Z2 - rn (o centro do raio fica em Z2, na normal do 2o bloco)', [p[1].x, p[1].z]);
+  ok(near(p[2].x, 40) && near(p[2].z, -20), 'G42 canto interno: a ponta de referencia chega no canto programado (X40 Z-20)', [p[2].x, p[2].z]);
+  ok(near(p[3].x, 47.7373, 1e-3) && near(p[3].z, -20), 'G42 saida: ponto de encontro com o bloco de saida (inclinado) em X47,737', [p[3].x, p[3].z]);
+  ok(near(p[4].x, 100) && near(p[4].z, 5) && /G40/.test(p[4].label), 'G40: a saida termina no ponto programado', p[4]);
+  ok(/G42/.test(p[1].label), 'G42: o rotulo do movimento mostra a compensacao');
+  ok(c.compAvisos.length === 0, 'G42 com raio no banco: sem aviso', c.compAvisos);
+  // ferramenta sem raio: simula como programado e avisa
+  const c0 = P.montarCena(R, Object.assign({ d: 60, sobre: 0, livre: 50 }, ferrR('')));
+  ok(c0.path.every((m, i) => near(m.x, R.moves[i].x) && near(m.z, R.moves[i].z)), 'G42 sem raio de ponta: segue a ponta programada');
+  ok(c0.compAvisos.length === 1 && /raio de ponta/.test(c0.compAvisos[0].texto), 'G42 sem raio de ponta: aviso', c0.compAvisos);
+  // interna (G41): o raio fica do lado do eixo
+  const Ri = run('T0101\nG96S200M4\nG0 X20 Z2\nG41\nG0 X30 Z2\nG1 Z-20 F.1\nX20\nG40 G0 X15 Z5\nM30');
+  const ci = P.montarCena(Ri, Object.assign({ d: 60, sobre: 0, livre: 50, furoD: 16 }, ferrR(0.8, 'interna'))).path;
+  ok(near(ci[1].x, 30) && near(ci[1].z, 1.2), 'G41 interno, partida: X30 Z2-rn', [ci[1].x, ci[1].z]);
+  ok(near(ci[2].x, 30) && near(ci[2].z, -20), 'G41 interno, fundo do furo: a ponta chega em X30 Z-20', [ci[2].x, ci[2].z]);
+  // canto externo: o centro do raio contorna o vertice em arco de raio rn
+  const Re = run('T0101\nG96S200M4\nG0 X60 Z5\nG42\nG0 X40 Z2\nG1 Z-20 F.2\nX30\nZ-30\nG40 G0 X100 Z5\nM30');
+  const pe = P.montarCena(Re, Object.assign({ d: 60, sobre: 0, livre: 50 }, ferrR(0.8))).path;
+  const arco = pe.filter(m => m.t === 'f' && m.z < -20.7 && m.z > -21.7 && m.x > 38 && m.x < 41);
+  const dist = arco.map(m => { const cc = ref(m, 0.8); return Math.hypot(cc.z - -20, cc.r - 20); });
+  ok(arco.length >= 2 && dist.every(d => near(d, 0.8, 1e-6)), 'G42 canto externo: o centro do raio de ponta passa a 0,8 do vertice (arco)', dist);
+  // material: cone a 45 graus. Com G42 a superficie fica na linha programada; sem compensacao fica deslocada.
+  const cone = comp => 'T0101\nG96S200M4\nG0 X70 Z5\n' + (comp ? 'G42\n' : '') + 'G0 X30 Z5\nG1 Z0 F.2\nX50 Z-10\nZ-30\n' + (comp ? 'G40 ' : '') + 'G0 X80 Z5\nM30'; // aproxima em Z5 (> raio 2,4): o nariz da pastilha nao entra na face
+  const dev = (txt) => {
+    const Rc = run(txt), cc = P.montarCena(Rc, Object.assign({ d: 60, sobre: 0, livre: 50 }, ferrR(2.4)));
+    cc.bruto.perfil = [{ z0: 0, z1: -10, d: 2 * (15 + 2.5), d1: 2 * (25 + 2.5) }, { z0: -10, z1: -75, d: 2 * (25 + 2.5) }]; cc.bruto.z0 = 0; cc.bruto.z1 = -75; // bruto = cone com 2,5 mm de sobremetal no raio
+    const sm = new S.Sim(cc); sm.analyze(); sm.seek(sm.total);
+    let maxd = 0; for (let z = -9; z <= -1; z += 1) { let rs = -1; for (let r = 40; r > 0; r -= 0.25) if (sobra(sm, z, r)) { rs = r; break; } maxd = Math.max(maxd, Math.abs(rs - (15 - z))); }
+    return maxd;
+  };
+  const dComp = dev(cone(true)), dSem = dev(cone(false));
+  ok(dComp <= 0.5, 'G42 cone 45 graus: a superficie acabada fica na linha programada (desvio <= 0,5 mm, a grade do simulador e 0,5)', dComp.toFixed(2));
+  ok(dSem >= 0.6 && dSem - dComp >= 0.4, 'sem compensacao o mesmo programa deixa o cone deslocado (desvio >= 0,6 mm e bem maior que com G42)', dSem.toFixed(2) + ' x ' + dComp.toFixed(2));
+}
+
 console.log('#### MODULO SIMULACAO:', total, 'verificacoes,', falhas, 'falha' + (falhas === 1 ? '' : 's'));
 if (falhas) process.exitCode = 1;

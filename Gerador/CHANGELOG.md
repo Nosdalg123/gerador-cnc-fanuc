@@ -8,6 +8,15 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.4.0 — 08/10/2026 — Simulação: programa decodificado, G73 e G41/G42
+- **Programa decodificado**: embaixo do código da janela de simulação do módulo Simulação, uma faixa mostra a linha em execução e, logo abaixo, a mesma linha já calculada (variáveis e expressões). Número escrito direto fica igual; variável ou expressão vira `[valor]`: com `#1=2 #2=2 #3=2`, `G0Z[[#1+#2]*#3]` aparece como `G0Z[8]`; `X#2` (com `#2=201`) como `X[201]`; `T#101` como `T[0101]`. Acompanha o simulador (executar, passo a passo, controle deslizante) e, nos laços `WHILE`, mostra o valor de cada volta. O bloco `G70` e o retorno dele mostram o próprio `G70`, e o contorno `N(P)…N(Q)` mostra os blocos dentro do ciclo.
+- **Funções e colchetes**: o leitor já calculava colchetes aninhados e `SIN COS TAN ASIN ACOS ATAN SQRT ABS ROUND FIX FUP LN EXP` (e `AND OR XOR MOD`, `EQ NE GT LT GE LE`); agora tudo isso aparece decodificado. `ARROUND` não existe no Fanuc: vale `ROUND`.
+- **G73 (desbaste paralelo ao perfil)**: `G73 U W R` + `G73 P Q U W F`. O contorno `N(P)…N(Q)` é repetido `R` vezes, deslocado do afastamento total `U` (raio) e `W` (Z) no 1º corte até só o sobremetal de acabamento no último; depois de cada corte volta ao ponto de partida. Direção em X pelo sinal do `U` de acabamento (avisa se o `U` do 1º bloco tiver sinal contrário). **Aviso fixo na tela**: `U/W` lidos como afastamento total (padrão Fanuc); o manual da ROMI os descreve por passada (a validar na máquina).
+- **G41/G42 (compensação do raio de ponta)**: usa o **raio de ponta da ferramenta do banco** e o formato de inserto da simulação (externa e interna). A ponta de referência anda no contorno deslocado do raio (G41 esquerda, G42 direita). Partida pela normal do 2º bloco, canto interno pelo ponto de encontro, canto externo em arco, saída no bloco do G40. Os ciclos de desbaste (G71/G72/G73/G74/G75/G76/G83) ignoram a compensação e o G70 e os movimentos normais a seguem. Sem raio de ponta no banco: aviso e simula na ponta programada. O rótulo do movimento mostra `· G42` (ou `· G41`/`· G40`).
+- `G40` agora cancela a compensação (antes só era ignorado); `G41/G42` deixaram de gerar o aviso "não é simulada".
+- Testes: `testprog.js` passa de 124 para 161 verificações (decodificado, G73 com R1/R2/R3 e interno, G41/G42 externo e interno, canto externo em arco, cone a 45° com e sem compensação). Casos antigos do gerador e os 14 programas da casa continuam idênticos.
+- Limites: a compensação não replica os alarmes de interferência do comando; a posição da ponta (quadrante) não é cadastrada (vale a do inserto da simulação); só a Simulação lê G41/G42 e G73 (o Gerador não os gera).
+
 ## 2.3.0 — 08/10/2026 — acesso por usuário (tela de entrada)
 - **Tela de entrada**: o sistema abre pedindo usuário e senha. O acesso fica salvo na aba até clicar em **Sair** (botão no cabeçalho, com o nome do usuário).
 - **Três usuários**, cada um com o menu limitado:
