@@ -122,6 +122,13 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .btn.danger{color:var(--err)}
 .btn.sm{padding:3px 9px;font-size:13px}
+/* entrada e acesso por usuario (v2.3.0) */
+.login{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;background:var(--bg)}
+.login[hidden]{display:none}
+.login-box{width:100%;max-width:340px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px;display:grid;gap:12px}
+.login-box h2{margin:0;font-size:18px}
+.login-erro{min-height:18px;font-size:13px;color:var(--err)}
+.menu button[hidden],.topnav button[hidden]{display:none}
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:-4px 0 12px;flex-wrap:wrap}
 .tabs button{border:0;background:transparent;color:var(--muted);padding:8px 12px;cursor:pointer;font:inherit;border-bottom:2px solid transparent}
 .tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}

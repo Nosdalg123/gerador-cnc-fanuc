@@ -8,6 +8,16 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.3.0 — 08/10/2026 — acesso por usuário (tela de entrada)
+- **Tela de entrada**: o sistema abre pedindo usuário e senha. O acesso fica salvo na aba até clicar em **Sair** (botão no cabeçalho, com o nome do usuário).
+- **Três usuários**, cada um com o menu limitado:
+  - `admin` — tudo (Gerador, Desenho da peça, Ferramentas, Simulação e Configurações).
+  - `simu` — só **Simulação** e **Ferramentas** (Configurações fica oculta).
+  - `desenho` — só **Desenho da peça** (Configurações fica oculta).
+- Cada usuário abre direto na primeira tela que tem permissão.
+- As senhas não ficam em texto puro: o arquivo guarda o SHA-256 de cada uma (com prefixo fixo). Instruções para trocar uma senha estão no topo de `acesso.js`.
+- **Limite**: é uma trava de uso, não de segurança. Quem tem os arquivos consegue ler o código; as senhas atuais são fáceis de adivinhar. Dados de ferramentas e de programas continuam no navegador, sem mudança.
+
 ## 2.2.1 — 07/10/2026 — Simulação: janela em painel próprio e desenho com inserto e suporte
 - Módulo **Simulação**: a janela de simulação agora fica num **painel separado, em largura total**, abaixo dos cartões Programa, Ferramentas e Bruto (que ficam lado a lado). Canvas maior (520 px), código e alertas ao lado.
 - **Desenho da ferramenta** mostra o **inserto** (laranja, com furo de fixação nas pastilhas) e o **suporte/haste** (cinza), na mesma orientação da simulação (esquerda = peça/placa, +Z → , +X ↑), com legenda e a cruz na ponta programada. Cada tipo tem o seu: pastilha rômbica (ângulo e raio do cadastro), barra de mandrilar, canal frontal, canal externo, canal interno, rosca externa/interna e broca (corpo + haste, eixo da peça tracejado). O desenho agora fica abaixo da escolha da ferramenta, com a largura do cartão.
