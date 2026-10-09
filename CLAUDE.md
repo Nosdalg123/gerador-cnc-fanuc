@@ -6,7 +6,8 @@ Contexto para qualquer sessão do Claude (qualquer conta). Leia isto primeiro, d
 Aplicação web local (HTML/JS puro, sem build) que gera programas Fanuc (G71/G70/G72/G75/G74/G76, macros #vars) para o torno ML-600L, a partir de parâmetros e de um desenho de peça. Inclui simulador XZ, banco de ferramentas e testes de regressão.
 
 ## Estado atual
-- **Versão 2.6.0** (09/10/2026) — o **Gerador gera G73** (opção "Paralelo ao perfil" no desbaste externo) e **G41/G42** (campo "Compensação do raio de ponta" no Acabamento; o último bloco do contorno cancela com G40 para o retorno do G70 sair da compensação); banco de ferramentas ganhou o **ângulo do suporte κ** (a pastilha da simulação gira 180° − κ − ponta). Valem para peça simples, porta-matriz e alimentador; sem as opções o programa é idêntico ao de antes.
+- **Versão 2.7.0** (09/10/2026) — **diagnóstico de erros do programa** (`diagnostico.js`, 73 tipos de erro, cada um com causa, solução e, quando dá, correção pronta com Aplicar/Desfazer na tela Simulação); alertas do simulador também trazem causa e solução; bloco "Diagnóstico do programa gerado" na janela do Gerador. Testes em `testdiag.js`.
+- **2.6.0** (09/10/2026) — o **Gerador gera G73** (opção "Paralelo ao perfil" no desbaste externo) e **G41/G42** (campo "Compensação do raio de ponta" no Acabamento; o último bloco do contorno cancela com G40 para o retorno do G70 sair da compensação); banco de ferramentas ganhou o **ângulo do suporte κ** (a pastilha da simulação gira 180° − κ − ponta). Valem para peça simples, porta-matriz e alimentador; sem as opções o programa é idêntico ao de antes.
 - **2.5.0** (09/10/2026) — o **programa decodificado** (faixa verde sob o código: `G0Z[[#1+#2]*#3]` → `G0Z[8]`) vale também na janela de simulação do Gerador; programas da casa `COPO BRUTO P2 P3` (G73, G72 interno, G74, G76) em `Exemplos de programaçaõ/` e nos testes.
 - **2.4.0** — Simulação ganhou o visor decodificado, ciclo **G73** (padrão Fanuc: U/W = afastamento total, confirmado pelo programa da casa) e **G41/G42** (raio de ponta vem do banco; sem raio = aviso). (O Gerador passou a gerar os dois na 2.6.0.)
 - **2.3.0** — **tela de entrada com 3 usuários**: `admin` (tudo), `simu` (só Simulação e Ferramentas), `desenho` (só Desenho da peça). Trava de uso, não de segurança (ver `acesso.js`).
@@ -15,7 +16,7 @@ Aplicação web local (HTML/JS puro, sem build) que gera programas Fanuc (G71/G7
 - Operações do menu: Gerador, Desenho da peça, Ferramentas, **Simulação**; Configurações no cabeçalho.
 
 ## Estrutura (pasta `Gerador/`)
-- `core.js` núcleo/geradores de código · `app.js` interface do Gerador · `acesso.js` tela de entrada e permissões por usuário (senhas em SHA-256; para trocar, ver o topo do arquivo) · `desenho.js` + `pecaview.js` Desenho da peça · `sim.js`/`simview.js` simulador (`SimView.create(prefixo)`: uma janela por tela) · `progsim.js` leitor/interpretador de programa Fanuc colado · `progview.js` tela do módulo Simulação · `seed.js` ferramentas de partida · `version.js` número da versão · `test.js` testes (chama `testprog.js`, que inclui a comparação gerado × lido) · `versionar.js` cria cópia em `versoes/`
+- `core.js` núcleo/geradores de código · `app.js` interface do Gerador · `acesso.js` tela de entrada e permissões por usuário (senhas em SHA-256; para trocar, ver o topo do arquivo) · `desenho.js` + `pecaview.js` Desenho da peça · `sim.js`/`simview.js` simulador (`SimView.create(prefixo)`: uma janela por tela) · `progsim.js` leitor/interpretador de programa Fanuc colado · `diagnostico.js` catálogo de erros com causa/solução e correções (usado pela Simulação e pela janela do Gerador) · `progview.js` tela do módulo Simulação · `seed.js` ferramentas de partida · `version.js` número da versão · `test.js` testes (chama `testprog.js`, que inclui a comparação gerado × lido, e `testdiag.js`, um caso por tipo de erro do catálogo) · `versionar.js` cria cópia em `versoes/`
 - `Exemplos de programaçaõ/` programas validados da casa (referência de verdade) · `Manuais da maquina/` · `EXEMPLO PORTA MATRIZ.jpg` croqui.
 
 ## Como rodar
@@ -29,6 +30,13 @@ Aplicação web local (HTML/JS puro, sem build) que gera programas Fanuc (G71/G7
 - Código gerado deve conferir com os programas validados da casa quando existe exemplo; casos antigos devem permanecer **idênticos** (testes de regressão).
 - O que não tem exemplo da casa vai para `VALIDAR-NA-MAQUINA.md`; rodar a seco antes de cortar.
 - Idioma: português do Brasil. Comentários do programa CNC em maiúsculas entre parênteses.
+
+## Formato das respostas e padrão CNC (instruções do usuário, valem em toda sessão)
+# Output Guidelines
+- Do not stream internal thoughts, tool traces, or intermediate debugging steps.
+- Keep final summaries concise, technical, and structured.
+- Use only: Overview, Files Changed, Test Status, and Pending Machine Validations.
+- CNC Standard: Always follow strict Fanuc ISO (Macro B).
 
 ## Pendências
 - Validar na máquina real tudo o que está em `Gerador/VALIDAR-NA-MAQUINA.md` (limites da ML-600L, canal interno, rosca G76, alimentador, G72 interno, T-MAX, pastilha/raio de ponta).

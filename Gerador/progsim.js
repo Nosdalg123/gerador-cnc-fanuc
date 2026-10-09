@@ -90,15 +90,21 @@
     var xHome = maq.xHome != null ? Number(maq.xHome) : (Number(maq.xMax) || 400);
     var zHome = maq.zHome != null ? Number(maq.zHome) : (Number(maq.zMax) || 300);
     var prep = prepara(texto), B = prep.blocos, NB = B.length;
-    var V = {}, varCom = {}, avisos = [], erros = [], visto = {}, moves = [], ferr = {}, ordem = [], g1900 = null;
+    var V = {}, varCom = {}, avisos = [], dicas = [], erros = [], visto = {}, moves = [], ferr = {}, ordem = [], g1900 = null;
     var fim = false, truncado = false, executou = false, pilha = [], passos = 0;
 
-    function aviso(i, t, chave) {
+    // cod = codigo do catalogo de diagnosticos (diagnostico.js); mensagens antigas sem cod sao classificadas la pelo texto
+    function aviso(i, t, chave, cod) {
       var k = chave || (i + ':' + t);
       if (visto[k]) return; visto[k] = 1;
-      if (avisos.length < 80) avisos.push({ linha: i, texto: t });
+      if (avisos.length < 80) avisos.push({ linha: i, texto: t, cod: cod });
     }
-    function erro(i, t) { if (erros.length < 60) erros.push({ linha: i, texto: t }); }
+    function dica(i, t, chave, cod) { // observacao sem risco imediato (nao conta como aviso)
+      var k = chave || (i + ':' + t);
+      if (visto[k]) return; visto[k] = 1;
+      if (dicas.length < 40) dicas.push({ linha: i, texto: t, cod: cod });
+    }
+    function erro(i, t, cod) { if (erros.length < 60) erros.push({ linha: i, texto: t, cod: cod }); }
     function falha(msg) { throw new ErroLeitura(msg); }
 
     /* ----- expressoes ----- */
@@ -235,7 +241,8 @@
     }
 
     /* ----- estado da maquina ----- */
-    var st = { x: xHome, z: zHome, mode: 0, abs: true, f: 0, fmin: false, tool: null, modo: 'G97', vc: 0, rpm: 0, lim: 0, spinObj: null, cyc83: null, c71: null, c72: null, c73: null, cRe: null, c76: null, comp: 0, compOff: false };
+    var st = { x: xHome, z: zHome, mode: 0, abs: true, f: 0, fmin: false, tool: null, modo: 'G97', vc: 0, rpm: 0, lim: 0, spinObj: null, cyc83: null, c71: null, c72: null, c73: null, cRe: null, c76: null, comp: 0, compOff: false,
+      giro: false, refri: false, emTrabalho: false, linhaModo: -1, linhaComp: -1, linhaFim: -1 };
     var decAtual = ''; // bloco em execucao com variaveis e expressoes ja calculadas (visor decodificado)
     function snapshot() { return { x: st.x, z: st.z, mode: st.mode, abs: st.abs, f: st.f, fmin: st.fmin, comp: st.comp }; }
     function restaura(s) { st.x = s.x; st.z = s.z; st.mode = s.mode; st.abs = s.abs; st.f = s.f; st.fmin = s.fmin; st.comp = s.comp; }
@@ -263,7 +270,11 @@
     function trocaFerramenta(p, i, b) {
       var code = tcode(p.v), f = fichaFerr(code, i, b);
       if (!f.comentario && p.varIdx != null && varCom[p.varIdx]) f.comentario = varCom[p.varIdx];
-      if (st.tool !== code) st.tool = code;
+      if (st.tool !== code) {
+        if (st.comp && code !== '0000') aviso(i, 'Troca de ferramenta (T' + code + ') com G' + st.comp + ' ainda ativo (ligado na linha ' + (st.linhaComp + 1) + ').', 'compTroca' + i, 'compTroca');
+        if (st.emTrabalho && st.tool && st.tool !== '0000' && code !== '0000') aviso(i, 'Troca da T' + st.tool + ' para a T' + code + ' sem recuar antes: não há G28/G30 depois do último corte.', 'trocaRec' + i, 'trocaSemRecuo');
+        st.tool = code; st.emTrabalho = false;
+      }
     }
 
     /* ----- emissao de movimentos (ctx.cap = leitura de contorno, sem emitir) ----- */
@@ -277,7 +288,10 @@
         if (!ferr['0000']) fichaFerr('0000', i, { com: '(sem comando T no programa)' });
       }
       var fi = ferr[tool], m = { t: t, x: x, z: z, line: i, label: label, tool: tool, spin: spin(), dec: decAtual, comp: st.compOff ? 0 : st.comp };
-      if (t !== 'r') m.f = f;
+      if (t !== 'r') {
+        m.f = f; st.emTrabalho = true;
+        if (!st.giro) aviso(i, 'Corte sem o fuso ligado: nenhum M3/M4 foi comandado antes do primeiro corte.', 'semGiro', 'semGiro');
+      }
       moves.push(m);
       fi.nMov++;
       if (t === 'r') { if (fi.preAvanco && z > 0.001 && z <= 20.001) fi.zAntes = fi.zAntes == null ? z : Math.min(fi.zAntes, z); }
@@ -296,10 +310,16 @@
     function fRev(xm, i) { // avanco em mm/rot (converte mm/min usando a rotacao)
       var f = st.f;
       if (!(f > 0)) { aviso(i, 'Corte sem avanço F definido: usei 0,1 mm/rot.', 'semF'); f = 0.1; }
-      if (st.fmin) { var rpm = rpmDe(spin(), xm); f = f / Math.max(rpm, 1); }
+      if (st.fmin) {
+        var rpm = rpmDe(spin(), xm), fm = f; f = f / Math.max(rpm, 1);
+        if (f < 0.003) aviso(i, 'Avanço F' + numTxt(fm) + ' em mm/min (G98/G94) a ' + Math.round(rpm) + ' rpm dá só ' + numTxt(f) + ' mm/rot: parece um valor de mm/rot com o modo mm/min ligado.', 'avBaixo' + numTxt(fm), 'avBaixo');
+      } else if (f > 1.5) aviso(i, 'Avanço F' + numTxt(f) + ' em mm/rot (G99/G95) é muito alto: parece um valor de mm/min com o modo mm/rot ligado.', 'avAlto' + numTxt(f), 'avAlto');
       return f;
     }
-    function checaS(i) { if (st.modo === 'G97' && !(st.rpm > 0) || st.modo === 'G96' && !(st.vc > 0)) aviso(i, 'Corte sem rotação definida (G96/G97 com S): usei o padrão do simulador.', 'semS'); }
+    function checaS(i) {
+      if (st.modo === 'G97' && !(st.rpm > 0) || st.modo === 'G96' && !(st.vc > 0)) aviso(i, 'Corte sem rotação definida (G96/G97 com S): usei o padrão do simulador.', 'semS');
+      if (st.modo === 'G96' && !(st.lim > 0)) { var lm = st.linhaModo >= 0 ? st.linhaModo : i; aviso(lm, 'G96 sem limite de rotação (G50 S) antes do corte: perto do centro o fuso sobe até a rotação máxima da máquina.', 'g96lim' + lm, 'g96semG50'); }
+    }
 
     function alvo(w) {
       var x = st.x, z = st.z;
@@ -348,24 +368,38 @@
       restaura(salvo);
       return ctx.cap;
     }
+    // o primeiro bloco do contorno (N do P) precisa de G0 ou G1, senao o comando alarma; variavel no G (G#) nao da para conferir
+    function checaContorno(iP, i, nome) {
+      var r = B[iP].rest;
+      if (r === '' || r.indexOf('G#') >= 0 || /G0?[01](?!\d)/.test(r)) return;
+      aviso(iP, nome + ' (linha ' + (i + 1) + '): o primeiro bloco do contorno (N' + B[iP].n + ') não tem G0 nem G1.', 'sem01' + iP, 'contornoSemG01');
+    }
     function nota(i, key) { var f = st.tool && ferr[st.tool]; if (f) f.ops[key] = (f.ops[key] || 0) + 1; }
 
     function ciclo71(w, i, tipo) { // G71 (longitudinal) e G72 (transversal): w = bloco com P Q U W F
       var par = tipo === 71 ? st.c71 : st.c72, nome = 'G' + tipo;
       if (!par) { aviso(i, nome + ' sem o bloco ' + nome + (tipo === 71 ? ' U R' : ' W R') + ' antes: usei profundidade 1 e retorno 1.', 'sempar' + tipo); par = { d: 1, e: 1 }; }
       var iP = acha(Math.round(w.P), i), iQ = iP < 0 ? -1 : acha(Math.round(w.Q), iP);
-      if (iP < 0 || iQ < 0) { erro(i, nome + ': não achei o bloco N' + (iP < 0 ? Math.round(w.P) : Math.round(w.Q)) + ' do contorno.'); return; }
+      if (iP < 0 || iQ < 0) { erro(i, nome + ': não achei o bloco N' + (iP < 0 ? Math.round(w.P) : Math.round(w.Q)) + ' do contorno.', 'cicloSemContorno'); return; }
+      checaContorno(iP, i, nome);
       var cap = capturaPerfil(iP, iQ, i), f = w.F != null ? w.F : st.f, du = w.U != null ? w.U : 0, dw = w.W != null ? w.W : 0, d = par.d, e = par.e;
       if (!(f > 0)) f = st.f;
       var fr = f > 0 ? (st.fmin ? f / Math.max(rpmDe(spin(), st.x), 1) : f) : fRev(st.x, i);
       if (cap.length < 2) { aviso(i, nome + ': contorno com menos de 2 movimentos; ciclo ignorado.', 'cap' + i); return; }
-      if (!(d > 0)) { erro(i, nome + ': profundidade de corte (' + (tipo === 71 ? 'U' : 'W') + ') deve ser maior que zero.'); return; }
+      if (!(d > 0)) { erro(i, nome + ': profundidade de corte (' + (tipo === 71 ? 'U' : 'W') + ') deve ser maior que zero.', 'cicloProf'); return; }
       checaS(i); nota(i, 'g' + tipo);
+      var eixoSobe = false, eixoDesce = false; // eixo principal do ciclo (Z no G71, X no G72) tem de andar sempre no mesmo sentido
+      for (k = 1; k < cap.length; k++) {
+        var dEixo = tipo === 71 ? cap[k].z - cap[k - 1].z : cap[k].x - cap[k - 1].x;
+        if (dEixo > 0.01) eixoSobe = true; if (dEixo < -0.01) eixoDesce = true;
+      }
+      if (eixoSobe && eixoDesce) dica(iP, nome + ' (linha ' + (i + 1) + '): o contorno volta em ' + (tipo === 71 ? 'Z' : 'X') + ' (anda nos dois sentidos); o simulador desbasta como se andasse só num sentido. Alguns comandos alarmam esse formato.', 'eixo' + i, 'cicloEixo');
       var xA = st.x, zA = st.z, rA = xA / 2, PZ = [], PR = [], k;
       cap.forEach(function (p) { PZ.push(p.z + dw); PR.push(p.x / 2 + du / 2); });
       var n = cap.length, lab = 'DESBASTE ' + nome;
       if (tipo === 71) {
         var r0 = cap[0].x / 2, ext = r0 < rA - 1e-6 ? true : (r0 > rA + 1e-6 ? false : du >= 0 && !(du === 0 && 1 / du < 0));
+        if (du !== 0 && (ext ? du < 0 : du > 0)) aviso(i, 'G71 ' + (ext ? 'externo' : 'interno') + ' com U' + numTxt(du) + ': o sobremetal de acabamento deve ser ' + (ext ? 'positivo' : 'negativo') + ' (senão o desbaste corta dentro do perfil).', 'g71sinal' + i, 'g71Sinal');
         var sg = ext ? 1 : -1, rFloor = ext ? Math.min.apply(null, PR) : Math.max.apply(null, PR), lv = [], r = rA - sg * d;
         if (Math.abs(cap[0].z - zA) > 0.01) aviso(i, 'G71 tipo II (primeiro bloco do contorno com Z) foi simulado como tipo I.', 'g71ii');
         var subiu = false, desceu = false;
@@ -415,7 +449,7 @@
 
     function ciclo70(w, i) { // acabamento: repete os blocos P..Q com o avanco do G70 e volta ao ponto de partida
       var iP = acha(Math.round(w.P), i), iQ = iP < 0 ? -1 : acha(Math.round(w.Q), iP);
-      if (iP < 0 || iQ < 0) { erro(i, 'G70: não achei o bloco N' + (iP < 0 ? Math.round(w.P) : Math.round(w.Q)) + ' do contorno.'); return; }
+      if (iP < 0 || iQ < 0) { erro(i, 'G70: não achei o bloco N' + (iP < 0 ? Math.round(w.P) : Math.round(w.Q)) + ' do contorno.', 'cicloSemContorno'); return; }
       nota(i, 'g70');
       var xA = st.x, zA = st.z, fAnt = st.f, ctx = { forcaF: true, sub: true }, j, dCiclo = decAtual;
       if (w.F != null) st.f = w.F; else aviso(i, 'G70 sem F: usei o avanço em vigor.', 'g70f');
@@ -430,7 +464,8 @@
       var par = st.c73;
       if (!par) { aviso(i, 'G73 sem o bloco G73 U W R antes: usei 1 corte sem afastamento.', 'sempar73'); par = { di: 0, dk: 0, d: 1 }; }
       var iP = acha(Math.round(w.P), i), iQ = iP < 0 ? -1 : acha(Math.round(w.Q), iP);
-      if (iP < 0 || iQ < 0) { erro(i, 'G73: não achei o bloco N' + (iP < 0 ? Math.round(w.P) : Math.round(w.Q)) + ' do contorno.'); return; }
+      if (iP < 0 || iQ < 0) { erro(i, 'G73: não achei o bloco N' + (iP < 0 ? Math.round(w.P) : Math.round(w.Q)) + ' do contorno.', 'cicloSemContorno'); return; }
+      checaContorno(iP, i, 'G73');
       var cap = capturaPerfil(iP, iQ, i), f = w.F != null ? w.F : st.f, du = w.U != null ? w.U : 0, dw = w.W != null ? w.W : 0, d = par.d, lab = 'DESBASTE G73';
       if (!(f > 0)) f = st.f;
       var fr = f > 0 ? (st.fmin ? f / Math.max(rpmDe(spin(), st.x), 1) : f) : fRev(st.x, i);
@@ -455,6 +490,7 @@
       var p = (w.P || 0) / 1000, q = (w.Q || 0) / 1000, Rr = w.R != null ? w.R : (st.cRe != null ? st.cRe : 0.5), dz = sinal(ze - zs), sx = temX && xf - xs > 1e-9 ? 1 : -1, fr, lab = temX ? 'TORNEAR (G74)' : 'FURAR (G74)';
       if (Math.abs(ze - zs) < 1e-9) { aviso(i, 'G74 sem curso em Z.', 'g74z' + i); return; }
       checaS(i); nota(i, temX ? 'g74' : 'g74furo');
+      if (!temX && st.modo === 'G96') aviso(i, 'Furação (G74 sem X) em G96: a broca no centro (X0) faria o fuso subir ao limite de rotação.', 'furo96' + i, 'furoG96');
       fr = fRev((xs + xf) / 2, i);
       var xi = [xs];
       if (temX && p > 0) while (sx * (xf - xi[xi.length - 1]) > 1e-9 && xi.length < 3000) xi.push(sx < 0 ? Math.max(xf, xi[xi.length - 1] - 2 * p) : Math.min(xf, xi[xi.length - 1] + 2 * p));
@@ -507,10 +543,19 @@
 
     function ciclo76(w, i) { // G76 em 2 blocos: o primeiro guarda os parametros, o segundo roda as passadas
       var semXZ = w.X == null && w.Z == null && w.U == null && w.W == null;
-      if (semXZ) { var P1 = Math.round(w.P || 0); st.c76 = { m: Math.floor(P1 / 10000) || 1, qmin: (w.Q || 0) / 1000, rfin: w.R || 0 }; return; }
+      if (semXZ) {
+        var P1 = Math.round(w.P || 0), ang76 = P1 % 100, m76 = Math.floor(P1 / 10000);
+        st.c76 = { m: m76 || 1, qmin: (w.Q || 0) / 1000, rfin: w.R || 0 };
+        if ([0, 29, 30, 55, 60, 80].indexOf(ang76) < 0) aviso(i, 'G76: ângulo da rosca ' + ang76 + '° (últimos 2 dígitos do P) não é um dos aceitos (0, 29, 30, 55, 60, 80).', 'g76ang' + i, 'g76Ang');
+        if (m76 > 3) dica(i, 'G76: P' + P1 + ' pede ' + m76 + ' passadas de acabamento (2 primeiros dígitos do P) — o usual é 1 (P010060).', 'g76acab' + i, 'g76Acab');
+        return;
+      }
       var xA = st.x, zA = st.z, a = alvo(w), xf = a.x, zE = a.z, he = (w.P || 0) / 1000, q = (w.Q || 0) / 1000, pitch = w.F || 0, m = st.c76 ? st.c76.m : 1;
       if (!(he > 0) || !(q > 0) || !(pitch > 0)) { aviso(i, 'G76 sem altura do filete (P), 1ª profundidade (Q) ou passo (F): rosca ignorada.', 'g76p' + i); return; }
       if (!st.c76) aviso(i, 'G76 sem o bloco G76 P Q R antes: usei 1 passada de acabamento.', 'g76pre');
+      if (st.modo === 'G96') aviso(i, 'G76 em G96: a rotação varia com o diâmetro e o passo da rosca sai errado (rosca pede G97).', 'g76g96' + i, 'g76G96');
+      else if (spin().rpm * pitch > 6000) aviso(i, 'G76: ' + Math.round(spin().rpm) + ' rpm × passo ' + numTxt(pitch) + ' = ' + Math.round(spin().rpm * pitch) + ' mm/min de avanço da rosca, acima do que o eixo costuma aguentar.', 'g76rpm' + i, 'g76Rpm');
+      if (he > 0.75 * pitch) aviso(i, 'G76: altura do filete P' + numTxt(he * 1000) + ' (' + numTxt(he) + ' mm) maior que 75% do passo ' + numTxt(pitch) + ' (rosca métrica ISO ≈ 61%).', 'g76alt' + i, 'g76Altura');
       var ext = xf < xA, xBase = ext ? xf + 2 * he : xf - 2 * he, deps = [], k = 1, d;
       do { d = Math.min(he, q * Math.sqrt(k)); deps.push(d); k++; } while (d < he - 1e-9 && k < 60);
       for (var mm = 0; mm < m; mm++) deps.push(he);
@@ -530,6 +575,8 @@
         var a0 = alvo(w); c.zEnd = a0.z; c.q = (w.Q || 0) / 1000; c.R = w.R != null ? w.R : st.z; c.f = w.F != null ? w.F : st.f;
         if (w.F != null) st.f = w.F;
         st.cyc83 = c;
+        if (st.modo === 'G96') aviso(i, 'Furação (G83) em G96: a broca no centro (X0) faria o fuso subir ao limite de rotação.', 'furo96' + i, 'furoG96');
+        if (!(c.q > 0)) dica(i, 'G83 sem Q: o furo é feito de uma só descida, sem quebra de cavaco nem retirada para limpar.', 'g83q' + i, 'g83semQ');
       }
       var x = st.x;
       if (repete) { var a1 = alvo(w); if (w.X != null || w.U != null) { rapido(a1.x, st.z, i, 'FURAR (G83)'); x = a1.x; } if (w.Z != null) c.zEnd = w.Z; }
@@ -550,6 +597,9 @@
       var ix = w.X != null || w.U != null, iz = w.Z != null || w.W != null;
       if (!ix && !iz) return;
       var a = alvo(w);
+      // X/Z absolutos no G28: o ponto intermediario e esse; mais perto da peca que a posicao atual = a torre passa por ele
+      if (st.abs && ((w.X != null && w.X < st.x - 1e-6) || (w.Z != null && w.Z < st.z - 1e-6))) aviso(i, 'G28/G30 com ' + (w.X != null && w.X < st.x - 1e-6 ? 'X' + numTxt(w.X) : 'Z' + numTxt(w.Z)) + ' absoluto: o ponto intermediário fica mais perto da peça que a posição atual (X' + numTxt(st.x) + ' Z' + numTxt(st.z) + ').', 'g28abs' + i, 'g28Abs');
+      st.emTrabalho = false;
       if (Math.abs(a.x - st.x) > 1e-9 || Math.abs(a.z - st.z) > 1e-9) rapido(a.x, a.z, i, 'RÁPIDO (G28: PONTO INTERMEDIÁRIO)', ctx);
       rapido(ix ? xHome : st.x, iz ? zHome : st.z, i, 'RETORNO À REFERÊNCIA (G28)', ctx);
     }
@@ -577,7 +627,7 @@
           case 17: case 18: case 19: case 21: case 54: case 55: case 56: case 57: case 58: case 59: case 61: case 62: case 63: case 64: case 69: break;
           case 20: aviso(i, 'G20 (polegadas): o simulador trata os valores como milímetros.', 'g20'); break;
           case 40: st.comp = 0; break; // cancela a compensacao do raio de ponta; o movimento deste bloco (se houver) e o de saida
-          case 41: case 42: st.comp = g; break; // o raio e a posicao da ponta vem da ferramenta do banco (aplicado em montarCena)
+          case 41: case 42: st.comp = g; st.linhaComp = i; break; // o raio e a posicao da ponta vem da ferramenta do banco (aplicado em montarCena)
           case 50: g50 = true; break;
           case 53: aviso(i, 'G53 (coordenada da máquina) não é simulado.', 'g53'); break;
           case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 83: cic = g; break;
@@ -586,8 +636,8 @@
           case 91: st.abs = false; break;
           case 94: case 98: st.fmin = true; break;
           case 95: case 99: st.fmin = false; break;
-          case 96: st.modo = 'G96'; st.spinObj = null; break;
-          case 97: st.modo = 'G97'; st.spinObj = null; break;
+          case 96: st.modo = 'G96'; st.spinObj = null; st.linhaModo = i; break;
+          case 97: st.modo = 'G97'; st.spinObj = null; st.linhaModo = i; break;
           case 1900: case 1901: g1900b = g; break;
           default: semMov = true; aviso(i, 'G' + g + ' não é simulado e foi ignorado (o bloco inteiro foi pulado).', 'g' + g);
         }
@@ -602,10 +652,13 @@
       if (g50 && temCoord(w)) aviso(i, 'G50 com X/Z (preset de coordenadas) não é simulado.', 'g50xz');
       var fimBloco = false, call = null, ret = false;
       M.forEach(function (m) {
-        if (m === 30 || m === 2) fimBloco = true;
+        if (m === 30 || m === 2) { fimBloco = true; st.linhaFim = i; }
         else if (m === 98) call = w.P;
         else if (m === 99) ret = true;
-        else if (m === 3 || m === 4 || m === 5) { /* sentido de giro nao altera o percurso */ }
+        else if (m === 3 || m === 4) st.giro = true; // o sentido de giro nao altera o percurso
+        else if (m === 5) st.giro = false;
+        else if (m === 8) st.refri = true;
+        else if (m === 9) st.refri = false;
       });
       if (tp && !ctx.cap) trocaFerramenta(tp, i, b);
       if (g1900b) { if (!g1900) g1900 = { d: w.D, l: w.L, k: w.K, linha: i }; if (g1900b === 1901 && w.E != null) g1900.e = w.E; }
@@ -626,6 +679,10 @@
               break;
             case 74: case 75:
               if (!temCoord(w) && w.R != null) { st.cRe = w.R; break; }
+              ['P', 'Q'].forEach(function (l) { // P/Q em milesimos de mm, sem ponto: Q2.5 ou Q3 viram micrometros
+                var v = w[l];
+                if (v != null && v > 0 && (v !== Math.round(v) || v < 20)) aviso(i, 'G' + cic + ': ' + l + numTxt(v) + ' vale só ' + numTxt(v / 1000) + ' mm (P e Q são em milésimos de mm, sem ponto decimal).', 'pq' + i + l, 'pqUnidade');
+              });
               if (cic === 74) ciclo74(w, i); else ciclo75(w, i);
               break;
             case 76: ciclo76(w, i); break;
@@ -649,7 +706,7 @@
         return k + 1;
       }
       if (ret) {
-        if (!pilha.length) { fim = true; return null; }
+        if (!pilha.length) { fim = true; st.linhaFim = i; return null; }
         var topo = pilha[pilha.length - 1];
         if (topo.rep > 1) { topo.rep--; return topo.ini; }
         pilha.pop(); return topo.ret;
@@ -712,7 +769,12 @@
         else throw e;
       }
     }
-    if (truncado) erro(NB - 1, 'Programa gera mais de ' + MAX_MOV + ' movimentos: a simulação foi cortada aqui.');
+    if (truncado) erro(NB - 1, 'Programa gera mais de ' + MAX_MOV + ' movimentos: a simulação foi cortada aqui.', 'truncado');
+    var ultima = NB - 1;
+    while (ultima > 0 && (B[ultima].s === '' || B[ultima].s.charAt(0) === '%')) ultima--;
+    if (st.linhaFim < 0 && executou && !pilha.length && !truncado && !erros.length) aviso(ultima, 'O programa termina sem M30 (nem M02): o comando não reinicia nem para o fuso e a refrigeração.', 'semFim', 'semFim');
+    if (st.comp) aviso(st.linhaComp, 'G' + st.comp + ' ligado na linha ' + (st.linhaComp + 1) + ' e nunca cancelado (G40) até o fim do programa.', 'compFim', 'compFim');
+    if (st.refri && st.linhaFim >= 0) dica(st.linhaFim, 'Refrigeração ligada (M8) e nunca desligada (M9) antes do fim do programa.', 'semM9', 'semM9');
     if (!fim && pc >= NB && NB && pilha.length) aviso(NB - 1, 'Fim do texto dentro de um subprograma (falta M99).', 'semM99');
 
     /* ----- ferramentas e sugestoes ----- */
@@ -723,7 +785,7 @@
     });
     var usadas = lista.filter(function (f) { return f.nMov > 0 && (f.codigo !== '0000' || f.nCorte > 0); });
     var sug = sugestoes(moves, usadas, g1900, xHome);
-    return { moves: moves, ferramentas: usadas, todasFerr: lista, erros: erros, avisos: avisos, g1900: g1900, sugestao: sug, start: { x: xHome, z: zHome }, linhas: prep.linhas.length, texto: prep.texto, blocosExec: passos, truncado: truncado };
+    return { moves: moves, ferramentas: usadas, todasFerr: lista, erros: erros, avisos: avisos, dicas: dicas, g1900: g1900, sugestao: sug, start: { x: xHome, z: zHome }, linhas: prep.linhas.length, texto: prep.texto, blocosExec: passos, truncado: truncado };
   }
 
   // palpite do tipo de ferramenta (para pre-selecionar no banco) a partir do que o programa faz com ela
@@ -891,5 +953,5 @@
     return Object.assign({}, cena, { path: cena.path.map(function (m) { return mapa[m.line] ? Object.assign({}, m, { dec: mapa[m.line] }) : m; }) });
   }
 
-  return { interpretar: interpretar, montarCena: montarCena, formaFerr: formaFerr, kindDe: kindDe, tcode: tcode, compensar: compensar, numTxt: numTxt, comDecodificado: comDecodificado, comCompensacao: comCompensacao };
+  return { interpretar: interpretar, prepara: prepara, montarCena: montarCena, formaFerr: formaFerr, kindDe: kindDe, tcode: tcode, compensar: compensar, numTxt: numTxt, comDecodificado: comDecodificado, comCompensacao: comCompensacao };
 });

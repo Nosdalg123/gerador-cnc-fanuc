@@ -264,3 +264,5 @@ if(verbose){ for (const [g,f,tl] of [['espina_cabeca',fc,{t1:{...t1,...acab}}],[
 }
 // ---- v2.2.0: modulo Simulacao (leitor de programa pronto) ----
 require('./testprog.js');
+// ---- v2.7.0: diagnostico de erros do programa com causa e solucao ----
+require('./testdiag.js');

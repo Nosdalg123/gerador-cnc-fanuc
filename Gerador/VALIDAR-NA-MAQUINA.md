@@ -36,6 +36,14 @@ O leitor segue os mesmos critérios dos geradores; o que não foi confirmado na 
 - **Ângulo do suporte κ (2.6.0):** só afeta a simulação. Usar o valor do suporte real (93°, 95°…). A pastilha gira 180° − κ − ponta (limitado a 0–60°).
 - **G41/G42 (2.4.0):** a simulação usa a compensação ideal. Partida pela normal do 2º bloco (tipo C), canto interno pelo ponto de encontro, **canto externo em arco** em volta do vértice (o comando pode ligar os pontos por reta, o que deixa um resquício mínimo no canto), saída com o G40 no bloco de movimento. Não replica os alarmes de interferência (P/S 041 e semelhantes). A posição da ponta (quadrante 1 a 9) não é cadastrada: vale a do inserto da simulação (externa = ponta 3, interna = ponta 2). Conferir na máquina a **geometria da ferramenta** (raio e quadrante no corretor) e a partida/saída com a ferramenta longe da peça (Z maior que o raio).
 
+## Diagnóstico de programa (2.7.0) — regras que seguem o padrão Fanuc, a conferir na máquina
+- **Primeiro bloco do contorno sem G0/G1** é tratado como erro (o comando alarma no G70–G73). Confirmar o alarme na máquina.
+- **Contorno que volta no eixo principal (G71 em Z, G72 em X)** aparece só como dica: o PORTA.MATRIZ e a CABECA.ESPINA.ANTIGO da casa têm essa volta de 2 mm e funcionam.
+- **Troca sem recuo:** só G28/G30 conta como recuo. Se a máquina aceita um G0 até o ponto de troca no lugar do G28, o aviso é só conservador.
+- **G96 sem G50 S** e **corte sem M3/M4** são avisos de segurança; **limites de avanço** (F acima de 1,5 mm/rot parece mm/min) e de **rotação × passo** na rosca (6000 mm/min) são regras práticas, não limites da máquina.
+- **G76:** ângulos aceitos 0, 29, 30, 55, 60 e 80; altura do filete acima de 75% do passo avisa (rosca ISO ≈ 61%).
+- As correções sugeridas que não são "exatas" (G28U0 antes do T, G50S2000, G40 antes do M30 ou do T) são pontos de partida: conferir o valor e o bloco de saída antes de rodar.
+
 ## O que o simulador não mostra
 - O **filete da rosca** (só percurso e tempo das passadas).
 - A haste/porta-ferramenta (só a pastilha); folga de haste em furos pequenos e canais internos fica por conta do operador.

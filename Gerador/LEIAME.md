@@ -125,8 +125,14 @@ Arquivos: `progsim.js` (leitor, sem tela, testável no Node), `progview.js` (tel
 - **G41/G42 (compensação do raio de ponta):** no grupo **Acabamento**, "Compensação do raio de ponta". Ligado: `G42` antes do `G70` externo, `G41` antes do `G70` interno, e o último bloco do contorno cancela com `G40`. A máquina precisa do raio e do quadrante da ponta no corretor da ferramenta. A simulação usa o raio cadastrado no banco.
 - **Ângulo de posição do suporte (κ):** em Ferramentas, campo opcional para as pastilhas de torneamento. O inserto gira 180° − κ − ponta; assim perfis que descem em direção à placa deixam de ser cortados a mais na simulação. Vazio = aresta de trás reta (como antes).
 
+## Diagnóstico de erros do programa (v2.7.0)
+- Na tela **Simulação**, o painel sob o texto do programa lista o que está errado: **erro** (o programa não roda certo), **aviso** (roda, mas pode dar problema) e **dica**. Clique no cartão para ir à linha; **Causa e como corrigir** explica por que acontece e o que fazer.
+- Quando a correção pode ser feita no texto, o cartão mostra a linha **antes e depois** e o botão **Aplicar**. **Aplicar N correções exatas** aplica de uma vez as que não mudam nenhum valor; as outras pedem conferência. **Desfazer a última correção** volta o texto.
+- Os alertas da simulação (placa, corte na peça, rápido no material, fora de curso, sobra) também trazem "Causa e como corrigir". Na janela de simulação do **Gerador**, o bloco **Diagnóstico do programa gerado** confere o próprio código gerado.
+- Tipos cobertos (73): sintaxe, variáveis e fluxo (GOTO, WHILE, M98), estrutura (M30, M9), movimentos e arcos, ferramenta/rotação/avanço (M3/M4, G50 S, G98/G99, troca sem recuo, G28), ciclos (G70–G76, G83), compensação G41/G42 e alertas do simulador.
+
 ## Desenvolvimento
-- `core.js` (geradores + percurso), `sim.js` (motor da simulação), `simview.js` (tela do simulador; fábrica `SimView.create`), `progsim.js` + `progview.js` (módulo Simulação), `testprog.js` (testes do módulo), `app.js` (interface do Gerador, Ferramentas e Configurações), `desenho.js` (operação Desenho da peça), `pecaview.js` (meia seção compartilhada), `seed.js` (ferramentas iniciais), `style.css` (visual), `version.js` (número da versão), `versionar.js` (guarda uma versão em `versoes/`).
+- `core.js` (geradores + percurso), `sim.js` (motor da simulação), `simview.js` (tela do simulador; fábrica `SimView.create`), `progsim.js` + `progview.js` (módulo Simulação), `diagnostico.js` (catálogo de erros, causas e soluções), `testprog.js` e `testdiag.js` (testes dos módulos), `app.js` (interface do Gerador, Ferramentas e Configurações), `desenho.js` (operação Desenho da peça), `pecaview.js` (meia seção compartilhada), `seed.js` (ferramentas iniciais), `style.css` (visual), `version.js` (número da versão), `versionar.js` (guarda uma versão em `versoes/`).
 - `node test.js` roda os geradores e a análise do simulador no terminal (inclui colisão forçada); `node test.js -v` imprime o código das espinas.
 - `serve.js` + `../.claude/launch.json`: servidor local só para testar no painel de preview; não é necessário para usar.
 

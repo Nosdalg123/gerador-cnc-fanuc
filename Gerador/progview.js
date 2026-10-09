@@ -188,15 +188,31 @@
 
   function linhasUteis(t) { return t.split(/\r?\n/).filter(function (l) { return l.trim() !== '' && l.trim() !== '%'; }).length; }
   var avisosComp = []; // avisos da compensacao G41/G42 (dependem da ferramenta do banco; vem de montarCena)
+  var diagLista = [], undo = []; // diagnostico do programa (diagnostico.js) e correcoes aplicadas ({antes, depois}) para desfazer
   function renderMsgs() {
-    var box = $('#psMsgs'), rs = $('#psResumo');
-    if (!res) { if (!$('#psTexto').value.trim()) { box.innerHTML = ''; rs.textContent = 'Nenhum programa colado.'; } return; }
-    var avs = res.avisos.concat(avisosComp);
+    var box = $('#psMsgs'), rs = $('#psResumo'), ta = $('#psTexto');
+    if (!res) { diagLista = []; if (!ta.value.trim()) { box.innerHTML = ''; rs.textContent = 'Nenhum programa colado.'; } return; }
+    if (undo.length && undo[undo.length - 1].depois !== ta.value) undo = []; // texto mudou depois da correcao: o desfazer deixa de valer
+    diagLista = CNCDiag.diagnosticar(res, res.texto, { extras: avisosComp });
+    var n = CNCDiag.resumo(diagLista), ex = CNCDiag.fixesExatos(diagLista), pl = function (k, um, v) { return k + ' ' + (k === 1 ? um : v); };
     rs.innerHTML = '<b>' + linhasUteis(res.texto) + '</b> linhas · <b>' + res.ferramentas.length + '</b> ferramenta' + (res.ferramentas.length === 1 ? '' : 's') + ' · <b>' + res.moves.length + '</b> movimentos · ' +
-      (res.erros.length ? '<b style="color:var(--err)">' + res.erros.length + ' erro' + (res.erros.length === 1 ? '' : 's') + '</b>' : '0 erros') + ' · ' + avs.length + ' aviso' + (avs.length === 1 ? '' : 's');
-    function item(cls, m) { return '<div class="msg ' + cls + ' ps-msg" data-l="' + m.linha + '" title="Clique para ir à linha"><b>Linha ' + (m.linha + 1) + ':</b> ' + esc(m.texto) + '</div>'; }
-    box.innerHTML = res.erros.map(function (m) { return item('err', m); }).join('') + avs.map(function (m) { return item('warn', m); }).join('');
-    $$('.ps-msg', box).forEach(function (el) { el.onclick = function () { irParaLinha(+el.dataset.l); }; });
+      (n.erro ? '<b style="color:var(--err)">' + pl(n.erro, 'erro', 'erros') + '</b>' : '0 erros') + ' · ' + pl(n.aviso, 'aviso', 'avisos') + ' · ' + pl(n.dica, 'dica', 'dicas');
+    var bar = '';
+    if (ex.length || undo.length) bar = '<div class="dg-bar">' +
+      (ex.length ? '<button type="button" class="btn sm primary" id="psAplicaTudo">Aplicar ' + pl(ex.length, 'correção exata', 'correções exatas') + '</button>' : '') +
+      (undo.length ? '<button type="button" class="btn sm" id="psDesfaz">Desfazer a última correção</button>' : '') + '</div>';
+    box.innerHTML = bar + '<div class="dg-lista">' + CNCDiag.html(diagLista, { aplicar: true, origem: 'programa' }) + '</div>';
+    $$('.dg', box).forEach(function (el) { el.onclick = function (e) { if (e.target.closest && e.target.closest('.dg-det')) return; irParaLinha(+el.dataset.l); }; });
+    $$('.dg-aplica', box).forEach(function (b) { b.onclick = function (e) { e.stopPropagation(); var it = diagLista[+b.dataset.k]; if (it && it.fix) aplicarFixes([it.fix]); }; });
+    if ($('#psAplicaTudo')) $('#psAplicaTudo').onclick = function () { aplicarFixes(CNCDiag.fixesExatos(diagLista)); };
+    if ($('#psDesfaz')) $('#psDesfaz').onclick = function () { var u = undo.pop(); if (u) { ta.value = u.antes; ler(); } };
+  }
+  function aplicarFixes(fixes) {
+    if (!fixes.length) return;
+    var ta = $('#psTexto'), antes = ta.value, depois = CNCDiag.aplicar(antes, fixes);
+    if (depois === antes) return;
+    undo.push({ antes: antes, depois: depois }); if (undo.length > 20) undo.shift();
+    ta.value = depois; ler();
   }
   function irParaLinha(n) {
     var ta = $('#psTexto'), L = ta.value.split('\n'), a = 0, i;
@@ -283,7 +299,7 @@
     rd.onload = function () {
       var buf = rd.result, txt;
       try { txt = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e) { txt = new TextDecoder('windows-1252').decode(buf); }
-      $('#psTexto').value = txt; ler();
+      $('#psTexto').value = txt; undo = []; ler();
     };
     rd.readAsArrayBuffer(file);
   }
@@ -302,15 +318,15 @@
     ta.addEventListener('paste', function () { setTimeout(ler, 30); });
     $('#psColar').onclick = function () {
       if (navigator.clipboard && navigator.clipboard.readText) {
-        navigator.clipboard.readText().then(function (t) { ta.value = t; ler(); }, function () { nota('O navegador não liberou a área de transferência: clique na caixa e use Ctrl+V.'); ta.focus(); });
+        navigator.clipboard.readText().then(function (t) { ta.value = t; undo = []; ler(); }, function () { nota('O navegador não liberou a área de transferência: clique na caixa e use Ctrl+V.'); ta.focus(); });
       } else { nota('Clique na caixa e use Ctrl+V para colar.'); ta.focus(); }
     };
     $('#psAbrir').onclick = function () { $('#psFile').click(); };
     $('#psFile').onchange = function () { var f = this.files[0]; this.value = ''; if (f) lerArquivo(f); };
-    $('#psExemplo').onclick = function () { ta.value = EXEMPLO; ler(); };
+    $('#psExemplo').onclick = function () { ta.value = EXEMPLO; undo = []; ler(); };
     $('#psLimpar').onclick = function () {
       if (ta.value.length > 80 && !confirm('Limpar o programa colado?')) return;
-      ta.value = ''; ler();
+      ta.value = ''; undo = []; ler();
     };
     if (st.texto) { /* a leitura acontece ao abrir a aba */ }
   }

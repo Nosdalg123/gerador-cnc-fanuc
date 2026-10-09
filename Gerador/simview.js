@@ -223,14 +223,28 @@
     stats.innerHTML = '<span class="chip">Tempo de ciclo ≈ <b>' + mmss(analysis.total) + '</b></span>' +
       '<span class="chip">Corte <b>' + mmss(analysis.tCut) + '</b> (' + fx(analysis.dCut, 0) + ' mm)</span>' +
       '<span class="chip">Rápido <b>' + mmss(analysis.tRapid) + '</b> (' + fx(analysis.dRapid, 0) + ' mm)</span>';
-    var real = analysis.alerts;
+    var real = analysis.alerts, origem = P === 'sim' ? 'gerador' : 'programa', D = window.CNCDiag;
     al.innerHTML = real.length ? real.map(function (a, i) {
       var linha = a.line >= 0 ? ' · linha ' + (a.line + 1) : '';
-      return '<button class="alert-item ' + a.type + '" data-i="' + i + '"><b>' + tituloAlerta(a.type) + '</b>' + esc(a.text) + linha + '</button>';
+      return '<div class="alert-grp"><button class="alert-item ' + a.type + '" data-i="' + i + '"><b>' + tituloAlerta(a.type) + '</b>' + esc(a.text) + linha + '</button>' +
+        (D ? D.htmlAlerta(a, { origem: origem }) : '') + '</div>';
     }).join('') : '<div class="alert-ok">Nenhuma colisão, corte indevido ou fora de curso detectado.</div>';
     Array.prototype.forEach.call(al.querySelectorAll('.alert-item'), function (b) {
       b.onclick = function () { var a = analysis.alerts[+b.dataset.i]; pause(); seek(Math.max(0, a.t + (a.type === 'sobra' ? 0 : 0.01))); };
     });
+    // programa do Gerador: diagnostico do proprio codigo gerado (o modulo Simulacao mostra o dele ao lado do texto colado)
+    if (D && P === 'sim' && res && res.code) {
+      var dl = D.analisarTexto(res.code, res.cena && res.cena.maq);
+      al.insertAdjacentHTML('beforeend', '<div class="dg-titulo">Diagnóstico do programa gerado</div><div class="dg-lista">' + D.html(dl, { origem: 'gerador' }) + '</div>');
+      Array.prototype.forEach.call(al.querySelectorAll('.dg'), function (el) {
+        el.onclick = function (e) {
+          if (e.target.closest && e.target.closest('.dg-det') || !sim) return;
+          var first = -1, k, ln = +el.dataset.l;
+          for (k = 0; k < sim.segs.length; k++) { if (sim.segs[k].line === ln) { first = sim.segs[k].t0; break; } }
+          if (first >= 0) { pause(); seek(first + 1e-6); }
+        };
+      });
+    }
     marks.innerHTML = real.filter(function (a) { return a.type !== 'sobra'; }).map(function (a) {
       return '<i style="left:' + (sim.total ? 100 * a.t / sim.total : 0) + '%"></i>';
     }).join('');

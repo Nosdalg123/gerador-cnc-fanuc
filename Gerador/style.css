@@ -191,6 +191,35 @@ dialog h3{margin:0 0 12px}
 .alert-item.limite,.alert-item.sobra{border-left-color:var(--warn);background:var(--warn-bg)}
 .alert-item.limite b,.alert-item.sobra b{color:var(--warn)}
 .alert-ok{padding:8px 11px;border-radius:8px;background:rgba(23,128,61,.12);color:var(--ok);font-size:13px}
+/* diagnostico do programa (diagnostico.js): erro / aviso / dica com causa e solucao */
+.dg-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.dg-bar .note{margin:0}
+.dg-lista{display:grid;gap:6px}
+.dg{border:1px solid var(--line);border-left:4px solid var(--accent);background:var(--panel);border-radius:8px;padding:7px 10px;font-size:13.5px;cursor:pointer}
+.dg-erro{border-left-color:var(--err);background:var(--err-bg)}
+.dg-aviso{border-left-color:var(--warn);background:var(--warn-bg)}
+.dg-dica{border-left-color:var(--accent)}
+.dg-top{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.dg-sev{font-size:10.5px;letter-spacing:.06em;font-weight:700;color:var(--muted)}
+.dg-erro .dg-sev{color:var(--err)}
+.dg-aviso .dg-sev{color:var(--warn)}
+.dg-dica .dg-sev{color:var(--accent)}
+.dg-tit{font-size:14px}
+.dg-lin{margin-left:auto;font-size:12px;color:var(--muted)}
+.dg-msg{margin-top:2px;color:var(--ink)}
+.dg-det{margin-top:5px;cursor:default}
+.dg-det summary{cursor:pointer;font-size:12.5px;color:var(--accent)}
+.dg-causa,.dg-como,.dg-fix{margin-top:5px;font-size:13px}
+.dg-sol{margin:3px 0 0;padding-left:20px}
+.dg-sol li{margin:2px 0}
+.dg-fix{display:grid;gap:3px;padding:6px 8px;border-radius:6px;background:rgba(127,127,127,.12)}
+.dg-fix code{display:block;font:12.5px/1.45 Consolas,"Cascadia Mono",monospace;white-space:pre-wrap;word-break:break-all}
+.dg-antes{color:var(--err);text-decoration:line-through}
+.dg-depois{color:var(--ok)}
+.dg-fix .btn{justify-self:start;margin-top:2px}
+.alert-grp{display:grid;gap:0}
+.alert-grp .dg-det{margin:2px 4px 0}
+.dg-titulo{margin:12px 0 4px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .simhelp{font-size:12px;color:var(--muted);margin-top:8px}
 
 /* seletor de lado (peças de dois lados) */
