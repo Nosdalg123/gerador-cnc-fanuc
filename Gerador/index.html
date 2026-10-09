@@ -365,6 +365,7 @@
       <div class="field" data-tipos="externa faceamento interna encaixe furacao rosca outra"><label>Pastilha</label><input name="pastilha" placeholder="ex.: WNMG 080408" autocomplete="off"></div>
       <div class="field" data-tipos="externa faceamento interna rosca outra"><label>Raio de ponta (mm)</label><input name="raio" type="number" step="any" min="0"></div>
       <div class="field" data-tipos="externa faceamento interna"><label>Ângulo da ponta (°) — externa</label><input name="angulo" type="number" step="any" min="20" max="120" placeholder="80"></div>
+      <div class="field" data-tipos="externa faceamento interna"><label>Ângulo de posição do suporte κ (°) — simulação</label><input name="apSuporte" type="number" step="any" min="60" max="120" placeholder="ex.: 93 ou 95 · vazio = aresta de trás reta"><div class="dica">Ângulo de posição do suporte (93°, 95°…). A pastilha gira 180° − κ − ponta: o inserto deixa de cortar além do perfil quando ele desce em direção à placa. Vazio = aresta de trás reta (como era antes). Só afeta a simulação.</div></div>
       <div class="field" data-tipos="encaixe"><label>Largura do canal (mm) — encaixe</label><input name="largura" type="number" step="any" min="0"></div>
       <div class="field" data-tipos="furacao"><label>Diâmetro da broca (mm) — furação</label><input name="diametro" type="number" step="any" min="0"></div>
       <div class="group-title">Parâmetros de corte</div>

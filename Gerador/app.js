@@ -451,7 +451,7 @@
     }
     partes.push('M' + tool.sentido);
     var det = ['Pastilha: ' + (tool.pastilha || '—')];
-    if (slot.id !== 't3' && slot.id !== 't6' && slot.id !== 't7') det.push('Raio de ponta: ' + (tool.raio === '' || tool.raio == null ? 'ponta viva' : fm(tool.raio)), 'Ângulo: ' + (tool.angulo ? fm(tool.angulo) : '80') + '°', 'Av. acabamento: ' + fm(tool.avAcab));
+    if (slot.id !== 't3' && slot.id !== 't6' && slot.id !== 't7') det.push('Raio de ponta: ' + (tool.raio === '' || tool.raio == null ? 'ponta viva' : fm(tool.raio)), 'Ângulo: ' + (tool.angulo ? fm(tool.angulo) : '80') + '°', tool.apSuporte ? 'Suporte κ' + fm(tool.apSuporte) + '°' : 'Suporte: aresta de trás reta', 'Av. acabamento: ' + fm(tool.avAcab));
     return '<span title="' + esc(det.join(' · ')) + '">' + partes.filter(Boolean).join(' · ') + '</span>';
   }
   /* ---------- maquina / placa ---------- */
@@ -569,7 +569,7 @@
     var rows = tools.slice().sort(function (a, b) { return CNC.tcode(a.t).localeCompare(CNC.tcode(b.t)) || a.nome.localeCompare(b.nome); });
     $('#tbFerr').innerHTML = rows.length ? '<tr><th>T</th><th>Nome</th><th>Tipo</th><th>Pastilha</th><th>Vc · RPM</th><th>Avanço</th><th>Incrementos (desbaste / acabamento)</th><th>Giro</th><th></th></tr>' +
       rows.map(function (t) {
-        var pas = (t.pastilha || '—') + (t.raio !== '' && t.raio != null ? ' · r' + CNC.fmt(t.raio) : '') + (t.tipo === 'encaixe' && t.largura ? ' · canal ' + CNC.fmt(t.largura) : (t.angulo ? ' · ' + CNC.fmt(t.angulo) + '°' : ''));
+        var pas = (t.pastilha || '—') + (t.raio !== '' && t.raio != null ? ' · r' + CNC.fmt(t.raio) : '') + (t.tipo === 'encaixe' && t.largura ? ' · canal ' + CNC.fmt(t.largura) : (t.angulo ? ' · ' + CNC.fmt(t.angulo) + '°' : '')) + (t.apSuporte ? ' · κ' + CNC.fmt(t.apSuporte) + '°' : '');
         var inc = t.tipo === 'encaixe' ? 'camada ' + CNC.fmt(t.incCanal)
           : '<div>Faceamento: <b>' + CNC.fmt(t.incFace || 0) + '</b> / acab. <b>' + CNC.fmt(t.acabFace || 0) + '</b></div><div>Cilindragem: <b>' + CNC.fmt(t.incTorn || 0) + '</b> / acab. <b>' + CNC.fmt(t.acabTorn || 0) + '</b></div>';
         return '<tr><td class="mono">' + CNC.tcode(t.t) + '</td><td>' + esc(t.nome) + (t.obs ? '<div class="note">' + esc(t.obs) + '</div>' : '') + '</td><td>' + esc(TIPOS[t.tipo] || t.tipo) + '</td>' +
@@ -628,7 +628,7 @@
     $$('label[data-lbl-padrao]', frm).forEach(function (l) { l.textContent = l.dataset['lbl' + cap] || l.dataset.lblPadrao; });
   }
   buildTipoGrid();
-  var NUMS = ['raio', 'angulo', 'largura', 'diametro', 'vc', 'rpm', 'avDesb', 'avAcab', 'incFace', 'incTorn', 'incCanal', 'acabFace', 'acabTorn'];
+  var NUMS = ['raio', 'angulo', 'apSuporte', 'largura', 'diametro', 'vc', 'rpm', 'avDesb', 'avAcab', 'incFace', 'incTorn', 'incCanal', 'acabFace', 'acabTorn'];
   function openDlg(t) {
     editingId = t ? t.id : null;
     $('#dlgTitulo').textContent = t ? 'Editar ferramenta' : 'Nova ferramenta';

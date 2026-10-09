@@ -100,14 +100,14 @@
   function legendaForma(f, t) {
     var past = t && t.pastilha ? 'Pastilha ' + esc(t.pastilha) + ' · ' : '';
     switch (f.kind) {
-      case 'interna': return 'Barra de mandrilar (dentro do furo) · ' + past + 'ponta ' + fx(f.ang) + '°' + (f.raio ? ' · raio ' + fx(f.raio) : '');
+      case 'interna': return 'Barra de mandrilar (dentro do furo) · ' + past + 'ponta ' + fx(f.ang) + '°' + (f.raio ? ' · raio ' + fx(f.raio) : '') + (f.ap ? ' · suporte κ' + fx(f.ap) + '°' : '');
       case 'canal': return 'Ferramenta de canal ' + fx(f.largura) + ' mm · canal frontal (corta em Z, na face)';
       case 'canalext': return 'Ferramenta de canal ' + fx(f.largura) + ' mm · canal externo (radial)';
       case 'canalint': return 'Ferramenta de canal ' + fx(f.largura) + ' mm · canal interno (radial)';
       case 'rosca': return 'Ferramenta de rosca 60° · externa';
       case 'roscaint': return 'Ferramenta de rosca 60° · interna';
       case 'broca': return 'Broca Ø' + fx(f.largura) + ' mm (furação no eixo)';
-      default: return (t ? '' : 'Pastilha padrão (nenhuma ferramenta escolhida) · ') + past + 'ponta ' + fx(f.ang) + '°' + (f.raio ? ' · raio ' + fx(f.raio) : '');
+      default: return (t ? '' : 'Pastilha padrão (nenhuma ferramenta escolhida) · ') + past + 'ponta ' + fx(f.ang) + '°' + (f.raio ? ' · raio ' + fx(f.raio) : '') + (f.ap ? ' · suporte κ' + fx(f.ap) + '°' : '');
     }
   }
   // pecas do desenho (inserto e suporte) no plano (z, r) da simulacao, com a ponta programada em (0,0)
@@ -138,6 +138,14 @@
       var hmax = Li * u2[1], r0 = hmax * 0.55;
       hold = k === 'interna' ? rect(Li * 0.6, r0 - 4, Li * 0.6 + 70, r0 + 8) : rect(Li * 0.5, r0, Li * 0.5 + 55, r0 + 16);
       furo = [Li * (1 + u2[0]) / 2 - zm, hmax / 2 - rm, 1.7];
+      var kap = Number(f.ap) || 0, phi = kap > 0 ? Math.max(0, Math.min(60, 180 - kap - (Number(f.ang) || 80))) * DEG : 0;
+      if (phi > 0) { // suporte: gira o inserto, o corpo e o furo em volta da ponta e leva a origem para o canto do inserto girado
+        var cs = Math.cos(phi), sn = Math.sin(phi), rot = function (p) { return [p[0] * cs - p[1] * sn, p[0] * sn + p[1] * cs]; };
+        ins = ins.map(rot); hold = hold.map(rot);
+        var fc = rot([furo[0], furo[1]]), z2 = Math.min.apply(null, ins.map(function (p) { return p[0]; })), r2 = Math.min.apply(null, ins.map(function (p) { return p[1]; }));
+        var sh = function (p) { return [p[0] - z2, p[1] - r2]; };
+        ins = ins.map(sh); hold = hold.map(sh); furo = [fc[0] - z2, fc[1] - r2, furo[2]];
+      }
       if (k === 'interna') { ins = espelhaR(ins); hold = espelhaR(hold); furo[1] = -furo[1]; }
     }
     return { ins: ins, hold: hold, furo: furo };

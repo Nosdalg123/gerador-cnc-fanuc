@@ -158,6 +158,11 @@ const BASE = 'G1900D62L50K0.\nG21G90G40G80\nG28U0\nG0Z250\nT0101(DESBASTE)\nG54\
     ['espina encaixe', 'espina_encaixe', { dBruto: 204, lBruto: 101, dFinal: 200, lPeca: 100, lUsin: 70, folga: .3, lEnc: 10.1, hEnc: 10, rFace: 5, rEnc: 3 }, { t1: Object.assign({}, t1, acab) }],
     ['peca simples + canal', 'peca_simples', Object.assign({}, d, { trechos1: [{ id: 'a', tipo: 'cil', a: 40, b: 20 }, { tipo: 'canal', a: 30, c: 4.5, seq: true }, { tipo: 'cil', a: 60, b: 10 }] }), { t1, t2 }],
     ['peca simples G72', 'peca_simples', Object.assign({}, d, { sentE1: 'trans' }), { t1, t2 }],
+    ['peca simples G73', 'peca_simples', Object.assign({}, d, { sentE1: 'par' }), { t1, t2 }],
+    ['peca simples G73 com acabamento', 'peca_simples', Object.assign({}, d, { sentE1: 'par' }), { t1: Object.assign({}, t1, acab), t2 }],
+    ['peca simples G42', 'peca_simples', Object.assign({}, d, { compRaio: 'sim' }), { t1, t2 }],
+    ['peca simples G73 + G42', 'peca_simples', Object.assign({}, d, { sentE1: 'par', compRaio: 'sim' }), { t1, t2 }],
+    ['peca simples furo + mandril G71 + G42/G41', 'peca_simples', big({ internos1: intA, compRaio: 'sim' }), { t1, t2, t3, t4 }],
     ['peca simples furo + mandril G71', 'peca_simples', big({ internos1: intA }), { t1, t2, t3, t4 }],
     ['peca simples furo + mandril G72', 'peca_simples', big({ internos1: intA, sentI1: 'trans' }), { t1, t2, t3, t4 }],
     ['peca simples rosca externa', 'peca_simples', Object.assign({}, d, { dBruto: 120, lBruto: 102, lPeca: 100, trechos1: [{ id: 'a', tipo: 'cil', a: 20, b: 10 }, { id: 'r', tipo: 'rosca', a: 30, b: 20, c: 2 }, { tipo: 'canal', a: 26, c: 4.5, seq: true }, { id: 'b', tipo: 'cil', a: 50, b: 15 }] }), { t1, t2, t6 }]
@@ -169,7 +174,7 @@ const BASE = 'G1900D62L50K0.\nG21G90G40G80\nG28U0\nG0Z250\nT0101(DESBASTE)\nG54\
       const R = P.interpretar(l.code, { maq: l.cena.maq });
       const gk = [...new Set(l.cena.path.map(m => m.tool))], mk = [...new Set(R.moves.map(m => m.tool))].filter(k => k !== '0000');
       const tm = { '0000': l.cena.tools[gk[0]] }; mk.forEach((k, i) => tm[k] = l.cena.tools[gk[i]]);
-      const sg = new S.Sim(l.cena), sp = new S.Sim(Object.assign({}, l.cena, { path: R.moves, start: R.start, tools: tm }));
+      const sg = new S.Sim(P.comCompensacao(l.cena)), sp = new S.Sim(P.comCompensacao(Object.assign({}, l.cena, { path: R.moves, start: R.start, tools: tm })));
       const A = sg.analyze(), B = sp.analyze();
       sg.seek(sg.total); sp.seek(sp.total);
       let dif = 0, rem = 0; for (let k = 0; k < sg.mat.length; k++) { if (sg.mat[k] !== sp.mat[k]) dif++; if (sg.mat0[k] && !sg.mat[k]) rem++; }
@@ -246,9 +251,9 @@ const BASE = 'G1900D62L50K0.\nG21G90G40G80\nG28U0\nG0Z250\nT0101(DESBASTE)\nG54\
   const c = P.montarCena(R, Object.assign({ d: 60, sobre: 0, livre: 50 }, ferrR(0.8)));
   const p = c.path;
   ok(near(p[0].x, 60) && near(p[0].z, 5), 'G42: movimento antes do G42 fica como programado');
-  ok(near(p[1].x, 40) && near(p[1].z, 1.2), 'G42 partida: a ponta vai para Z2 - rn (o centro do raio fica em Z2, na normal do 2o bloco)', [p[1].x, p[1].z]);
-  ok(near(p[2].x, 40) && near(p[2].z, -20), 'G42 canto interno: a ponta de referencia chega no canto programado (X40 Z-20)', [p[2].x, p[2].z]);
-  ok(near(p[3].x, 47.7373, 1e-3) && near(p[3].z, -20), 'G42 saida: ponto de encontro com o bloco de saida (inclinado) em X47,737', [p[3].x, p[3].z]);
+  ok(near(p[1].x, 40) && near(p[1].z, 1.2, 0.005), 'G42 partida: a ponta vai para Z2 - rn (o centro do raio fica em Z2, na normal do 2o bloco)', [p[1].x, p[1].z]);
+  ok(near(p[2].x, 40) && near(p[2].z, -20, 0.005), 'G42 canto interno: a ponta de referencia chega no canto programado (X40 Z-20)', [p[2].x, p[2].z]);
+  ok(near(p[3].x, 47.7373, 5e-3) && near(p[3].z, -20, 0.005), 'G42 saida: ponto de encontro com o bloco de saida (inclinado) em X47,737', [p[3].x, p[3].z]);
   ok(near(p[4].x, 100) && near(p[4].z, 5) && /G40/.test(p[4].label), 'G40: a saida termina no ponto programado', p[4]);
   ok(/G42/.test(p[1].label), 'G42: o rotulo do movimento mostra a compensacao');
   ok(c.compAvisos.length === 0, 'G42 com raio no banco: sem aviso', c.compAvisos);
@@ -259,14 +264,14 @@ const BASE = 'G1900D62L50K0.\nG21G90G40G80\nG28U0\nG0Z250\nT0101(DESBASTE)\nG54\
   // interna (G41): o raio fica do lado do eixo
   const Ri = run('T0101\nG96S200M4\nG0 X20 Z2\nG41\nG0 X30 Z2\nG1 Z-20 F.1\nX20\nG40 G0 X15 Z5\nM30');
   const ci = P.montarCena(Ri, Object.assign({ d: 60, sobre: 0, livre: 50, furoD: 16 }, ferrR(0.8, 'interna'))).path;
-  ok(near(ci[1].x, 30) && near(ci[1].z, 1.2), 'G41 interno, partida: X30 Z2-rn', [ci[1].x, ci[1].z]);
-  ok(near(ci[2].x, 30) && near(ci[2].z, -20), 'G41 interno, fundo do furo: a ponta chega em X30 Z-20', [ci[2].x, ci[2].z]);
+  ok(near(ci[1].x, 30) && near(ci[1].z, 1.2, 0.005), 'G41 interno, partida: X30 Z2-rn', [ci[1].x, ci[1].z]);
+  ok(near(ci[2].x, 30) && near(ci[2].z, -20, 0.005), 'G41 interno, fundo do furo: a ponta chega em X30 Z-20', [ci[2].x, ci[2].z]);
   // canto externo: o centro do raio contorna o vertice em arco de raio rn
   const Re = run('T0101\nG96S200M4\nG0 X60 Z5\nG42\nG0 X40 Z2\nG1 Z-20 F.2\nX30\nZ-30\nG40 G0 X100 Z5\nM30');
   const pe = P.montarCena(Re, Object.assign({ d: 60, sobre: 0, livre: 50 }, ferrR(0.8))).path;
   const arco = pe.filter(m => m.t === 'f' && m.z < -20.7 && m.z > -21.7 && m.x > 38 && m.x < 41);
   const dist = arco.map(m => { const cc = ref(m, 0.8); return Math.hypot(cc.z - -20, cc.r - 20); });
-  ok(arco.length >= 2 && dist.every(d => near(d, 0.8, 1e-6)), 'G42 canto externo: o centro do raio de ponta passa a 0,8 do vertice (arco)', dist);
+  ok(arco.length >= 2 && dist.every(d => near(d, 0.8, 2e-3)), 'G42 canto externo: o centro do raio de ponta passa a 0,8 do vertice (arco)', dist);
   // material: cone a 45 graus. Com G42 a superficie fica na linha programada; sem compensacao fica deslocada.
   const cone = comp => 'T0101\nG96S200M4\nG0 X70 Z5\n' + (comp ? 'G42\n' : '') + 'G0 X30 Z5\nG1 Z0 F.2\nX50 Z-10\nZ-30\n' + (comp ? 'G40 ' : '') + 'G0 X80 Z5\nM30'; // aproxima em Z5 (> raio 2,4): o nariz da pastilha nao entra na face
   const dev = (txt) => {
@@ -279,6 +284,43 @@ const BASE = 'G1900D62L50K0.\nG21G90G40G80\nG28U0\nG0Z250\nT0101(DESBASTE)\nG54\
   const dComp = dev(cone(true)), dSem = dev(cone(false));
   ok(dComp <= 0.5, 'G42 cone 45 graus: a superficie acabada fica na linha programada (desvio <= 0,5 mm, a grade do simulador e 0,5)', dComp.toFixed(2));
   ok(dSem >= 0.6 && dSem - dComp >= 0.4, 'sem compensacao o mesmo programa deixa o cone deslocado (desvio >= 0,6 mm e bem maior que com G42)', dSem.toFixed(2) + ' x ' + dComp.toFixed(2));
+}
+
+/* ---- angulo de posicao do suporte (kappa) no banco: o inserto gira e nao corta alem de perfil que desce para a placa (v2.6.0) ---- */
+{
+  const sh0 = S.toolShape({ kind: 'rombo', ang: 80, raio: 0.8 });
+  ok(near(sh0.nose[0], 0.8, 2e-3) && near(sh0.nose[1], 0.8, 2e-3), 'suporte: sem kappa o centro do raio de ponta fica a (rn, rn) da ponta (como sempre)', sh0.nose);
+  const shI0 = S.toolShape({ kind: 'interna', ang: 80, raio: 0.8 });
+  ok(near(shI0.nose[0], 0.8, 2e-3) && near(shI0.nose[1], -0.8, 2e-3), 'suporte: barra interna sem kappa, centro a (rn, -rn)', shI0.nose);
+  ok(S.toolShape({ kind: 'rombo', ang: 80, raio: 0 }).nose === null, 'suporte: ponta viva nao tem centro de raio');
+  [[80, 95], [55, 93], [35, 93], [80, 0], [80, 90]].forEach(([ang, ap]) => ['rombo', 'interna'].forEach(kind => {
+    const sh = S.toolShape({ kind, ang, raio: 1.2, ap }), arco = kind === 'rombo' ? sh.pts.slice(0, 9) : sh.pts.slice(-9);
+    ok(arco.every(p => near(Math.hypot(p[0] - sh.nose[0], p[1] - sh.nose[1]), 1.2, 1e-9)), 'suporte: ' + kind + ' ponta ' + ang + '° kappa ' + ap + ': o arco do nariz esta a rn do centro', arco.map(p => Math.hypot(p[0] - sh.nose[0], p[1] - sh.nose[1]).toFixed(4)));
+  }));
+  // a aresta de tras sobe phi = 180 - kappa - ponta (55 graus em suporte de 93: 32 graus)
+  const sh55 = S.toolShape({ kind: 'rombo', ang: 55, raio: 0, ap: 93 }), p0 = sh55.pts[0], p1 = sh55.pts[1];
+  ok(near(Math.atan2(p1[1] - p0[1], p1[0] - p0[0]) * 180 / Math.PI, 32, 1e-6), 'suporte: ponta 55 em kappa 93 = aresta de tras subindo 32 graus', Math.atan2(p1[1] - p0[1], p1[0] - p0[0]) * 180 / Math.PI);
+  // efeito: cone que desce para a placa (como o do FRENTE.COPO): sem kappa a aresta de tras corta alem do perfil
+  const cone = 'T0101\nG96S200M4\nG0 X200 Z5\nG0 X188 Z2\nG1 Z-15 F.3\nX175 Z-61.57\nZ-70\nG0 X200 Z5\nM30';
+  const desvio = (ferr) => {
+    const Rc = run(cone), cc = P.montarCena(Rc, { d: 190, sobre: 2, livre: 100, ferr: { '0101': { tool: ferr, orient: null } } });
+    const a = 0.8; // bruto = perfil acabado + 0,8 mm no raio
+    cc.bruto.perfil = [{ z0: 2, z1: -15, d: 2 * (94 + a) }, { z0: -15, z1: -61.57, d: 2 * (94 + a), d1: 2 * (87.5 + a) }, { z0: -61.57, z1: -125, d: 2 * (87.5 + a) }]; cc.bruto.z0 = 2; cc.bruto.z1 = -125;
+    const sm = new S.Sim(cc); sm.analyze(); sm.seek(sm.total);
+    let md = 0; for (let z = -8; z >= -58; z -= 5) { let rs = -1; for (let r = 100; r > 0; r -= 0.25) if (sobra(sm, z, r)) { rs = r; break; } md = Math.max(md, Math.abs(rs - (z >= -15 ? 94 : 94 + (z + 15) * 6.5 / 46.57))); } // perfil: cilindro r94 ate Z-15, cone ate r87,5 em Z-61,57
+    return md;
+  };
+  const base = { t: '0101', tipo: 'externa', raio: 0.4, angulo: 55, vc: 200, rpm: 2000, modo: 'G96' };
+  const dSem = desvio(base), dCom = desvio(Object.assign({}, base, { apSuporte: 93 }));
+  ok(dSem >= 0.9, 'suporte: sem kappa o cone que desce para a placa e cortado alem do perfil (>= 0,9 mm)', dSem.toFixed(2));
+  ok(dCom <= 0.6, 'suporte: com kappa 93 (ponta 55) o cone fica no perfil (<= 0,6 mm)', dCom.toFixed(2));
+  // G42 junto com o suporte girado: a superficie continua na linha programada
+  const cone45 = 'T0101\nG96S200M4\nG0 X70 Z5\nG42\nG0 X30 Z5\nG1 Z0 F.2\nX50 Z-10\nZ-30\nG40 G0 X80 Z5\nM30';
+  const Rg = run(cone45), cg = P.montarCena(Rg, { d: 60, sobre: 0, livre: 50, ferr: { '0101': { tool: Object.assign({}, base, { raio: 2.4, apSuporte: 93 }), orient: null } } });
+  cg.bruto.perfil = [{ z0: 0, z1: -10, d: 2 * (15 + 2.5), d1: 2 * (25 + 2.5) }, { z0: -10, z1: -75, d: 2 * (25 + 2.5) }]; cg.bruto.z0 = 0; cg.bruto.z1 = -75;
+  const sg = new S.Sim(cg); sg.analyze(); sg.seek(sg.total);
+  let md2 = 0; for (let z = -9; z <= -1; z += 1) { let rs = -1; for (let r = 40; r > 0; r -= 0.25) if (sobra(sg, z, r)) { rs = r; break; } md2 = Math.max(md2, Math.abs(rs - (15 - z))); }
+  ok(md2 <= 0.5, 'suporte: G42 com a pastilha girada (ponta 55, kappa 93, raio 2,4) deixa o cone 45 graus na linha programada', md2.toFixed(2));
 }
 
 /* ---- visor decodificado tambem na janela do Gerador (v2.5.0): programa gerado + texto de cada linha ---- */

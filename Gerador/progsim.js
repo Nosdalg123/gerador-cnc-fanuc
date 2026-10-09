@@ -4,9 +4,9 @@
    usadas, avisos/erros por linha e sugestoes de bruto. Coordenadas: X = diametro, Z = eixo (como no programa).
    Os ciclos seguem os mesmos criterios dos geradores (core.js), para que um programa gerado e depois colado aqui simule igual. */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('./core.js'));
-  else root.CNCProg = factory(root.CNC);
-})(typeof self !== 'undefined' ? self : this, function (CNC) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./core.js'), require('./sim.js'));
+  else root.CNCProg = factory(root.CNC, root.CNCSim);
+})(typeof self !== 'undefined' ? self : this, function (CNC, Sim) {
   'use strict';
   var DEG = Math.PI / 180, MAX_BLOCOS = 400000, MAX_MOV = 150000;
 
@@ -758,10 +758,10 @@
   // programado: G41 a esquerda e G42 a direita do sentido do percurso, no plano (z, r) com +Z a direita e +X acima (externa em cima, interna embaixo).
   // Partida (como o tipo C do Fanuc): o centro vai ao fim do 1o bloco deslocado pela normal do 2o bloco. Saida (G40): ponto de encontro com o
   // bloco de saida e depois reta ate o ponto programado. Canto interno = ponto de encontro das retas deslocadas; canto externo = arco de raio rn.
-  function narizDe(forma) { // raio e vetor "referencia -> centro do raio de ponta" (z, r) das pastilhas de torneamento do simulador
+  function narizDe(forma) { // raio e vetor "referencia -> centro do raio de ponta" (z, r) das pastilhas de torneamento do simulador (vem do proprio formato, com o giro do suporte)
     if (!forma || (forma.kind !== 'rombo' && forma.kind !== 'interna')) return null;
-    var rn = Number(forma.raio) || 0;
-    return rn > 0.001 ? { rn: rn, cz: rn, cr: forma.kind === 'interna' ? -rn : rn } : null;
+    var rn = Number(forma.raio) || 0, sh = rn > 0.001 ? Sim.toolShape(forma) : null;
+    return sh && sh.nose ? { rn: rn, cz: sh.nose[0], cr: sh.nose[1] } : null;
   }
   function segComp(A, B, m, lado, saida) {
     var dz = B[0] - A[0], dr = B[1] - A[1], len = Math.hypot(dz, dr);
@@ -871,8 +871,15 @@
       outline: [], hStock: 0,
       foco: { z0: Math.min(F.z0, -livre), z1: Math.max(F.z1, sobre + 5), r0: F.r0, r1: Math.max(F.r1, 5) },
       maq: maq, semPerfil: true,
-      path: comp.path, compAvisos: comp.avisos, start: { x: res.start.x, z: res.start.z }, tools: tools
+      path: comp.path, compAvisos: comp.avisos, compensada: true, start: { x: res.start.x, z: res.start.z }, tools: tools
     };
+  }
+
+  // Programa do Gerador: os movimentos do acabamento marcados com comp (G41/G42) ganham o desvio do raio de ponta da ferramenta que o gerador usou
+  // (cena.tools). A cena original nao e alterada; cena que ja vem compensada (modulo Simulacao) ou sem compensacao volta como veio.
+  function comCompensacao(cena) {
+    if (!cena || cena.compensada || !cena.path || !cena.path.some(function (m) { return m.comp; })) return cena;
+    return Object.assign({}, cena, { path: compensar(cena.path, cena.start, cena.tools).path, compensada: true });
   }
 
   // Programa do Gerador: o percurso vem do core.js (sem o texto decodificado). Le o mesmo codigo e devolve a cena com o texto de cada linha
@@ -884,5 +891,5 @@
     return Object.assign({}, cena, { path: cena.path.map(function (m) { return mapa[m.line] ? Object.assign({}, m, { dec: mapa[m.line] }) : m; }) });
   }
 
-  return { interpretar: interpretar, montarCena: montarCena, formaFerr: formaFerr, kindDe: kindDe, tcode: tcode, compensar: compensar, numTxt: numTxt, comDecodificado: comDecodificado };
+  return { interpretar: interpretar, montarCena: montarCena, formaFerr: formaFerr, kindDe: kindDe, tcode: tcode, compensar: compensar, numTxt: numTxt, comDecodificado: comDecodificado, comCompensacao: comCompensacao };
 });

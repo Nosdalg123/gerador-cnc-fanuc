@@ -134,8 +134,8 @@
     if (kind === 'canal' || kind === 'canalext' || kind === 'canalint') return { kind: kind, largura: Number(tool.largura) || 4.5, vc: Number(tool.vc), rpm: Number(tool.rpm), modo: tool.modo || 'G96' };
     if (kind === 'rosca' || kind === 'roscaint') return { kind: kind, vc: 0, rpm: Number(tool.rpm), modo: 'G97' };
     if (kind === 'broca') return { kind: 'broca', largura: Number(tool.diametro) || 10, vc: Number(tool.vc), rpm: Number(tool.rpm), modo: tool.modo || 'G97' };
-    if (kind === 'interna') return { kind: 'interna', ang: Number(tool.angulo) || 80, raio: Number(tool.raio) || 0, vc: Number(tool.vc), rpm: Number(tool.rpm), modo: tool.modo || 'G96' };
-    return { kind: 'rombo', ang: Number(tool.angulo) || 80, raio: Number(tool.raio) || 0, vc: Number(tool.vc), rpm: Number(tool.rpm), modo: tool.modo || 'G96' };
+    if (kind === 'interna') return { kind: 'interna', ang: Number(tool.angulo) || 80, raio: Number(tool.raio) || 0, ap: Number(tool.apSuporte) || 0, vc: Number(tool.vc), rpm: Number(tool.rpm), modo: tool.modo || 'G96' };
+    return { kind: 'rombo', ang: Number(tool.angulo) || 80, raio: Number(tool.raio) || 0, ap: Number(tool.apSuporte) || 0, vc: Number(tool.vc), rpm: Number(tool.rpm), modo: tool.modo || 'G96' };
   }
 
   function arcPoints(zc, rc, R, th0, th1, n) {
@@ -314,6 +314,9 @@
   var GRIP_PADRAO = 25;
   // sentido do desbaste: longitudinal (passes ao longo de Z) ou transversal (passes de frente, ao longo de X)
   var SENT_OPC = [['long', 'Longitudinal (G71): passes ao longo de Z'], ['trans', 'Transversal (G72): passes de frente, ao longo de X']];
+  // perfil externo tambem aceita G73 (repete o contorno deslocado; para bruto forjado ou fundido, ja perto da forma final)
+  var SENT_OPC_E = SENT_OPC.concat([['par', 'Paralelo ao perfil (G73): repete o contorno deslocado; bruto forjado/fundido']]);
+  var COMP_OPC = [['nao', 'Não: segue a ponta programada (como sempre)'], ['sim', 'Sim: G42 no externo e G41 no interno, só no acabamento (G70)']];
   var SENT_TORN_OPC = [['long', 'Longitudinal (G74): passes ao longo de Z'], ['trans', 'Transversal (G75): passes de frente, ao longo de X']];
   var SENT_TORN_HINT = 'Como desbastar o diâmetro: longitudinal = G74 (padrão da casa); transversal = G75 em fatias de frente, com o incremento do faceamento. Altera só o desbaste do Ø.';
   function camposFixacao(pressaoPadrao, sufixo, quando) {
@@ -1891,6 +1894,25 @@
     pb.rapid(o.xA, o.zA, line, 'DESBASTE G72', T);
   }
 
+  // G73 (desbaste paralelo ao perfil, externo): repete o contorno N1..N2 `d` vezes, deslocado no raio (e em Z) do afastamento TOTAL (U/W do 1o bloco),
+  // do 1o corte ate so o sobremetal de acabamento no ultimo; depois de cada corte volta ao ponto de partida (X, depois Z). Mesma conta do leitor (progsim.js).
+  function cyc73(pb, ct, o) {
+    var line = o.line, T = o.tool, lab = 'DESBASTE G73', j, zc;
+    for (j = 1; j <= o.d; j++) {
+      var fr = o.d > 1 ? (o.d - j) / (o.d - 1) : 1, sr = o.du / 2 + o.di * fr, sz = o.dw + o.dk * fr; // deslocamento do perfil neste corte (raio, Z)
+      zc = o.zA;
+      ct.moves.forEach(function (m) {
+        var z = m.to[0] == null ? zc : m.to[0];
+        if (m.g === 'G0') pb.rapid(2 * (m.to[1] + sr), z + sz, line, lab, T);
+        else if (m.g === 'G1') pb.feed(2 * (m.to[1] + sr), z + sz, o.f, line, lab, T);
+        else pb.arcRP([m.from[0] + sz, m.from[1] + sr], [z + sz, m.to[1] + sr], m.R, m.g === 'G3', o.f, line, lab, T);
+        zc = z;
+      });
+      pb.rapid(o.xA, zc + sz, line, lab, T);
+      pb.rapid(o.xA, o.zA, line, lab, T);
+    }
+  }
+
   // G83 (furacao com bicada): a partir do plano R (zR) desce q por bicada, recua ao plano R e volta (rapido) ate 1 mm acima do fundo anterior
   function cycG83(pb, zR, zEnd, q, f, line, T) {
     var z = zR, prev = zR;
@@ -2002,7 +2024,7 @@
   function psLado(o) {
     var erros = [], avisos = [], t1 = o.tools && o.tools.t1, t2 = o.tools && o.tools.t2, t3 = o.tools && o.tools.t3, t4 = o.tools && o.tools.t4, t5 = o.tools && o.tools.t5, t6 = o.tools && o.tools.t6, t7 = o.tools && o.tools.t7, rot = o.rot || '';
     var R0 = o.dBruto / 2, sobreZ = o.lBruto - o.lPeca;
-    var sentE = o.sentE === 'trans' ? 'G72' : 'G71', sentI = o.sentI === 'trans' ? 'G72' : 'G71';
+    var sentE = o.sentE === 'trans' ? 'G72' : (o.sentE === 'par' ? 'G73' : 'G71'), sentI = o.sentI === 'trans' ? 'G72' : 'G71';
     var fx = fixacao({ grip: o.grip, pressao: o.pressao }, o.meta, erros), maq = fx.maq;
     var ext = o.ext !== false, opInt = o.int !== false; // usinar o externo e/ou o interno neste lado
     var ct = ext ? psContorno(psNormRosca(o.lista, false), R0, '#1', rot, erros, sentE) : { ok: true, defs: [], calcs: [], moves: [], pts: [[0, R0]], canais: [], pieces: [], zEnd: 0, hMax: 0, somaL: 0 }; // so interno: o externo fica no Ø bruto
@@ -2023,6 +2045,8 @@
     var ci = (Array.isArray(internos) && internos.length) ? psContornoInt(internos, { R0: R0, lPeca: o.lPeca }, erros, rot, sentI, bi && bi.segs) : null;
     if (!ext && !ci) erros.push(rot + 'Só interno: adicione o furo ou o mandrilamento em "Internos" deste lado.');
     validarTool(t1, 't1', 'Ferramenta de faceamento/torneamento', ['externa', 'faceamento'], erros, avisos);
+    if (ext && sentE === 'G73' && t1 && !(Number(t1.incTorn) > 0)) erros.push(rot + 'Desbaste paralelo ao perfil (G73): a ferramenta externa precisa de incremento de cilindragem (corte máximo por passe no raio).');
+    if (ext && o.comp && t1 && !(Number(t1.raio) > 0)) avisos.push(rot + 'Compensação G42: a ferramenta externa não tem raio de ponta no banco (ponta viva), então a compensação não terá efeito na simulação. Cadastre o raio na ferramenta e o mesmo valor no corretor da máquina.');
     var temCanal = ct.ok && ct.canais.length > 0;
     var temPil = !!(ci && ci.ok && ci.furo), temFuro = temPil && !ci.furo.existente, temMand = !!(ci && ci.ok && ci.pieces.length > 0);
     if (temFuro) {
@@ -2035,6 +2059,7 @@
     }
     if (temMand) {
       validarTool(t4, 't4', 'Ferramenta de mandrilamento interno', ['interna'], erros, avisos);
+      if (o.comp && t4 && !(Number(t4.raio) > 0)) avisos.push(rot + 'Compensação G41: a barra de mandrilamento não tem raio de ponta no banco (ponta viva), então a compensação não terá efeito na simulação. Cadastre o raio na ferramenta e o mesmo valor no corretor da máquina.');
       if (t4) {
         if (sentI === 'G71' && !(Number(t4.incTorn) > 0)) erros.push(rot + 'Ferramenta de mandrilamento sem incremento de cilindragem (U do G71 interno).');
         if (sentI === 'G72' && !(Number(t4.incFace) > 0) && !(Number(t4.incTorn) > 0)) erros.push(rot + 'Ferramenta de mandrilamento sem incremento (W do G72 interno).');
@@ -2101,6 +2126,14 @@
     var acabT = num(t1.acabTorn), acabF = num(t1.acabFace);
     var T1 = tcode(t1.t), T2 = temCanal ? tcode(t2.t) : '', av = Number(t1.avAcab) > 0 ? Number(t1.avAcab) : 0.15;
     var incX = Number(t1.incTorn), incZ = Number(t1.incFace), avD = Number(t1.avDesb);
+    // G73: afastamento total do perfil no raio = o bruto que sobra sobre a parte mais funda do contorno (menos o sobremetal de acabamento), arredondado
+    // para cima em 0,1 mm; o numero de cortes mantem cada corte com no maximo o incremento de cilindragem da ferramenta
+    var g73Di = 0, g73R = 1;
+    if (ext && sentE === 'G73') {
+      var rMinC = ct.pts.reduce(function (m, p) { return Math.min(m, p[1]); }, R0);
+      g73Di = Math.max(0, Math.ceil((R0 - rMinC - acabT / 2) * 10 - 1e-9) / 10);
+      g73R = g73Di > 0 ? Math.ceil(g73Di / incX - 1e-9) + 1 : 1;
+    }
     var defs = [
       { sec: 'MEDIDAS FINAIS', n: 3, val: o.lPeca, c: o.duplo ? 'COMPRIMENTO DA PECA NESTA OPERACAO' : 'COMPRIMENTO FINAL DA PECA', efeito: 'Define o sobremetal em Z (#13 = #2 - #3) e o fundo da peca na simulacao.' },
       { sec: 'BRUTO', n: 1, val: o.dBruto, c: 'DIAMETRO BRUTO', efeito: 'Diametro do bloco. Inicio do faceamento, ponto de partida do G71 e bruto da simulacao (G1900).' },
@@ -2138,8 +2171,13 @@
       { sec: 'PARAMETROS', n: 12, val: acabF, c: 'SOBREMETAL ACABAMENTO EM Z', efeito: 'W do ' + sentE + ': material deixado em Z nos degraus para o acabamento (G70). 0 = sem sobremetal.' }
     );
     if (sentE !== 'G72') defs.splice(defs.findIndex(function (d) { return d.n === 9; }), 0,
-      { sec: 'PARAMETROS', n: 8, val: incX, c: 'INCREMENTO DE CORTE NO RAIO', efeito: 'Profundidade de corte por passe no G71 (U do primeiro bloco).' });
+      { sec: 'PARAMETROS', n: 8, val: incX, c: 'INCREMENTO DE CORTE NO RAIO', efeito: sentE === 'G73' ? 'Corte maximo por passe no raio do G73: o numero de cortes (#22) sai daqui.' : 'Profundidade de corte por passe no G71 (U do primeiro bloco).' });
     if (!ext) defs = defs.filter(function (d) { return d.sec !== 'PARAMETROS' || [7, 8, 11, 12].indexOf(d.n) < 0; }); // so interno: sem G71/G72 e G70 externos
+    if (ext && sentE === 'G73') defs.push(
+      { sec: 'PARAMETROS', n: 20, val: g73Di, c: 'AFASTAMENTO TOTAL DO PERFIL NO RAIO (G73)', efeito: 'U do 1o bloco do G73: quanto o contorno fica afastado (raio) no 1o corte; os cortes seguintes se aproximam igualmente ate o perfil acabado. Calculado pelo bruto sobre a parte mais funda do contorno: aumente se sobrar material.' },
+      { sec: 'PARAMETROS', n: 21, val: 0, c: 'AFASTAMENTO TOTAL EM Z (G73)', efeito: 'W do 1o bloco do G73: afastamento em Z. 0 = so no raio (a face ja foi faceada). Positivo afasta para +Z.' },
+      { sec: 'PARAMETROS', n: 22, val: g73R, c: 'NUMERO DE CORTES (G73)', efeito: 'R do 1o bloco do G73: quantas vezes o contorno e repetido. Calculado para cada corte ficar no maximo no incremento de cilindragem (#8).' }
+    );
     if (temCanal) {
       defs.push(
         { sec: 'PARAMETROS', n: 50, val: Number(t2.vc), c: 'VELOCIDADE DE CORTE CANAL', efeito: 'Vc em m/min (G96) da ferramenta de canal.' },
@@ -2235,7 +2273,11 @@
       P('G0Z1', 'g0z1a'); pb.rapid(o.dBruto, 1, 'g0z1a', 'APROXIMACAO', 'a');
       P('X#1', 'g0x1a'); pb.rapid(o.dBruto, 1, 'g0x1a', 'APROXIMACAO', 'a');
       var cp = ct.pts.slice(); // o contorno ja comeca em (0, r)
-      if (sentE === 'G72') {
+      if (sentE === 'G73') {
+        P('G73U#20W#21R#22', 'g71a');
+        P('G73P1Q2U#11W#12F#6', 'g71');
+        cyc73(pb, ct, { xA: o.dBruto, zA: 1, di: g73Di, dk: 0, d: g73R, du: acabT, dw: acabF, f: avD, line: 'g71', tool: 'a' });
+      } else if (sentE === 'G72') {
         P('G72W#9R.5', 'g71a');
         P('G72P1Q2U#11W#12F#6', 'g71');
         cyc72(pb, cp, { xA: o.dBruto, zA: 1, W: incZ, Rr: 0.5, du: acabT, dw: acabF, f: avD, line: 'g71', tool: 'a', interno: false });
@@ -2253,21 +2295,25 @@
           else pb.arcRP(m.from, [z, m.to[1]], m.R, m.g === 'G3', feed, k, label, 'a');
         });
       };
-      ct.moves.forEach(function (m) { P(m.code, m.key); });
+      ct.moves.forEach(function (m, ix) { P(o.comp && ix === ct.moves.length - 1 ? m.code.replace(/^(N\d+)/, '$1G40') : m.code, m.key); }); // com compensacao o ultimo bloco (saida do contorno) cancela com G40
       runC(av, null, 'CONTORNO');
       P('');
       P('G0Z1', 'g0z1b'); pb.rapid(pb.pos.x, 1, 'g0z1b', 'RETORNO', 'a');
       P('X#1', 'g0x1b'); pb.rapid(o.dBruto, 1, 'g0x1b', 'RETORNO', 'a');
       P('(CICLO DE ACABAMENTO)');
+      if (o.comp) P('G42(COMPENSACAO DO RAIO DE PONTA)', 'g42');
       P('G70P1Q2F#7', 'g70');
+      var n70 = pb.moves.length, nCanc = -1;
       // G70: parte do ponto A, segue o contorno e volta a A
-      ct.moves.forEach(function (m) {
+      ct.moves.forEach(function (m, ix) {
+        if (ix === ct.moves.length - 1) nCanc = pb.moves.length; // bloco de saida (G40): este movimento e o retorno a A ja saem da compensacao
         var z = m.to[0] == null ? pb.pos.z : m.to[0];
         if (m.g === 'G0') pb.rapid(2 * m.to[1], z, 'g70', 'ACABAMENTO (G70)', 'a');
         else if (m.g === 'G1') pb.feed(2 * m.to[1], z, av, 'g70', 'ACABAMENTO (G70)', 'a');
         else pb.arcRP(m.from, [z, m.to[1]], m.R, m.g === 'G3', av, 'g70', 'ACABAMENTO (G70)', 'a');
       });
       pb.rapid(o.dBruto, 1, 'g70', 'ACABAMENTO (G70)', 'a');
+      if (o.comp) for (var q70 = n70; q70 < nCanc; q70++) pb.moves[q70].comp = 42; // o simulador desloca esses movimentos do raio de ponta (CNCProg.comCompensacao)
     }
 
     // canais
@@ -2359,23 +2405,27 @@
         P('G71P3Q4U-#76W#77F#72', 'gi71');
         cyc71i(pb, cpi, { rF: rFi, xA: xAi, zA: 1, U: incI, Rr: 0.5, du: acabIT, dw: acabIF, f: Number(t4.avDesb), line: 'gi71', tool: 'd' });
       }
-      var runI = function (feed, key, label) {
-        ci.moves.forEach(function (m) {
+      var runI = function (feed, key, label, aoUltimo) {
+        ci.moves.forEach(function (m, ix) {
+          if (aoUltimo && ix === ci.moves.length - 1) aoUltimo();
           var z = m.to[0] == null ? pb.pos.z : m.to[0], k = key || m.key;
           if (m.g === 'G0') pb.rapid(2 * m.to[1], z, k, label, 'd');
           else if (m.g === 'G1') pb.feed(2 * m.to[1], z, feed, k, label, 'd');
           else pb.arcRP(m.from, [z, m.to[1]], m.R, m.g === 'G3', feed, k, label, 'd');
         });
       };
-      ci.moves.forEach(function (m) { P(m.code, m.key); });
+      ci.moves.forEach(function (m, ix) { P(o.comp && ix === ci.moves.length - 1 ? m.code.replace(/^(N\d+)/, '$1G40') : m.code, m.key); }); // com compensacao o ultimo bloco (saida) cancela com G40
       runI(avIA, null, 'CONTORNO INTERNO');
       P('');
       P('G0Z1', 'gi0z1'); pb.rapid(pb.pos.x, 1, 'gi0z1', 'RETORNO', 'd');
       P('X' + ci.furo.vd, 'gi0x'); pb.rapid(xAi, 1, 'gi0x', 'RETORNO', 'd');
       P('(CICLO DE ACABAMENTO INTERNO)');
+      if (o.comp) P('G41(COMPENSACAO DO RAIO DE PONTA)', 'g41');
       P('G70P3Q4F#73', 'gi70');
-      runI(avIA, 'gi70', 'ACABAMENTO INTERNO (G70)');
+      var ni70 = pb.moves.length, nciC = -1;
+      runI(avIA, 'gi70', 'ACABAMENTO INTERNO (G70)', function () { nciC = pb.moves.length; });
       pb.rapid(xAi, 1, 'gi70', 'ACABAMENTO INTERNO (G70)', 'd');
+      if (o.comp) for (var qi70 = ni70; qi70 < nciC; qi70++) pb.moves[qi70].comp = 41;
     }
 
     // canal interno (G75 do furo para fora), depois do mandrilamento
@@ -2514,9 +2564,12 @@
     est.push('A ferramenta T' + T1 + ' (' + t1.nome + ') faceia e usina o perfil com Vc constante (G96, ' + fmt(t1.vc) + ' m/min) limitada a ' + fmt(t1.rpm) + ' RPM por G50 e giro M' + Number(t1.sentido) + '.' + txtPressao(fx.pr) + ' O bloco bruto Ø' + fmt(o.dBruto) + ' x ' + fmt(o.lBruto) + ' deixa ' + fmt(sobreZ) + ' mm de sobremetal em Z. O faceamento é G75 (passes de ' + fmt(incZ) + ' mm).');
     var nCil = ct.pieces.filter(function (p) { return p.t === 'cil'; }).length, nCone = ct.pieces.length - nCil;
     if (!ext) est.push('Só interno neste lado: não há torneamento externo, o bloco mantém o Ø bruto (Ø' + fmt(o.dBruto) + ') e só é feito o faceamento antes das operações internas.');
-    if (ext) est.push('O perfil tem ' + plural(nCil, 'cilindro', 'cilindros') + (nCone ? ' e ' + plural(nCone, 'cone', 'cones') : '') + ', com ' + fmt(ct.zEnd) + ' mm da face ao último trecho, e fica no bloco N1–N2. ' + (sentE === 'G72'
+    if (ext) est.push('O perfil tem ' + plural(nCil, 'cilindro', 'cilindros') + (nCone ? ' e ' + plural(nCone, 'cone', 'cones') : '') + ', com ' + fmt(ct.zEnd) + ' mm da face ao último trecho, e fica no bloco N1–N2. ' + (sentE === 'G73'
+      ? 'O desbaste é PARALELO AO PERFIL: o G73 repete o contorno ' + g73R + (g73R === 1 ? ' vez' : ' vezes') + ', afastado ' + fmt(g73Di) + ' mm no raio no 1º corte (U, #20) e se aproximando igualmente até o perfil acabado, com no máximo ' + fmt(incX) + ' mm por corte (R, #22). Serve para bruto forjado ou fundido, já perto da forma final; em barra maciça gasta cortes no ar'
+      : sentE === 'G72'
       ? 'O desbaste é TRANSVERSAL: o G72 corta de frente, em passes ao longo de X a cada ' + fmt(incZ) + ' mm em Z (W, R.5)'
       : 'O desbaste é LONGITUDINAL: o G71 corta ao longo de Z, em passes de ' + fmt(incX) + ' mm no raio (R.5)') + ', deixando ' + (acabT > 0 ? fmt(acabT) + ' mm no Ø' : 'nada no Ø') + ' e ' + (acabF > 0 ? fmt(acabF) + ' mm em Z' : 'nada em Z') + ' (U/W). Como nos programas da casa, o contorno depois do ' + sentE + ' é executado uma vez em movimento normal (F' + fmt(av) + ') e o G70 passa o acabamento de novo.');
+    if (o.comp && (ext || temMand)) est.push('Compensação do raio de ponta no acabamento: ' + (ext ? 'G42 antes do G70 externo' : '') + (ext && temMand ? ' e ' : '') + (temMand ? 'G41 antes do G70 interno' : '') + ', G40 logo depois. O contorno N1–N2' + (temMand ? ' / N3–N4' : '') + ' é programado no contorno da peça e a máquina desloca a ferramenta do raio de ponta (corretor da ferramenta: raio e quadrante da ponta). A aproximação é radial em Z1 (maior que o raio); a simulação mostra o percurso compensado com o raio cadastrado no banco.');
     if (temCanal) est.push('Depois a ferramenta de canal T' + T2 + ' (' + t2.nome + ', largura ' + fmt(wT) + ' mm) faz ' + plural(canais.length, 'canal', 'canais') + ' em G75: desce ' + fmt(t2.incCanal) + ' mm por vez até o Ø do fundo' + (canais.some(function (c) { return c.w > wT + 1e-9; }) ? ' e anda ' + fmt(wT * 0.8) + ' mm em Z entre descidas nos canais mais largos' : '') + '. O ponto programado é o canto da pastilha do lado da face.');
     if (implicito) {
       est.push('Sem "Furo (broca)" e sem furo informado no bruto, o programa considera que o bloco já vem com furo passante de Ø' + fmt(bi.segs[0].r * 2) + ' (o menor diâmetro do perfil interno). O mandrilamento parte dele, sem broca; os trechos maiores são abertos pela barra. Se o bloco não tiver esse furo, adicione o "Furo (broca)".');
@@ -2576,10 +2629,11 @@
         { tipo: 'chanfro', a: 1, canto: 'ext' }, { tipo: 'cil', a: 50, b: 15 }] },
       { grupo: 'Trechos internos (furo e mandrilamento)', doDesenho: true, id: 'internos1', tipo: 'trechos', label: 'Internos · lado 1', formas: PS_FORMAS_INT, max: PS_MAX_INT, quando: function (f) { return f.usin1 !== 'ext'; }, def: [] },
       { grupo: 'Trechos internos (furo e mandrilamento)', doDesenho: true, id: 'internos2', tipo: 'trechos', label: 'Internos · lado 2', formas: PS_FORMAS_INT, max: PS_MAX_INT, quando: function (f) { return f.lados === '2' && f.usin2 !== 'ext'; }, def: [] },
-      { grupo: 'Sentido do desbaste', id: 'sentE1', tipo: 'select', label: 'Perfil externo · lado 1', def: 'long', opcoes: SENT_OPC, quando: function (f) { return f.usin1 !== 'int'; }, hint: 'Longitudinal = passes ao longo de Z (G71). Transversal = passes de frente, ao longo de X (G72).' },
+      { grupo: 'Sentido do desbaste', id: 'sentE1', tipo: 'select', label: 'Perfil externo · lado 1', def: 'long', opcoes: SENT_OPC_E, quando: function (f) { return f.usin1 !== 'int'; }, hint: 'Longitudinal = passes ao longo de Z (G71). Transversal = passes de frente, ao longo de X (G72). Paralelo ao perfil (G73) = repete o contorno deslocado, para bruto forjado ou fundido já perto da forma final (em barra maciça gasta cortes no ar).' },
       { grupo: 'Sentido do desbaste', id: 'sentI1', tipo: 'select', label: 'Mandrilamento interno · lado 1', def: 'long', opcoes: SENT_OPC, quando: function (f) { return f.usin1 !== 'ext' && psTemMand(f.internos1); }, hint: 'Só vale com cilindro/cone interno (o furo da broca não tem sentido).' },
-      { grupo: 'Sentido do desbaste', id: 'sentE2', tipo: 'select', label: 'Perfil externo · lado 2', def: 'long', opcoes: SENT_OPC, quando: function (f) { return f.lados === '2' && f.usin2 !== 'int'; } },
-      { grupo: 'Sentido do desbaste', id: 'sentI2', tipo: 'select', label: 'Mandrilamento interno · lado 2', def: 'long', opcoes: SENT_OPC, quando: function (f) { return f.lados === '2' && f.usin2 !== 'ext' && psTemMand(f.internos2); } }
+      { grupo: 'Sentido do desbaste', id: 'sentE2', tipo: 'select', label: 'Perfil externo · lado 2', def: 'long', opcoes: SENT_OPC_E, quando: function (f) { return f.lados === '2' && f.usin2 !== 'int'; } },
+      { grupo: 'Sentido do desbaste', id: 'sentI2', tipo: 'select', label: 'Mandrilamento interno · lado 2', def: 'long', opcoes: SENT_OPC, quando: function (f) { return f.lados === '2' && f.usin2 !== 'ext' && psTemMand(f.internos2); } },
+      { grupo: 'Acabamento', id: 'compRaio', tipo: 'select', label: 'Compensação do raio de ponta (G41/G42)', def: 'nao', opcoes: COMP_OPC, hint: 'Com compensação, o acabamento (G70) roda com G42 no perfil externo e G41 no mandrilamento interno, e G40 logo depois: o contorno é o da peça e a máquina desloca a ferramenta do raio de ponta. Exige o raio e o quadrante da ponta no corretor da ferramenta. A simulação usa o raio cadastrado no banco.' }
     ].concat(camposFixacao('', '1', '· lado 1'), [{ grupo: 'Fixação na placa', id: 'grip2', label: 'Comprimento preso na placa · lado 2', unit: 'mm', def: GRIP_PADRAO, quando: function (f) { return f.lados === '2'; }, hint: 'Quanto da peça fica dentro das castanhas no lado 2 (padrão ' + GRIP_PADRAO + ').' }]),
     nomeAuto: function (f) { return (f.desenhoNome ? nomeArquivo(f.desenhoNome) : 'PECA.SIMPLES') + '.D' + fmt(f.dBruto); },
     derivados: function (f) {
@@ -2619,7 +2673,7 @@
       var mk = function (nome) { return { nome: nome, autor: mt.autor, data: mt.data, maq: meta && meta.maq }; };
       var bi1 = function (lado, zOpp) { return bPieces.length ? { pieces: bPieces, desdeAqui: bLado === lado, zOpp: zOpp } : null; };
       if (!dois) {
-        var r = psLado({ nome: base, ext: f.usin1 !== 'int', int: f.usin1 !== 'ext', lista: f.trechos1, brutoInt: bi1('1', -n.lPeca), internos: f.internos1, sentE: f.sentE1, sentI: f.sentI1, dBruto: n.dBruto, lBruto: n.lBruto, lPeca: n.lPeca, grip: n.grip1, pressao: f.pressao, rot: '', tools: tools, meta: mk(base) });
+        var r = psLado({ nome: base, ext: f.usin1 !== 'int', int: f.usin1 !== 'ext', lista: f.trechos1, brutoInt: bi1('1', -n.lPeca), internos: f.internos1, sentE: f.sentE1, sentI: f.sentI1, comp: f.compRaio === 'sim', dBruto: n.dBruto, lBruto: n.lBruto, lPeca: n.lPeca, grip: n.grip1, pressao: f.pressao, rot: '', tools: tools, meta: mk(base) });
         if (r.erros && r.erros.length) return { erros: r.erros, avisos: r.avisos || [] };
         delete r._geo;
         return r;
@@ -2627,11 +2681,11 @@
       var sobre2 = n.lBruto - n.lPeca - n.sobre1;
       if (sobre2 < -EPS) return { erros: ['Comprimento bruto (' + fmt(n.lBruto) + ') menor que o comprimento final + sobremetal do lado 1 (' + fmt(n.lPeca + n.sobre1) + ').'], avisos: avisos };
       var lPecaL1 = n.lBruto - n.sobre1;
-      var r1 = psLado({ nome: base + '.LADO.01', ext: f.usin1 !== 'int', int: f.usin1 !== 'ext', lista: f.trechos1, brutoInt: bi1('1', -lPecaL1), internos: f.internos1, sentE: f.sentE1, sentI: f.sentI1, dBruto: n.dBruto, lBruto: n.lBruto, lPeca: lPecaL1, grip: n.grip1, pressao: f.pressao, rot: 'Lado 1: ', duplo: true, tools: tools, meta: mk(base + '.LADO.01') });
+      var r1 = psLado({ nome: base + '.LADO.01', ext: f.usin1 !== 'int', int: f.usin1 !== 'ext', lista: f.trechos1, brutoInt: bi1('1', -lPecaL1), internos: f.internos1, sentE: f.sentE1, sentI: f.sentI1, comp: f.compRaio === 'sim', dBruto: n.dBruto, lBruto: n.lBruto, lPeca: lPecaL1, grip: n.grip1, pressao: f.pressao, rot: 'Lado 1: ', duplo: true, tools: tools, meta: mk(base + '.LADO.01') });
       if (r1.erros && r1.erros.length) return { erros: r1.erros, avisos: r1.avisos || [] };
       // o lado 1 visto da outra face: contorno ate o fundo do bloco (lPecaL1 = peca + sobremetal do lado 2)
       var geo = r1._geo;
-      var r2 = psLado({ nome: base + '.LADO.02', ext: f.usin2 !== 'int', int: f.usin2 !== 'ext', lista: f.trechos2, brutoInt: bi1('2', -(n.lPeca + n.sobre1)), internos: f.internos2, sentE: f.sentE2, sentI: f.sentI2, dBruto: n.dBruto, lBruto: n.lBruto - n.sobre1, lPeca: n.lPeca, grip: n.grip2, pressao: f.pressao, rot: 'Lado 2: ', duplo: true, tools: tools, meta: mk(base + '.LADO.02'),
+      var r2 = psLado({ nome: base + '.LADO.02', ext: f.usin2 !== 'int', int: f.usin2 !== 'ext', lista: f.trechos2, brutoInt: bi1('2', -(n.lPeca + n.sobre1)), internos: f.internos2, sentE: f.sentE2, sentI: f.sentI2, comp: f.compRaio === 'sim', dBruto: n.dBruto, lBruto: n.lBruto - n.sobre1, lPeca: n.lPeca, grip: n.grip2, pressao: f.pressao, rot: 'Lado 2: ', duplo: true, tools: tools, meta: mk(base + '.LADO.02'),
         outro: { pts: geo.pts.concat([]), zEnd: geo.zEnd, cav: geo.cav } });
       if (r2.erros && r2.erros.length) return { erros: r2.erros, avisos: (r1.avisos || []).concat(r2.avisos || []) };
       var z2 = r2._geo.zEnd, gap = n.lPeca - geo.zEnd - z2;
@@ -2691,8 +2745,9 @@
       { grupo: 'Bloco bruto', id: 'sobre1', label: 'Sobremetal em Z no lado 1', unit: 'mm', def: 1, hint: 'O que o lado 1 faceia; o resto do sobremetal (bruto − A − este valor) fica para o lado 2' },
       { grupo: 'Divisão entre os lados', id: 'lUsin1', label: 'Até onde o lado 1 torneia o Ø E', unit: 'mm', def: 70, hint: 'Da face do cone, igual ao "comprimento final após o encaixe" do PORTA.MATRIZ; o lado 2 torneia o resto (A − este valor) a partir da outra face' },
       { grupo: 'Divisão entre os lados', id: 'tipoL', tipo: 'select', label: 'Borda do furo (L)', def: 'raio', opcoes: TIPO_L_OPC, hint: 'O PORTA.MATRIZ.INTERNO da casa usa raio na boca; o croqui mostra chanfro' },
-      { grupo: 'Sentido do desbaste', id: 'sentE', tipo: 'select', label: 'Perfil externo (os 2 lados)', def: 'long', opcoes: SENT_OPC },
-      { grupo: 'Sentido do desbaste', id: 'sentI', tipo: 'select', label: 'Mandrilamento interno', def: 'long', opcoes: SENT_OPC }
+      { grupo: 'Sentido do desbaste', id: 'sentE', tipo: 'select', label: 'Perfil externo (os 2 lados)', def: 'long', opcoes: SENT_OPC_E },
+      { grupo: 'Sentido do desbaste', id: 'sentI', tipo: 'select', label: 'Mandrilamento interno', def: 'long', opcoes: SENT_OPC },
+      { grupo: 'Acabamento', id: 'compRaio', tipo: 'select', label: 'Compensação do raio de ponta (G41/G42)', def: 'nao', opcoes: COMP_OPC, hint: 'Com compensação, o acabamento (G70) roda com G42 no perfil externo e G41 no mandrilamento interno, e G40 logo depois. Exige o raio e o quadrante da ponta no corretor da ferramenta.' }
     ].concat(camposFixacao('', '1', '· lado 1'), camposFixacao('', '2', '· lado 2')),
     nomeAuto: function (f) { return 'PORTA.MATRIZ.D' + fmt(f.dBruto); },
     derivados: function () { return []; },
@@ -2729,7 +2784,7 @@
       if (erros.length) return { erros: erros, avisos: avisos };
       var raioL = f.tipoL !== 'chanfro', lBruto = n.lBruto, len2 = n.lPeca - n.lUsin1;
       var f2 = psBase();
-      Object.assign(f2, { dBruto: n.dBruto, lBruto: lBruto, lPeca: n.lPeca, lados: '2', sobre1: n.sobre1, usin1: 'ambos', usin2: 'ambos', sentE1: f.sentE || 'long', sentE2: f.sentE || 'long', sentI1: f.sentI || 'long', sentI2: f.sentI || 'long', grip1: n.grip1, grip2: n.grip2, pressao: f.pressao, brutoIntLado: '1',
+      Object.assign(f2, { dBruto: n.dBruto, lBruto: lBruto, lPeca: n.lPeca, lados: '2', sobre1: n.sobre1, usin1: 'ambos', usin2: 'ambos', sentE1: f.sentE || 'long', sentE2: f.sentE || 'long', sentI1: f.sentI || 'long', sentI2: f.sentI || 'long', compRaio: f.compRaio, grip1: n.grip1, grip2: n.grip2, pressao: f.pressao, brutoIntLado: '1',
         brutoInt: [{ tipo: 'bcil', a: n.dFuro, b: lBruto }] });
       // lado 1 (PORTA.MATRIZ): cone K -> M, rebaixo M ate F, Ø E (raio G na quina do degrau) ate lUsin1; borda L na entrada do furo C
       f2.trechos1 = [{ id: 'pm1', tipo: 'cone', a: n.d1, b: n.d2, c: Lz }, { id: 'pm2', tipo: 'cil', a: n.d2, b: n.lEnc - Lz }, { id: 'pm3', tipo: 'cil', a: n.d3, b: n.lUsin1 - n.lEnc }];
@@ -2781,8 +2836,9 @@
       { grupo: 'Lado 2 · encaixe', id: 'lUsin2', label: 'Comprimento da usinagem em Z', unit: 'mm', def: 15, hint: 'Ø externo torneado a partir da face do lado 2 (precisa passar do encaixe + raio do ombro)' },
       { grupo: 'Lado 2 · encaixe', avancado: 'Raios e folgas', id: 'rFace2', label: 'Raio da face do encaixe', unit: 'mm', def: 3 },
       { grupo: 'Lado 2 · encaixe', avancado: 'Raios e folgas', id: 'rEnc', label: 'Raio do ombro do encaixe', unit: 'mm', def: 3, hint: 'O raio entra depois do trecho reto do encaixe (como no programa da casa)' },
-      { grupo: 'Sentido do desbaste', id: 'sentE', tipo: 'select', label: 'Perfil externo (os 2 lados)', def: 'long', opcoes: SENT_OPC },
-      { grupo: 'Sentido do desbaste', id: 'sentI', tipo: 'select', label: 'Cone interno · lado 1', def: 'long', opcoes: SENT_OPC }
+      { grupo: 'Sentido do desbaste', id: 'sentE', tipo: 'select', label: 'Perfil externo (os 2 lados)', def: 'long', opcoes: SENT_OPC_E },
+      { grupo: 'Sentido do desbaste', id: 'sentI', tipo: 'select', label: 'Cone interno · lado 1', def: 'long', opcoes: SENT_OPC },
+      { grupo: 'Acabamento', id: 'compRaio', tipo: 'select', label: 'Compensação do raio de ponta (G41/G42)', def: 'nao', opcoes: COMP_OPC, hint: 'Com compensação, o acabamento (G70) roda com G42 no perfil externo e G41 no cone interno, e G40 logo depois. Exige o raio e o quadrante da ponta no corretor da ferramenta.' }
     ].concat(camposFixacao('', '1', '· lado 1').concat(camposFixacao('', '2', '· lado 2')).map(function (c) { return Object.assign({}, c, { def: c.id === 'grip2' ? 8 : 10, hint: 'Peça fina (' + 'espessura + sobremetais): preso curto para a usinagem do lado caber fora da placa. ' + (c.hint || '') }); })),
     nomeAuto: function (f) { return 'ALIMENTADOR.D' + fmt(f.dExt); },
     derivados: function () { return []; },
@@ -2800,7 +2856,7 @@
       if (!(dEnc > n.dInt)) erros.push('O Ø do encaixe (' + fmt(dEnc) + ') precisa ser maior que o Ø interno menor (' + fmt(n.dInt) + ').');
       if (erros.length) return { erros: erros, avisos: avisos };
       var f2 = psBase();
-      Object.assign(f2, { permiteSobrepor: true, dBruto: n.dExt + n.sobreD, lBruto: lBruto, lPeca: n.espessura, lados: '2', sobre1: n.sobre1, usin1: 'ambos', usin2: 'ext', sentE1: f.sentE || 'long', sentE2: f.sentE || 'long', sentI1: f.sentI || 'long', grip1: n.grip1, grip2: n.grip2, pressao: f.pressao, brutoIntLado: '1',
+      Object.assign(f2, { permiteSobrepor: true, dBruto: n.dExt + n.sobreD, lBruto: lBruto, lPeca: n.espessura, lados: '2', sobre1: n.sobre1, usin1: 'ambos', usin2: 'ext', sentE1: f.sentE || 'long', sentE2: f.sentE || 'long', sentI1: f.sentI || 'long', compRaio: f.compRaio, grip1: n.grip1, grip2: n.grip2, pressao: f.pressao, brutoIntLado: '1',
         brutoInt: [{ tipo: 'bcil', a: n.dFuro, b: lBruto }] });
       f2.trechos1 = [{ id: 'al1', tipo: 'cil', a: dUs, b: n.lUsin1 }];
       if (n.rFace1 > 0) f2.trechos1.push({ tipo: 'raio', a: n.rFace1, alvo: 'al1', onde: 'ini' });

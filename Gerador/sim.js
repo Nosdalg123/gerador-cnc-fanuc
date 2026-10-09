@@ -11,7 +11,7 @@
   /* ---------- geometria da ferramenta (poligono convexo, anti-horario) ---------- */
   // Ponto de referencia (0,0) = ponta programada. Eixos: [z, r].
   function toolShape(tool) {
-    var pts = [], i;
+    var pts = [], i, nose = null; // nose = centro do raio de ponta em relacao a ponta de referencia [z, r] (para G41/G42)
     if (tool.kind === 'canal') {
       var w = Math.max(0.5, Number(tool.largura) || 4.5), L = 12;
       // canto interno (lado do centro) = ponto programado; largura cresce para fora (+r)
@@ -34,14 +34,17 @@
       pts = [[0, 0], [Ld, 0], [Ld, rd], [0, rd]];
     } else {
       var a = (Number(tool.ang) || 80) * DEG, rn = Math.max(0, Number(tool.raio) || 0), Lb = 12;
-      var u1 = [1, 0], u2 = [Math.cos(a), Math.sin(a)];
+      // suporte (angulo de posicao kappa): o inserto gira phi = 180 - kappa - ponta; a aresta de tras sobe para +Z
+      // e deixa de cortar alem de um perfil que desce em direcao a placa. Sem kappa: aresta de tras reta (phi = 0)
+      var kap = Number(tool.ap) || 0, phi = kap > 0 ? Math.max(0, Math.min(60, 180 - kap - (Number(tool.ang) || 80))) * DEG : 0;
+      var u1 = [Math.cos(phi), Math.sin(phi)], u2 = [Math.cos(a + phi), Math.sin(a + phi)], C = null;
       var E1 = [Lb * u1[0], Lb * u1[1]], E2 = [Lb * u2[0], Lb * u2[1]];
       var far = [E1[0] + E2[0], E1[1] + E2[1]];
       if (rn > 0.001) {
         var half = a / 2, d = rn / Math.sin(half);
         var bx = u1[0] + u2[0], by = u1[1] + u2[1], bl = Math.hypot(bx, by);
-        var C = [d * bx / bl, d * by / bl];
-        var th2 = 90 * DEG + a, th1 = 270 * DEG, n = 8;
+        C = [d * bx / bl, d * by / bl];
+        var th2 = 90 * DEG + a + phi, th1 = 270 * DEG + phi, n = 8;
         for (i = 0; i <= n; i++) {
           var th = th2 + (th1 - th2) * i / n;
           pts.push([C[0] + rn * Math.cos(th), C[1] + rn * Math.sin(th)]);
@@ -53,10 +56,12 @@
       var zm = 1e9, rm = 1e9;
       pts.forEach(function (p) { if (p[0] < zm) zm = p[0]; if (p[1] < rm) rm = p[1]; });
       pts = pts.map(function (p) { return [p[0] - zm, p[1] - rm]; });
+      if (C) nose = [C[0] - zm, C[1] - rm];
       if (tool.kind === 'interna') {
         // mandrilamento: a barra fica dentro do furo (lado do eixo, -r) e a pastilha corta para fora (+r);
         // espelha em r (ponta continua sendo o ponto programado) e mantem o sentido anti-horario
         pts = pts.map(function (p) { return [p[0], -p[1]]; }).reverse();
+        if (nose) nose = [nose[0], -nose[1]];
       }
     }
     // arestas
@@ -67,7 +72,7 @@
       if (len > 1e-9) edges.push([p[0], p[1], ex, ey, len]);
       zmin = Math.min(zmin, p[0]); zmax = Math.max(zmax, p[0]); rmin = Math.min(rmin, p[1]); rmax = Math.max(rmax, p[1]);
     }
-    return { pts: pts, edges: edges, bb: [zmin, zmax, rmin, rmax] };
+    return { pts: pts, edges: edges, bb: [zmin, zmax, rmin, rmax], nose: nose };
   }
   function insideShape(sh, dz, dr) {
     var E = sh.edges;

@@ -120,6 +120,11 @@ Menu **Simulação**: simula qualquer programa Fanuc colado, sem passar pelo ger
 **Convenção da casa:** depois do `G71/G72` os blocos `N(P)…N(Q)` são executados de novo em movimento normal (como no gerador e nos programas da casa).
 Arquivos: `progsim.js` (leitor, sem tela, testável no Node), `progview.js` (tela), `testprog.js` (testes; inclui a comparação "gerado × lido").
 
+## Desbaste G73, compensação G41/G42 e ângulo do suporte (v2.6.0)
+- **G73 (desbaste paralelo ao perfil):** no Gerador, em "Sentido do desbaste", o perfil externo tem a opção **Paralelo ao perfil (G73)** (peça simples, porta-matriz, alimentador). Serve para bruto forjado ou fundido já perto da forma final; em barra maciça gasta cortes no ar. O programa traz as variáveis #20 (afastamento total no raio, U), #21 (afastamento em Z, W = 0) e #22 (número de cortes, R); mude se sobrar material.
+- **G41/G42 (compensação do raio de ponta):** no grupo **Acabamento**, "Compensação do raio de ponta". Ligado: `G42` antes do `G70` externo, `G41` antes do `G70` interno, e o último bloco do contorno cancela com `G40`. A máquina precisa do raio e do quadrante da ponta no corretor da ferramenta. A simulação usa o raio cadastrado no banco.
+- **Ângulo de posição do suporte (κ):** em Ferramentas, campo opcional para as pastilhas de torneamento. O inserto gira 180° − κ − ponta; assim perfis que descem em direção à placa deixam de ser cortados a mais na simulação. Vazio = aresta de trás reta (como antes).
+
 ## Desenvolvimento
 - `core.js` (geradores + percurso), `sim.js` (motor da simulação), `simview.js` (tela do simulador; fábrica `SimView.create`), `progsim.js` + `progview.js` (módulo Simulação), `testprog.js` (testes do módulo), `app.js` (interface do Gerador, Ferramentas e Configurações), `desenho.js` (operação Desenho da peça), `pecaview.js` (meia seção compartilhada), `seed.js` (ferramentas iniciais), `style.css` (visual), `version.js` (número da versão), `versionar.js` (guarda uma versão em `versoes/`).
 - `node test.js` roda os geradores e a análise do simulador no terminal (inclui colisão forçada); `node test.js -v` imprime o código das espinas.

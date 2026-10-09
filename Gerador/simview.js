@@ -25,8 +25,8 @@
   function build() {
     if (!pending || !pending.cena) { sim = null; analysis = null; renderSide(); st.dirty = true; draw(); return; }
     res = pending; codeLines = res.code.split('\n');
-    // programa do Gerador: acrescenta o texto decodificado de cada linha (o modulo Simulacao ja o traz)
-    sim = new CNCSim.Sim(window.CNCProg ? CNCProg.comDecodificado(res.cena, res.code, res.cena.maq) : res.cena);
+    // programa do Gerador: acrescenta o texto decodificado de cada linha e o desvio do raio de ponta (G41/G42) no acabamento; o modulo Simulacao ja traz os dois
+    sim = new CNCSim.Sim(window.CNCProg ? CNCProg.comCompensacao(CNCProg.comDecodificado(res.cena, res.code, res.cena.maq)) : res.cena);
     sim.srcCena = res.cena;
     analysis = sim.analyze();
     mc = document.createElement('canvas'); mc.width = sim.nz; mc.height = sim.nr; mctx = mc.getContext('2d');
