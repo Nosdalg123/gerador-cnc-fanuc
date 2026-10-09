@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gerador CNC Torno</title>
+<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("cnc.theme.v2")||"alumasa")}catch(e){document.documentElement.setAttribute("data-theme","alumasa")}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="loginTit">
+  <form class="login-box" id="loginForm" autocomplete="off">
+    <img class="logo" src="assets/logo-alumasa.png" alt="Alumasa - Alumínio e Plástico" width="150" height="38">
+    <h2 id="loginTit">Entrar</h2>
+    <div><label for="loginUser">Usuário</label><input id="loginUser" autocomplete="username" required></div>
+    <div><label for="loginSenha">Senha</label><input id="loginSenha" type="password" autocomplete="current-password" required></div>
+    <div class="login-erro" id="loginErro" role="alert"></div>
+    <button type="submit" class="btn primary">Entrar</button>
+  </form>
+</div>
+<div class="shell">
+<aside class="side" aria-label="Menu de operações">
+  <img class="logo" src="assets/logo-alumasa.png" alt="Alumasa - Alumínio e Plástico" width="150" height="38">
+  <nav class="menu" role="tablist" aria-label="Operações">
+    <button id="nav-gerador" role="tab" aria-selected="true"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h10M4 19h16"/><path d="M17 9l3 3-3 3"/></svg>Gerador</button>
+    <button id="nav-desenho" role="tab" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10l4-5h8l4 5v10z"/><path d="M9 20v-6h6v6"/></svg>Desenho da peça</button>
+    <button id="nav-ferr" role="tab" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l4 4-8 8H6v-4z"/><path d="M13 7l4 4"/></svg>Ferramentas</button>
+    <button id="nav-sim" role="tab" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M10 8.5l5.5 3.5-5.5 3.5z"/></svg>Simulação</button>
+  </nav>
+</aside>
+<div class="content">
+<header>
+  <div>
+    <h1>Gerador CNC Torno</h1>
+    <div class="sub">Fanuc 0i · Macro B · padrão da ferramentaria · ML-600L</div>
+  </div>
+  <span class="ver" id="verTag" title="Versão do gerador (histórico em CHANGELOG.md)"></span>
+  <nav class="topnav" aria-label="Sistema">
+    <button id="nav-cfg" aria-selected="false">Configurações</button>
+    <button id="nav-tema" title="Alternar tema (claro, escuro, Alumasa)">Tema</button>
+    <button id="nav-sair" hidden>Sair</button>
+  </nav>
+</header>
+<main>
+  <!-- ===== GERADOR ===== -->
+  <section id="view-gerador">
+    <div class="grid">
+      <div class="col">
+        <div class="card">
+          <h2>1 · Peça e programa</h2>
+          <div class="row">
+            <div class="field full">
+              <label for="tipo">Tipo de peça</label>
+              <select id="tipo"></select>
+            </div>
+            <div class="field full">
+              <div class="namebox">
+                <div class="grow">
+                  <label for="nome">Nome do programa<button type="button" class="info" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></label>
+                  <input id="nome" autocomplete="off" spellcheck="false">
+                </div>
+                <label class="chk"><input type="checkbox" id="nomeManual"> editar manual</label>
+              </div>
+              <div class="dica">Aparece no cabeçalho como &lt;NOME.txt&gt; e é o nome do arquivo baixado. Autor, data e pressão da placa ficam em Configurações.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>2 · Medidas</h2>
+          <div class="row" id="campos"></div>
+          <div class="pvbox" id="preview" hidden></div>
+        </div>
+
+        <div class="card">
+          <h2>3 · Ferramentas<button type="button" class="info" data-alvo="#ferrNota" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></h2>
+          <div class="dica" id="ferrNota" style="margin:0 0 8px">Aparecem só as ferramentas que o processo usa (ex.: broca só com furo, barra só com mandrilamento). Vc, RPM, avanços, incrementos e sentido de giro vêm do banco. Para mudar, edite na aba Ferramentas. No comando, o operador ainda altera tudo no bloco de variáveis.</div>
+          <div id="ferrBox"></div>
+        </div>
+
+        <div class="card" id="incCard">
+          <h2>4 · Incrementos de corte</h2>
+          <div class="derived" id="incResumo" style="margin-top:0"></div>
+          <div class="row" id="incBox" hidden style="margin-top:10px"></div>
+          <div class="incbar">
+            <div class="note" id="incNota"></div>
+            <div class="incbtns">
+              <button class="btn sm" id="incEdit" type="button" aria-expanded="false" aria-controls="incBox">Editar incrementos</button>
+              <button class="btn sm" id="incReset" type="button" hidden>Voltar ao padrão da ferramenta</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card saida">
+        <div class="msgs" id="msgs"></div>
+        <div class="stk">
+        <div class="ladosel" id="ladoSel" role="tablist" aria-label="Lado da peça" hidden></div>
+        <div class="tabs" role="tablist">
+          <button role="tab" data-out="code" aria-selected="true">Código CNC</button>
+          <button role="tab" data-out="sim" aria-selected="false">Simulador</button>
+          <button role="tab" data-out="est" aria-selected="false">Estratégia</button>
+          <button role="tab" data-out="dic" aria-selected="false">Dicionário de variáveis</button>
+        </div>
+        </div>
+        <div id="out-code">
+          <div class="toolbar">
+            <button class="btn primary" id="copiar">Copiar código</button>
+            <button class="btn" id="baixar">Baixar .txt</button>
+            <button class="btn" id="baixar2" hidden>Baixar os 2 lados</button>
+            <span class="note" id="copiado" style="align-self:center"></span>
+          </div>
+          <pre class="code" id="codigo"></pre>
+        </div>
+
+        <div id="out-sim" hidden>
+          <div class="simgrid">
+            <div>
+              <div class="simcanvas"><canvas id="simCanvas" class="simcv" aria-label="Simulação do corte em meia seção XZ"></canvas></div>
+              <div class="slider">
+                <input type="range" id="simSlider" min="0" max="1000" value="0" step="1" aria-label="Posição no ciclo">
+                <div class="marks" id="simMarks"></div>
+              </div>
+              <div class="simbar">
+                <button class="btn" id="simReset" title="Voltar ao início" aria-label="Voltar ao início">⏮</button>
+                <button class="btn" id="simPrevLine" title="Linha anterior do G-code" aria-label="Linha anterior">⏪</button>
+                <button class="btn" id="simPrevSeg" title="Movimento anterior (←)" aria-label="Movimento anterior">◀</button>
+                <button class="btn primary" id="simPlay" title="Executar (espaço)" aria-label="Executar">▶</button>
+                <button class="btn" id="simNextSeg" title="Próximo movimento (→)" aria-label="Próximo movimento">▶|</button>
+                <button class="btn" id="simNextLine" title="Próxima linha do G-code" aria-label="Próxima linha">⏩</button>
+                <select id="simSpeed" aria-label="Velocidade da simulação">
+                  <option value="1">1× tempo real</option>
+                  <option value="5">5×</option>
+                  <option value="10" selected>10×</option>
+                  <option value="25">25×</option>
+                  <option value="60">60×</option>
+                  <option value="150">150×</option>
+                  <option value="400">400×</option>
+                </select>
+                <label class="chk inline"><input type="checkbox" id="simTrace" checked> trajeto</label>
+                <label class="chk inline"><input type="checkbox" id="simToolShow" checked> pastilha</label>
+                <label class="chk inline"><input type="checkbox" id="simFollow"> seguir</label>
+                <button class="btn sm" id="simFit">Vista geral</button>
+                <button class="btn sm" id="simFitProfile">Zoom no perfil</button>
+              </div>
+              <div class="simread">
+                <span class="mono" id="simPos">X0 Z0</span>
+                <span class="sim-badge rapid" id="simMode">RÁPIDO (G0)</span>
+                <span class="chip" id="simLabel">—</span>
+                <span class="mono" id="simTime">0:00 / 0:00</span>
+                <button type="button" class="info" data-alvo="#simAjuda" aria-expanded="false" aria-label="Como usar o simulador" title="Como usar o simulador">i</button>
+              </div>
+              <div class="simhelp dica" id="simAjuda">Roda do mouse = zoom, arrastar = mover a vista. Espaço = executar/pausar, ← → = movimento a movimento. Clique numa linha do código para ir até ela. Tracejado roxo/laranja = rápido; verde = corte.</div>
+            </div>
+            <div>
+              <div id="simStats" class="derived" style="margin-top:0"></div>
+              <div id="simCode" class="simcode" style="margin-top:10px" aria-label="Código com a linha em execução destacada"></div>
+              <div id="simDec" class="simdec" aria-label="Linha em execução com variáveis e expressões calculadas"></div>
+              <div class="alerts" id="simAlerts"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="out-est" class="est" hidden></div>
+        <div id="out-dic" hidden><div class="tablewrap"><table id="tbDic"></table></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DESENHO DA PEÇA ===== -->
+  <section id="view-desenho" hidden>
+    <div class="pp">
+      <div>
+        <div class="card">
+          <h2>1 · Desenho<button type="button" class="info" data-alvo="#dsDica" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></h2>
+          <div class="dica" id="dsDica" style="margin:0 0 8px">Desenhe a peça acabada (perfil externo e interno, comprimento final e lados) e salve com um nome. No Gerador, em Peça simples, é só escolher o desenho e digitar o bruto. O Ø do bruto aqui é só referência para validar o desenho e listar os cantos.</div>
+          <div class="pp-fields">
+            <div class="field" style="grid-column:1/-1"><label for="dsSel">Desenho salvo</label><select id="dsSel"></select></div>
+            <div class="field" style="grid-column:1/-1"><label for="dsNome">Nome do desenho</label><input id="dsNome" autocomplete="off" placeholder="ex.: Bucha flange D60"></div>
+            <div class="field"><label for="dsLPeca">Comprimento final da peça</label><div class="unit"><input id="dsLPeca" type="number" step="any" inputmode="decimal"><span>mm</span></div></div>
+            <div class="field"><label for="dsDRef">Ø do bruto (referência)</label><div class="unit"><input id="dsDRef" type="number" step="any" inputmode="decimal"><span>mm</span></div></div>
+            <div class="field" style="grid-column:1/-1"><label>Lados a usinar</label><div class="pp-seg" id="dsLados"></div></div>
+          </div>
+          <div class="toolbar" style="margin:12px 0 4px">
+            <button class="btn primary" id="dsSalvar" type="button">Salvar</button>
+            <button class="btn" id="dsNovo" type="button">Novo</button>
+            <button class="btn" id="dsDup" type="button">Duplicar</button>
+            <button class="btn danger" id="dsExcluir" type="button">Excluir</button>
+            <button class="btn" id="dsExp" type="button">Exportar (.json)</button>
+            <button class="btn" id="dsImp" type="button">Importar (.json)</button>
+            <input type="file" id="dsFile" accept=".json,application/json" hidden>
+          </div>
+          <div class="note" id="dsEstado"></div>
+        </div>
+        <div class="card">
+          <h2>2 · Elementos<button type="button" class="info" data-alvo="#dsPalDica" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></h2>
+          <div class="dica" id="dsPalDica" style="margin:0 0 8px">Clique no elemento: abre uma janela com o desenho e as cotas. Ele entra no fim da lista do lado escolhido; depois dá para editar (clique na linha), mover ou remover. Chanfro e raio: o canto é escolhido no próprio desenho da peça.</div>
+          <div class="pp-grp">Perfil externo</div><div class="pp-pal" id="dsPalExt"></div>
+          <div class="pp-grp">Interno (furo e mandrilamento)</div><div class="pp-pal" id="dsPalInt"></div>
+        </div>
+        <div class="card">
+          <div class="pv-head"><h2 style="margin:0">3 · Peça montada</h2><div class="pp-seg" id="dsLado" hidden></div></div>
+          <div id="dsListas"></div>
+        </div>
+      </div>
+      <div class="pp-dir">
+        <div class="card">
+          <div class="msgs" id="dsMsgs"></div>
+          <div class="pv-head"><div class="pv-leg">Meia seção da peça</div><div class="pp-seg" id="dsLado2" hidden></div></div>
+          <div id="dsGraf"></div>
+          <div class="pp-nota" id="dsResumo"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- ===== SIMULAÇÃO (programa colado) ===== -->
+  <section id="view-sim" hidden>
+    <div class="ps">
+      <div class="ps-esq">
+        <div class="card">
+          <h2>1 · Programa<button type="button" class="info" data-alvo="#psDica" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></h2>
+          <div class="dica" id="psDica" style="margin:0 0 8px">Cole aqui um programa Fanuc já pronto (do gerador, da casa ou de outro lugar). O sistema lê as variáveis (#), expressões entre colchetes (com SIN, COS, TAN, SQRT, ABS, ROUND, FIX, FUP…), IF/GOTO, subprogramas, os ciclos G71, G72, G73, G70, G74, G75, G76 e G83 e a compensação de raio G41/G42, descobre as ferramentas usadas (comando T) e simula o corte. Embaixo do código, a faixa verde mostra a linha em execução já decodificada (variáveis e contas calculadas). Nada é enviado para fora do computador.</div>
+          <textarea id="psTexto" class="ps-texto" spellcheck="false" wrap="off" autocomplete="off" placeholder="Cole o programa CNC aqui (Ctrl+V)…"></textarea>
+          <div class="toolbar" style="margin:10px 0 6px">
+            <button class="btn primary" id="psColar" type="button">Colar da área de transferência</button>
+            <button class="btn" id="psAbrir" type="button">Abrir arquivo…</button>
+            <button class="btn" id="psExemplo" type="button">Exemplo</button>
+            <button class="btn danger" id="psLimpar" type="button">Limpar</button>
+            <input type="file" id="psFile" accept=".txt,.nc,.cnc,.tap,.mpf,.ngc,.min,text/plain" hidden>
+          </div>
+          <div class="note" id="psResumo"></div>
+          <div class="msgs" id="psMsgs" style="margin-top:8px"></div>
+        </div>
+        <div class="card">
+          <h2>2 · Ferramentas do programa<button type="button" class="info" data-alvo="#psFerrDica" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></h2>
+          <div class="dica" id="psFerrDica" style="margin:0 0 8px">Cada comando T do programa aparece aqui. Escolha ao lado a ferramenta do banco que está montada naquela posição: o desenho mostra o formato que o simulador usa (a cruz é a ponta programada). A escolha fica salva para o mesmo código T. Rotação, Vc e avanço vêm do próprio programa.</div>
+          <div id="psFerr"></div>
+        </div>
+        <div class="card">
+          <h2>3 · Bruto e fixação<button type="button" class="info" data-alvo="#psBrutoDica" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></h2>
+          <div class="dica" id="psBrutoDica" style="margin:0 0 8px">Campos vazios usam o valor lido do programa (G1900/G1901 ou os movimentos); o valor lido aparece em cinza dentro do campo. Digite para sobrescrever. O Z0 do programa é a face da peça; o comprimento livre vai de Z0 até a face das castanhas.</div>
+          <div class="row" id="psBruto">
+            <div class="field"><label for="psD">Ø do bruto</label><div class="unit"><input id="psD" data-b="d" type="number" step="any" min="0" inputmode="decimal"><span>mm</span></div></div>
+            <div class="field"><label for="psSobre">Sobremetal na face (Z)</label><div class="unit"><input id="psSobre" data-b="sobre" type="number" step="any" min="0" inputmode="decimal"><span>mm</span></div></div>
+            <div class="field"><label for="psLivre">Comprimento livre (Z0 até a placa)</label><div class="unit"><input id="psLivre" data-b="livre" type="number" step="any" min="0" inputmode="decimal"><span>mm</span></div></div>
+            <div class="field"><label for="psGrip">Preso na placa</label><div class="unit"><input id="psGrip" data-b="grip" type="number" step="any" min="0" inputmode="decimal"><span>mm</span></div></div>
+            <div class="field full"><label for="psFuro">Furo já existente no bruto (Ø) — vazio = maciço</label><div class="unit"><input id="psFuro" data-b="furoD" type="number" step="any" min="0" inputmode="decimal"><span>mm</span></div></div>
+          </div>
+          <div class="toolbar" style="margin:10px 0 0"><button class="btn sm" id="psBrutoAuto" type="button">Voltar tudo ao automático</button></div>
+          <div class="note" style="margin-top:8px">Ø da placa, cursos e velocidade de rápido: Configurações → Máquina e placa.</div>
+        </div>
+      </div>
+      <div class="ps-dir">
+        <div class="card ps-simcard">
+          <h2>Simulação do corte<span class="note" id="psTitulo" style="text-transform:none;letter-spacing:0;font-weight:400;margin-left:8px"></span></h2>
+          <div class="simgrid">
+          <div>
+          <div class="simcanvas"><canvas id="psCanvas" class="simcv" aria-label="Simulação do programa colado em meia seção XZ"></canvas></div>
+          <div class="slider">
+            <input type="range" id="psSlider" min="0" max="1000" value="0" step="1" aria-label="Posição no ciclo">
+            <div class="marks" id="psMarks"></div>
+          </div>
+          <div class="simbar">
+            <button class="btn" id="psReset" title="Voltar ao início" aria-label="Voltar ao início">⏮</button>
+            <button class="btn" id="psPrevLine" title="Linha anterior do G-code" aria-label="Linha anterior">⏪</button>
+            <button class="btn" id="psPrevSeg" title="Movimento anterior (←)" aria-label="Movimento anterior">◀</button>
+            <button class="btn primary" id="psPlay" title="Executar (espaço)" aria-label="Executar">▶</button>
+            <button class="btn" id="psNextSeg" title="Próximo movimento (→)" aria-label="Próximo movimento">▶|</button>
+            <button class="btn" id="psNextLine" title="Próxima linha do G-code" aria-label="Próxima linha">⏩</button>
+            <select id="psSpeed" aria-label="Velocidade da simulação">
+              <option value="1">1× tempo real</option>
+              <option value="5">5×</option>
+              <option value="10" selected>10×</option>
+              <option value="25">25×</option>
+              <option value="60">60×</option>
+              <option value="150">150×</option>
+              <option value="400">400×</option>
+            </select>
+            <label class="chk inline"><input type="checkbox" id="psTrace" checked> trajeto</label>
+            <label class="chk inline"><input type="checkbox" id="psToolShow" checked> pastilha</label>
+            <label class="chk inline"><input type="checkbox" id="psFollow"> seguir</label>
+            <button class="btn sm" id="psFit">Vista geral</button>
+            <button class="btn sm" id="psFitProfile">Zoom no corte</button>
+          </div>
+          <div class="simread">
+            <span class="mono" id="psPos">X0 Z0</span>
+            <span class="sim-badge rapid" id="psMode">RÁPIDO (G0)</span>
+            <span class="chip" id="psLabel">—</span>
+            <span class="mono" id="psTime">0:00 / 0:00</span>
+            <button type="button" class="info" data-alvo="#psAjuda" aria-expanded="false" aria-label="Como usar o simulador" title="Como usar o simulador">i</button>
+          </div>
+          <div class="simhelp dica" id="psAjuda">Roda do mouse = zoom, arrastar = mover a vista. Espaço = executar/pausar, ← → = movimento a movimento. Clique numa linha do programa para ir até ela. Tracejado = rápido; verde = corte. Aqui não há peça acabada para comparar: o simulador mostra o que o programa remove e avisa colisão com a placa, rápido dentro do material e fora de curso.</div>
+          </div>
+          <div>
+            <div id="psStats" class="derived" style="margin-top:0"></div>
+            <div id="psCode" class="simcode" style="margin-top:10px" aria-label="Programa com a linha em execução destacada"></div>
+            <div id="psDec" class="simdec" aria-label="Linha em execução com variáveis e expressões calculadas"></div>
+            <div class="alerts" id="psAlerts"></div>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- ===== CONFIGURAÇÕES ===== -->
+  <section id="view-cfg" hidden>
+    <div class="card">
+      <h2>Programa</h2>
+      <div class="row">
+        <div class="field"><label for="autor">Autor</label><input id="autor" autocomplete="off"><div class="dica show">Vai no cabeçalho do programa, ex.: (FERRAMENTARIA - OUT/2026).</div></div>
+        <div class="field"><label for="data">Data</label><input id="data" autocomplete="off" placeholder="automática"><div class="dica show" id="dataDica"></div></div>
+        <div class="field"><label for="pressao">Pressão da placa</label><select id="pressao"><option value="">Padrão da máquina (sem comando)</option><option value="M34">Nível 1 (M34)</option><option value="M35">Nível 2 (M35)</option></select>
+          <div class="dica show">M34/M35 escolhem o nível de pressão da placa em todos os programas. Sem comando, vale o último nível selecionado na máquina.</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Máquina e placa (só simulação)</h2>
+      <div class="row" id="maqCard">
+        <div class="field"><label for="m_chuckD">Ø externo da placa</label><div class="unit"><input id="m_chuckD" data-m="chuckD" type="number" step="any" min="0"><span>mm</span></div></div>
+        <div class="field"><label for="m_xMax">Curso em X (Ø máx.)</label><div class="unit"><input id="m_xMax" data-m="xMax" type="number" step="any" min="0"><span>mm</span></div></div>
+        <div class="field"><label for="m_zMax">Curso em +Z</label><div class="unit"><input id="m_zMax" data-m="zMax" type="number" step="any" min="0"><span>mm</span></div></div>
+        <div class="field"><label for="m_rapido">Velocidade de rápido</label><div class="unit"><input id="m_rapido" data-m="rapido" type="number" step="any" min="1"><span>mm/min</span></div></div>
+        <div class="field" style="align-self:end"><button class="btn sm" id="m_reset" type="button">Restaurar padrões</button></div>
+      </div>
+      <div class="note" style="margin-top:8px">Valores provisórios: confirme no manual da ML-600L e ajuste. Eles não entram no programa, só nos alertas e no tempo estimado. O comprimento preso na placa é pedido em "2 · Medidas" (grupo Fixação na placa).</div>
+    </div>
+    <div class="card">
+      <h2>Aparência</h2>
+      <label class="chk inline"><input type="checkbox" id="cfgDicas"> Mostrar todas as explicações dos campos (senão, só pelo botão “i” de cada um)</label>
+    </div>
+    <div class="card">
+      <h2>Versão</h2>
+      <div class="note">Versão <b id="verTxt"></b>. O histórico das mudanças está em CHANGELOG.md e uma cópia de cada versão fica na pasta versoes/.</div>
+    </div>
+  </section>
+  <!-- ===== FERRAMENTAS ===== -->
+  <section id="view-ferr" hidden>
+    <div class="card">
+      <h2>Banco de ferramentas</h2>
+      <div class="toolbar">
+        <button class="btn primary" id="ferrNova">Nova ferramenta</button>
+        <button class="btn" id="ferrExp">Exportar (.json)</button>
+        <button class="btn" id="ferrImp">Importar (.json)</button>
+        <input type="file" id="ferrFile" accept=".json,application/json" hidden>
+      </div>
+      <div class="tablewrap"><table id="tbFerr"></table></div>
+      <p class="note">O banco fica salvo neste navegador. Use Exportar para ter cópia de segurança ou para levar a outro computador. Os valores iniciais vieram dos programas de exemplo; confirme antes de usar em produção.</p>
+    </div>
+  </section>
+</main>
+</div>
+</div>
+
+<dialog id="dlgFerr">
+  <form method="dialog" id="frmFerr">
+    <h3 id="dlgTitulo">Ferramenta</h3>
+    <div class="row">
+      <div class="field full"><label>Nome / descrição</label><input name="nome" required autocomplete="off"></div>
+      <div class="field"><label>Nº da ferramenta (T, 4 dígitos)</label><input name="t" required pattern="[0-9]{3,4}" placeholder="0101" autocomplete="off"></div>
+      <div class="field full"><label>Tipo da ferramenta</label>
+        <input type="hidden" name="tipo" value="externa">
+        <div class="tipo-grid" id="tipoGrid" role="radiogroup" aria-label="Tipo da ferramenta"></div></div>
+      <div class="group-title">Pastilha (usada no desenho da simulação)</div>
+      <div class="field" data-tipos="externa faceamento interna encaixe furacao rosca outra"><label>Pastilha</label><input name="pastilha" placeholder="ex.: WNMG 080408" autocomplete="off"></div>
+      <div class="field" data-tipos="externa faceamento interna rosca outra"><label>Raio de ponta (mm)</label><input name="raio" type="number" step="any" min="0"></div>
+      <div class="field" data-tipos="externa faceamento interna"><label>Ângulo da ponta (°) — externa</label><input name="angulo" type="number" step="any" min="20" max="120" placeholder="80"></div>
+      <div class="field" data-tipos="externa faceamento interna"><label>Ângulo de posição do suporte κ (°) — simulação</label><input name="apSuporte" type="number" step="any" min="60" max="120" placeholder="ex.: 93 ou 95 · vazio = aresta de trás reta"><div class="dica">Ângulo de posição do suporte (93°, 95°…). A pastilha gira 180° − κ − ponta: o inserto deixa de cortar além do perfil quando ele desce em direção à placa. Vazio = aresta de trás reta (como era antes). Só afeta a simulação.</div></div>
+      <div class="field" data-tipos="encaixe"><label>Largura do canal (mm) — encaixe</label><input name="largura" type="number" step="any" min="0"></div>
+      <div class="field" data-tipos="furacao"><label>Diâmetro da broca (mm) — furação</label><input name="diametro" type="number" step="any" min="0"></div>
+      <div class="group-title">Parâmetros de corte</div>
+      <div class="field"><label>Modo de rotação</label>
+        <select name="modo"><option value="G96">G96 · Vc constante</option><option value="G97">G97 · RPM fixo</option></select></div>
+      <div class="field"><label>Sentido de giro</label>
+        <select name="sentido"><option value="4">M4</option><option value="3">M3</option></select></div>
+      <div class="field"><label data-lbl-furacao="Vc (m/min) - 0 se for RPM fixo" data-lbl-padrao="Vc (m/min)">Vc (m/min)</label><input name="vc" type="number" step="any" min="0"></div>
+      <div class="field"><label data-lbl-furacao="RPM fixo da broca" data-lbl-rosca="RPM fixo do roscamento (máx. 5000 / passo)" data-lbl-padrao="Limite de RPM (G50)">Limite de RPM (G50) / RPM fixo</label><input name="rpm" type="number" step="any" min="0"></div>
+      <div class="field"><label>Avanço de corte (mm/rot)</label><input name="avDesb" type="number" step="any" min="0"></div>
+      <div class="field" data-tipos="externa faceamento interna encaixe rosca outra"><label data-lbl-encaixe="Avanço de rampa (mm/rot)" data-lbl-padrao="Avanço aprox./acabamento (mm/rot)">Avanço aprox./acabamento/rampa (mm/rot)</label><input name="avAcab" type="number" step="any" min="0"></div>
+      <div class="field" data-tipos="externa faceamento interna"><label>Incremento faceamento (mm)</label><input name="incFace" type="number" step="any" min="0"></div>
+      <div class="field" data-tipos="externa faceamento interna furacao"><label data-lbl-furacao="Bicada (mm por descida antes de recuar)" data-lbl-padrao="Incremento torneamento (mm, no raio)">Incremento torneamento (mm, no raio)</label><input name="incTorn" type="number" step="any" min="0"></div>
+      <div class="field" data-tipos="encaixe"><label>Incremento do encaixe (mm, profundidade por camada)</label><input name="incCanal" type="number" step="any" min="0"></div>
+      <div class="field" data-tipos="externa faceamento interna"><label>Acabamento do faceamento (sobremetal em Z, mm)</label><input name="acabFace" type="number" step="any" min="0" placeholder="0 = sem acabamento"></div>
+      <div class="field" data-tipos="externa faceamento interna"><label>Acabamento da cilindragem (sobremetal no Ø, mm)</label><input name="acabTorn" type="number" step="any" min="0" placeholder="0 = sem acabamento"></div>
+      <div class="field full"><label>Observações</label><textarea name="obs" rows="2"></textarea></div>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn" id="dlgCancel">Cancelar</button>
+      <button type="submit" class="btn primary" value="ok">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgEl" class="dlg-el">
+  <form method="dialog" id="frmEl">
+    <h3 id="dlgT">Elemento</h3>
+    <div class="sub" id="dlgSub"></div>
+    <div class="dwg w2" id="dlgDwg"></div>
+    <div id="dlgPick" hidden></div>
+    <div class="dlg-pv" id="dlgPvBox"><div class="l">Como fica na peça</div><div id="dlgPv"></div></div>
+    <div class="msg err" id="dlgErr" style="margin-top:10px" hidden></div>
+    <div class="dlg-actions">
+      <button type="button" class="btn" id="dlgCancel">Cancelar</button>
+      <button type="submit" class="btn primary" id="dlgOk">Adicionar à peça</button>
+    </div>
+  </form>
+</dialog>
+<div class="autoria">Desenvolvido por Gladson Bernardo</div>
+
+<script src="version.js"></script>
+<script src="core.js"></script>
+<script src="sim.js"></script>
+<script src="progsim.js"></script>
+<script src="diagnostico.js"></script>
+<script src="seed.js"></script>
+<script src="simview.js"></script>
+<script src="progview.js"></script>
+<script src="pecaview.js"></script>
+<script src="desenho.js"></script>
+<script src="app.js"></script>
+<script src="acesso.js"></script>
+</body>
+</html>

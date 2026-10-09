@@ -44,6 +44,11 @@ O leitor segue os mesmos critérios dos geradores; o que não foi confirmado na 
 - **G76:** ângulos aceitos 0, 29, 30, 55, 60 e 80; altura do filete acima de 75% do passo avisa (rosca ISO ≈ 61%).
 - As correções sugeridas que não são "exatas" (G28U0 antes do T, G50S2000, G40 antes do M30 ou do T) são pontos de partida: conferir o valor e o bloco de saída antes de rodar.
 
+## Comando Siemens 802D sl em modo ISO (2.7.1)
+- O programa visto no comando (`\MPF\FUNDO-PF`) usa `G291` e sintaxe Fanuc **sem variáveis `#`**. **Confirmar se esse comando aceita Macro B** (`#1=…`, `IF…GOTO`, `WHILE…DO…END`): os programas do Gerador dependem disso. Se não aceitar, é preciso uma saída com números fixos.
+- Conferir como o modo ISO do Siemens trata G73, G74, G75, G76, G83, G41/G42 e o retorno do G70, e se `G92 S` limita a rotação em G96 como o `G50 S` do Fanuc (é o que o leitor assume).
+- Programas em modo Siemens nativo (`G290`, `CYCLE95`, parâmetros `R`, `T1 D1`, `CR=`) não são lidos.
+
 ## O que o simulador não mostra
 - O **filete da rosca** (só percurso e tempo das passadas).
 - A haste/porta-ferramenta (só a pastilha); folga de haste em furos pequenos e canais internos fica por conta do operador.

@@ -8,6 +8,14 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.7.1 — 09/10/2026 — Leitor entende o modo ISO do Siemens 802D sl (G291, G290 e G92 S)
+- Programas da casa vistos no comando **Siemens SINUMERIK 802D sl** (pasta `\MPF\`, como o `FUNDO-PF`) são Fanuc em modo ISO: começam com `G291` (liga o modo ISO; `G290` volta ao modo Siemens) e usam G71/G70, G96, G95 e T0101 como os programas da casa.
+- **`G92 S…` agora vale como limite de rotação em G96** (o equivalente do `G50 S` do Fanuc, no sistema B/C e no Siemens em modo ISO). Antes o leitor ignorava a linha e lia o `S` como velocidade de corte (`G96 S1000` + `G92 S1200` virava Vc 1200) e ainda dava um aviso falso de "G96 sem limite de rotação". `G92` com X/Z (preset de coordenadas ou ciclo de rosca do sistema A) continua ignorado, com aviso.
+- **`G291` e `G290` passam em silêncio** (só trocam o dialeto; não movem nada). Um programa que entra no modo Siemens nativo (`G290`) e segue com `CYCLE95`, `R1=…` etc. continua sem suporte: essas linhas aparecem como erro.
+- O texto do diagnóstico do "G96 sem limite" cita o `G92 S` do Siemens em modo ISO.
+- Testes: `testprog.js` 223 → 232 verificações (trecho do programa `FUNDO-PF` lido sem aviso falso, Vc 1000 e limite 1200 rpm, G92 com X/Z ainda ignorado) e `testdiag.js` 311 → 313.
+- A confirmar: se o comando aceita as variáveis `#` e `IF/GOTO/WHILE` (Macro B) em modo ISO — o programa visto não usa nenhuma — e como ele trata G73, G74, G75, G76 e G83 (ver `VALIDAR-NA-MAQUINA.md`).
+
 ## 2.7.0 — 09/10/2026 — Diagnóstico de erros do programa, com causa e solução para cada tipo
 - **Novo módulo `diagnostico.js`**: junta tudo o que pode estar errado num programa Fanuc numa lista só. Cada item traz **gravidade** (erro, aviso ou dica), a **linha**, a mensagem do caso, **por que acontece** e **como corrigir**; quando dá para resolver no texto, traz a **correção pronta** (antes/depois). Catálogo com **73 tipos de erro**, em 8 grupos: Sintaxe, Variáveis e fluxo, Estrutura, Movimentos, Ferramenta e rotação, Ciclos, Compensação G41/G42 e Simulação. Padrão seguido: Fanuc ISO com Macro B.
 - **Tela Simulação (programa colado)**: o painel sob o texto virou um painel de diagnóstico (erros primeiro, depois avisos e dicas; clique leva à linha). Cada cartão abre "Causa e como corrigir". Botões **Aplicar** (uma correção), **Aplicar N correções exatas** (todas as que não dependem de valor) e **Desfazer a última correção**. As correções "exatas" são as que não mudam valor nenhum (fechar parêntese, acrescentar M30, M9 antes do fim, G0 no contorno etc.); as demais mostram "confira o valor antes de usar".

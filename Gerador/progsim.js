@@ -625,10 +625,15 @@
           case 4: semMov = true; break; // pausa: X/P/U sao tempo, nao movimento
           case 28: case 30: home = true; break;
           case 17: case 18: case 19: case 21: case 54: case 55: case 56: case 57: case 58: case 59: case 61: case 62: case 63: case 64: case 69: break;
+          case 290: case 291: break; // Siemens: G290 = modo Siemens, G291 = modo ISO (Fanuc); so troca o dialeto, nao move nada
           case 20: aviso(i, 'G20 (polegadas): o simulador trata os valores como milímetros.', 'g20'); break;
           case 40: st.comp = 0; break; // cancela a compensacao do raio de ponta; o movimento deste bloco (se houver) e o de saida
           case 41: case 42: st.comp = g; st.linhaComp = i; break; // o raio e a posicao da ponta vem da ferramenta do banco (aplicado em montarCena)
           case 50: g50 = true; break;
+          case 92: // ISO (sistema B/C, tambem no Siemens em G291): G92 so com S = limite de rotacao em G96 (como o G50 S); com X/Z e preset ou ciclo de rosca
+            if (w.S != null && !temCoord(w)) g50 = true;
+            else { semMov = true; aviso(i, 'G92 não é simulado e foi ignorado (o bloco inteiro foi pulado).', 'g92'); }
+            break;
           case 53: aviso(i, 'G53 (coordenada da máquina) não é simulado.', 'g53'); break;
           case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 83: cic = g; break;
           case 80: st.cyc83 = null; break;

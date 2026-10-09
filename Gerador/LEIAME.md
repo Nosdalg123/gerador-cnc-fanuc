@@ -131,6 +131,9 @@ Arquivos: `progsim.js` (leitor, sem tela, testável no Node), `progview.js` (tel
 - Os alertas da simulação (placa, corte na peça, rápido no material, fora de curso, sobra) também trazem "Causa e como corrigir". Na janela de simulação do **Gerador**, o bloco **Diagnóstico do programa gerado** confere o próprio código gerado.
 - Tipos cobertos (73): sintaxe, variáveis e fluxo (GOTO, WHILE, M98), estrutura (M30, M9), movimentos e arcos, ferramenta/rotação/avanço (M3/M4, G50 S, G98/G99, troca sem recuo, G28), ciclos (G70–G76, G83), compensação G41/G42 e alertas do simulador.
 
+## Comando Siemens 802D sl em modo ISO (v2.7.1)
+O leitor da Simulação entende os programas Fanuc que rodam no Siemens 802D sl com o modo ISO ligado (`G291` no começo; `G92 S…` = limite de rotação em G96). Programas em linguagem Siemens nativa (`CYCLE95`, `R1=…`, `T1 D1`) não são lidos. O Gerador continua gerando Fanuc com variáveis `#`; confirme na máquina se ela aceita Macro B (ver `VALIDAR-NA-MAQUINA.md`).
+
 ## Desenvolvimento
 - `core.js` (geradores + percurso), `sim.js` (motor da simulação), `simview.js` (tela do simulador; fábrica `SimView.create`), `progsim.js` + `progview.js` (módulo Simulação), `diagnostico.js` (catálogo de erros, causas e soluções), `testprog.js` e `testdiag.js` (testes dos módulos), `app.js` (interface do Gerador, Ferramentas e Configurações), `desenho.js` (operação Desenho da peça), `pecaview.js` (meia seção compartilhada), `seed.js` (ferramentas iniciais), `style.css` (visual), `version.js` (número da versão), `versionar.js` (guarda uma versão em `versoes/`).
 - `node test.js` roda os geradores e a análise do simulador no terminal (inclui colisão forçada); `node test.js -v` imprime o código das espinas.

@@ -367,5 +367,26 @@ const BASE = 'G1900D62L50K0.\nG21G90G40G80\nG28U0\nG0Z250\nT0101(DESBASTE)\nG54\
   }
 }
 
+/* ---- comando Siemens 802D sl em modo ISO (v2.7.1): G291/G290 e G92 S (limite de rotacao) ---- */
+{
+  // trecho de um programa real da casa visto no comando (\MPF\FUNDO-PF): Fanuc em modo ISO, sem variaveis #
+  const foto = ['N10 G291', 'N20 G90G40G21G95', 'N30 T00', 'N40 G54G0X250Z-300', 'N60 T0101', 'N70 G96S1000', 'N80 G92S1200M3', 'N90 G0X64Z2', 'N100 G71U1.5R.5',
+    'N110 G71P120 Q180U.35W.1F.45', 'N120 G0X-1', 'N130 G1Z0', 'N140 X25', 'N150 X37.5Z-1', 'N160 X42Z-2.5', 'N170 X52', 'Z-7', 'N180 X64', 'N190 G0Z100X150', 'N210 G28U0', 'M30'].join('\n');
+  const R = run(foto);
+  ok(R.erros.length === 0, 'Siemens ISO (foto): le sem erro', R.erros);
+  ok(!R.avisos.some(a => /G291|G290/.test(a.texto)), 'Siemens ISO: G291 passa em silencio', R.avisos.map(a => a.texto));
+  ok(!R.avisos.some(a => /G92/.test(a.texto) || /limite de rotação/.test(a.texto)), 'Siemens ISO: G92 S vale como limite de rotacao (sem aviso de G96 sem limite)', R.avisos.map(a => a.texto));
+  const m = R.moves.find(x => x.tool === '0101' && x.t === 'f');
+  ok(m && m.spin.modo === 'G96' && m.spin.vc === 1000 && m.spin.rpm === 1200, 'Siemens ISO: Vc 1000 e limite 1200 rpm (G92 S nao vira Vc)', m && m.spin);
+  ok(R.moves.filter(x => x.label === 'DESBASTE G71').length > 10, 'Siemens ISO: o desbaste G71 simula');
+  ok(R.moves.filter(x => x.line === 0 || x.line === 6).length === 0, 'Siemens ISO: G291 e G92 S nao geram movimento');
+  // G290 (volta ao modo Siemens) tambem so troca o dialeto
+  ok(run('G290\nG0X50Z2\nM30').avisos.every(a => !/G290/.test(a.texto)), 'G290 passa em silencio');
+  // G92 com X/Z (preset de coordenadas ou rosca do sistema A) continua ignorado, com aviso
+  const R2 = run('T0101\nG96S200M4\nG92S1500\nG92X100Z50\nG1X50Z-5F.2\nM30');
+  ok(R2.avisos.some(a => /G92 não é simulado/.test(a.texto)) && R2.moves.length === 1 && near(R2.moves[0].x, 50), 'G92 com X/Z continua ignorado (aviso, sem movimento)', R2.avisos.map(a => a.texto));
+  ok(!R2.avisos.some(a => /limite de rotação/.test(a.texto)), 'G92 S antes do corte conta como limite', R2.avisos.map(a => a.texto));
+}
+
 console.log('#### MODULO SIMULACAO:', total, 'verificacoes,', falhas, 'falha' + (falhas === 1 ? '' : 's'));
 if (falhas) process.exitCode = 1;

@@ -258,6 +258,13 @@ const CAB = 'G21G90G40G80\nG28U0\nT0101\nG96S250M4\nG50S1500\nM8\n', FIM = '\nG2
   });
 }
 
+/* ---- Siemens em modo ISO (2.7.1): G92 S e G291 nao geram aviso falso ---- */
+{
+  const L = diag(['G291', 'G90G40G21G95', 'T0101', 'G96S1000', 'G92S1200M3', 'G0X64Z2', 'G1Z-5F.2', 'G28U0', 'M9', 'M30'].join('\n'));
+  ok(!L.some(x => x.cod === 'gIgnorado' || x.cod === 'g96semG50'), 'diag Siemens ISO: G291 e G92 S sem aviso', L.map(x => x.cod));
+  ok(D.CAT.g96semG50.solucao.join(' ').indexOf('G92') > 0, 'catalogo: g96semG50 cita o G92 S do Siemens em modo ISO');
+}
+
 /* ---- cobertura: todo tipo do catalogo foi exercitado ---- */
 {
   const faltam = Object.keys(D.CAT).filter(c => c !== 'geral' && !cob[c]);
