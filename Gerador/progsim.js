@@ -438,7 +438,6 @@
       checaS(i); nota(i, 'g73');
       var xA = st.x, zA = st.z, dirX = du !== 0 ? sinal(du) : (par.di < 0 ? -1 : 1), j;
       if (par.di !== 0 && sinal(par.di) !== dirX) aviso(i, 'G73: o sinal de U do primeiro bloco é contrário ao U de acabamento; usei a direção do acabamento.', 'g73sinal');
-      aviso(i, 'G73: U e W do primeiro bloco foram lidos como afastamento TOTAL do perfil (padrão Fanuc), dividido em ' + d + ' corte' + (d === 1 ? '' : 's') + '. O manual da ROMI os descreve por passada: confira na máquina.', 'g73sem');
       if (dirX > 0) nota(i, 'ext'); else { nota(i, 'int'); var fi73 = st.tool && ferr[st.tool]; if (fi73) fi73.ops.intXA = fi73.ops.intXA == null ? xA : Math.min(fi73.ops.intXA, xA); }
       var di = Math.abs(par.di) * dirX, dk = par.dk;
       for (j = 1; j <= d; j++) {
@@ -876,5 +875,14 @@
     };
   }
 
-  return { interpretar: interpretar, montarCena: montarCena, formaFerr: formaFerr, kindDe: kindDe, tcode: tcode, compensar: compensar, numTxt: numTxt };
+  // Programa do Gerador: o percurso vem do core.js (sem o texto decodificado). Le o mesmo codigo e devolve a cena com o texto de cada linha
+  // (primeira execucao da linha); a cena original nao e alterada. Cena que ja traz o texto (modulo Simulacao) volta como veio.
+  function comDecodificado(cena, texto, maq) {
+    if (!cena || !cena.path || !cena.path.length || cena.path[0].dec || !texto) return cena;
+    var R = interpretar(texto, { maq: maq || cena.maq }), mapa = {};
+    R.moves.forEach(function (m) { if (mapa[m.line] === undefined) mapa[m.line] = m.dec; });
+    return Object.assign({}, cena, { path: cena.path.map(function (m) { return mapa[m.line] ? Object.assign({}, m, { dec: mapa[m.line] }) : m; }) });
+  }
+
+  return { interpretar: interpretar, montarCena: montarCena, formaFerr: formaFerr, kindDe: kindDe, tcode: tcode, compensar: compensar, numTxt: numTxt, comDecodificado: comDecodificado };
 });

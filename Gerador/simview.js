@@ -25,7 +25,9 @@
   function build() {
     if (!pending || !pending.cena) { sim = null; analysis = null; renderSide(); st.dirty = true; draw(); return; }
     res = pending; codeLines = res.code.split('\n');
-    sim = new CNCSim.Sim(res.cena);
+    // programa do Gerador: acrescenta o texto decodificado de cada linha (o modulo Simulacao ja o traz)
+    sim = new CNCSim.Sim(window.CNCProg ? CNCProg.comDecodificado(res.cena, res.code, res.cena.maq) : res.cena);
+    sim.srcCena = res.cena;
     analysis = sim.analyze();
     mc = document.createElement('canvas'); mc.width = sim.nz; mc.height = sim.nr; mctx = mc.getContext('2d');
     sim.reset(); st.t = 0; st.playing = false; st.lineShown = -2;
@@ -39,7 +41,7 @@
     clearTimeout(buildTimer);
     buildTimer = setTimeout(build, 120);
   }
-  function show() { active = true; resize(); if (!sim || sim.scene !== (pending && pending.cena)) build(); else { st.dirty = true; draw(); } }
+  function show() { active = true; resize(); if (!sim || sim.srcCena !== (pending && pending.cena)) build(); else { st.dirty = true; draw(); } }
   function hide() { active = false; pause(); }
 
   /* ---------- vista ---------- */

@@ -1,0 +1,276 @@
+%
+<FRENTE.COPO.BRUTO.P2.P3.txt>
+ 
+G1900D190.L190.K0. 
+ 
+(samoel - setembro/2025) 
+(zeramento ferramenta canal frontal feito pela parte inferior do inserto, tocando na parte de cima do leitor)
+(ferramenta de canal fronta com raio 2.5mm)
+ 
+(OBS: deixar 1mm de sobremetal na face)
+ 
+(1 facear) 
+(2 usinar perfil externo triangular) 
+(3 furar t-max)
+(4 usinar cone e raio interno G72) 
+(5 canal frontal)
+ 
+#100=1010(DESBASTE EXT. TRIANGULAR)
+#101=0606(DESBASTE INT. 25MM)
+#102=0404(T-MAX) 
+#103=0808(CANAL FRONTAL) 
+ 
+(N60 furacao)
+(N70 desbaste interno) 
+(N71 acabamento externo) 
+(N72 acabamento interno) 
+(N80 canal frontal)
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+(PT DE TROCA)
+G21G90G40G80 
+G28U0
+G0Z400 
+T#100
+G54
+G96S300M4
+G50S1800 
+ 
+ 
+G0Z3 
+X195 
+M8 
+(FACEAR) 
+G75X-1Z0P999999Q500R1F.3 
+ 
+G0Z3 
+X193 
+ 
+ 
+ 
+ 
+ 
+(PERFIL EXTERNO) 
+G73U8W-0R8(SOBREMETAL E PASSES NO ANGULO)
+G73P1Q2U0W0F.3(PERFIL DO ANGULO) 
+N1G0X185 
+Z0 
+G3X188Z-1.5R1.5
+G1Z-15 
+X175Z-61.57
+Z-70 
+G0X190 
+N2Z3 
+ 
+ 
+GOTO93 
+N71
+G21G90G40G80 
+G28U0
+G0Z400 
+T#100
+G54
+G96S300M4
+G50S1800 
+M8 
+ 
+N93
+M8 
+G0Z3 
+X193 
+(ACABAMENTO EXTERNO) 
+G70P1Q2F.3 
+M9 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+N60
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+(FURACAO)
+G21G90G40G80 
+G28U0
+G0Z300 
+T#102
+G54
+M5 
+G97S1000M3 
+G0Z20
+X0 
+Z5 
+M8 
+ 
+(FURACAO)
+G74R.5 
+G74Z-75Q2000F.04 
+M9 
+ 
+G0Z200 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+N70
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+(PT DE TROCA)
+G28U0
+G0Z300 
+G21G90G40G80 
+G28U0
+G0Z300 
+T#101
+G54
+M5 
+G96S200M4
+G50S2000 
+ 
+G0Z20
+X40
+Z1 
+M8 
+ 
+(CONE E RAIO INTERNO)
+G72W.5R.1
+G72P3Q4U-1W1F.5
+N3G0Z-55 
+X42
+G3X62Z-45R10 
+G1X116 
+Z-42 
+X136Z-22.5 
+N4X162Z0 
+M9 
+ 
+GOTO91 
+N72
+(ACABAMENTO INTERNO) 
+ 
+G28U0
+G0Z300 
+G21G90G40G80 
+G28U0
+G0Z300 
+T#101
+G54
+M5 
+G96S200M4
+G50S2000 
+M8 
+N91
+G0Z20
+X40
+Z3 
+ 
+(NAO USAR G70 SE NAO O ACABAMENTO COMECA DE TRAS PARA FRENTE)
+(DEIXAR SOBREMETAL)
+G1X161F.5
+Z0F.2
+X135.02Z-22.5
+X115Z-40.665 
+Z-39 
+X116 
+Z-44 
+X62
+G2X42Z-55R10 
+G1X40
+G0Z20
+M9 
+ 
+ 
+G0Z200 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+N80
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+(CANAL FRONTAL)
+G21G90G40G80 
+G28U0
+G0Z300 
+T#103
+G54
+G97S800M4
+ 
+G0Z20
+X106 
+Z-41 
+M8 
+ 
+(CANAL FRONTAL)
+G74R.1 
+G74Z-56Q100F.1 
+ 
+ 
+ 
+G1X105F.3
+Z-43.5 
+ 
+G74R.1 
+G74Z-56Q100F.1 
+ 
+G0Z200 
+G28U0
+M9 
+ 
+ 
+ 
+ 
+ 
+ 
+M19
+M30
+%

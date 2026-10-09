@@ -223,7 +223,7 @@ const BASE = 'G1900D62L50K0.\nG21G90G40G80\nG28U0\nG0Z250\nT0101(DESBASTE)\nG54\
   const R4 = run(prog('U4 W3', 1, 'U2 W.3'));
   const ini4 = R4.moves.filter(m => m.label === 'DESBASTE G73' && m.t === 'r' && m.z > 1.9 && m.x < 40).map(m => m.x);
   ok(ini4.join(',') === '33', 'G73 R1: corte unico com o afastamento inteiro', ini4);
-  ok(R.avisos.some(a => /afastamento TOTAL/.test(a.texto)), 'G73: aviso de que U/W foram lidos como afastamento total (a validar na maquina)');
+  ok(!R.avisos.some(a => /G73/.test(a.texto)), 'G73 correto (U/W = afastamento total, padrao Fanuc): sem aviso', R.avisos.map(a => a.texto));
   // interno (exemplo ROMI): U de acabamento negativo manda a direcao do afastamento
   const Ri = run('T0606\nG96S215M4\nG0 X27 Z6\nG73 U1 W1.2 R3\nG73 P100 Q120 U-2 W.4 F.3\nN100 G0 X72 Z2\nN110 G1 Z0 F.2\nN120 X60 Z-10\nG70 P100 Q120\nM30');
   const gi = Ri.moves.filter(m => m.label === 'DESBASTE G73' && m.t === 'r' && m.z > 1.5 && m.x > 60).map(m => m.x);
@@ -279,6 +279,50 @@ const BASE = 'G1900D62L50K0.\nG21G90G40G80\nG28U0\nG0Z250\nT0101(DESBASTE)\nG54\
   const dComp = dev(cone(true)), dSem = dev(cone(false));
   ok(dComp <= 0.5, 'G42 cone 45 graus: a superficie acabada fica na linha programada (desvio <= 0,5 mm, a grade do simulador e 0,5)', dComp.toFixed(2));
   ok(dSem >= 0.6 && dSem - dComp >= 0.4, 'sem compensacao o mesmo programa deixa o cone deslocado (desvio >= 0,6 mm e bem maior que com G42)', dSem.toFixed(2) + ' x ' + dComp.toFixed(2));
+}
+
+/* ---- visor decodificado tambem na janela do Gerador (v2.5.0): programa gerado + texto de cada linha ---- */
+{
+  const t1 = { nome: 'W', t: '0101', tipo: 'externa', modo: 'G96', vc: 300, rpm: 2000, avDesb: .45, avAcab: .15, incFace: 1, incTorn: 3, sentido: 4, angulo: 80, raio: 0.8 };
+  const g = C.GERADORES.matriz_solida.gerar({ dBruto: 201, lBruto: 52, dFinal: 200, lPeca: 50, lUsin: 14, raio: 3, folga: 1 }, { t1 }, { autor: 'F', data: 'OUT/2026' });
+  const sem = g.cena.path.filter(m => m.dec);
+  const cd = P.comDecodificado(g.cena, g.code, g.cena.maq);
+  ok(sem.length === 0, 'Gerador: a cena do core.js nao traz o texto decodificado', sem.length);
+  ok(cd !== g.cena && cd.path.length === g.cena.path.length && g.cena.path.every(m => !m.dec), 'Gerador: comDecodificado devolve uma copia e nao altera a cena original');
+  const comDec = cd.path.filter(m => m.dec).length;
+  ok(comDec >= cd.path.length * 0.9, 'Gerador: o texto decodificado cobre quase todos os movimentos', comDec + ' de ' + cd.path.length);
+  const linhas = g.code.split('\n'), m1 = cd.path.find(m => /^G0Z\[?\d/.test(m.dec || '') || /^G0Z/.test(m.dec || ''));
+  ok(!!m1 && /\[/.test(m1.dec) && !/#/.test(m1.dec), 'Gerador: variavel do codigo gerado aparece com o valor, sem #', m1 && m1.dec + ' <- ' + linhas[m1.line]);
+  ok(cd.path.every(m => !m.dec || !/#/.test(m.dec)), 'Gerador: nenhum texto decodificado fica com variavel (#)');
+  ok(P.comDecodificado(cd, g.code, g.cena.maq) === cd, 'Gerador: cena que ja traz o texto volta como veio');
+  const sim = new S.Sim(cd); sim.analyze(); sim.seek(sim.total * 0.3);
+  ok(typeof sim.state().dec === 'string', 'Gerador: o estado do simulador devolve o texto');
+}
+
+/* ---- programas da casa COPO BRUTO P2/P3 (funcionam na maquina): G73, G72 interno, G74, G76, GOTO entre operacoes (v2.5.0) ---- */
+{
+  const dir = path.join(__dirname, '..', 'Exemplos de programaçaõ', 'COPO BRUTO P2 P3'), le = n => fs.readFileSync(path.join(dir, n)).toString('latin1');
+  if (fs.existsSync(dir)) {
+    const F = run(le('FRENTE.COPO.BRUTO.P2.P3.txt'));
+    ok(F.erros.length === 0 && F.avisos.length === 0, 'COPO FRENTE: le sem erro e sem aviso', F.erros.concat(F.avisos).map(e => (e.linha + 1) + ':' + e.texto));
+    ok(F.ferramentas.map(f => f.codigo).join(',') === '1010,0404,0606,0808', 'COPO FRENTE: ferramentas 1010, 0404, 0606 e 0808', F.ferramentas.map(f => f.codigo));
+    const g = F.moves.filter(m => m.label === 'DESBASTE G73'), voltas = g.filter(m => m.t === 'r' && near(m.x, 193) && near(m.z, 3));
+    ok(voltas.length === 8, 'COPO FRENTE: G73 R8 = 8 cortes', voltas.length);
+    const ini = []; g.forEach((m, i) => { if (i === 0 || (near(g[i - 1].x, 193) && near(g[i - 1].z, 3))) ini.push(m.x); }); // 1o movimento de cada corte
+    ok(near(ini[0], 201) && near(ini[ini.length - 1], 185) && ini.length === 8, 'COPO FRENTE: G73 U8 = 1o corte 8 mm no raio acima do perfil (X201) e o ultimo no perfil (X185)', ini);
+    ok(ini.every((x, i) => i === 0 || near(ini[i - 1] - x, 16 / 7, 1e-6)), 'COPO FRENTE: cortes igualmente espacados (U8 dividido em 7 intervalos)', ini);
+    ok(g[0].dec === 'G73P1Q2U0W0F.3', 'COPO FRENTE: visor decodificado do bloco G73', g[0].dec);
+    ok(F.moves.some(m => m.label === 'FURAR (G74)') && F.moves.some(m => m.label === 'DESBASTE G72') && F.moves.some(m => m.label === 'RETORNO (G70)'), 'COPO FRENTE: furacao G74, desbaste G72 interno e acabamento G70');
+    const T = run(le('TRAS.COPO.BRUTO.P2.P3.txt'));
+    ok(T.erros.length === 0 && T.avisos.length === 0, 'COPO TRAS: le sem erro e sem aviso', T.erros.concat(T.avisos).map(e => (e.linha + 1) + ':' + e.texto));
+    ok(T.ferramentas.map(f => f.codigo).join(',') === '0101,0404,0606,0808', 'COPO TRAS: ferramentas 0101, 0404, 0606 e 0808', T.ferramentas.map(f => f.codigo));
+    ok(T.moves.some(m => m.label === 'ROSCA G76') && T.moves.some(m => m.label === 'DESBASTE G71') && T.moves.some(m => m.label === 'FURAR (G74)'), 'COPO TRAS: rosca G76 interna, G71 e furacao G74');
+    // GOTO93: o acabamento externo roda com a mesma ferramenta, sem repetir a troca (N71)
+    ok(T.moves.filter(m => m.line === 65).length === 0, 'COPO TRAS: o GOTO pula o bloco de troca de ferramenta do acabamento (N71)');
+    const c = P.montarCena(T, { maq: MAQ }), sim = new S.Sim(c); sim.analyze(); sim.seek(sim.total);
+    let rs = -1; for (let r = 100; r > 0; r -= 0.25) if (sobra(sim, -37, r)) { rs = r; break; }
+    ok(Math.abs(rs - 87.5) <= 0.5, 'COPO TRAS: cilindro externo acabado em Ø175 (r 87,5)', rs);
+  }
 }
 
 console.log('#### MODULO SIMULACAO:', total, 'verificacoes,', falhas, 'falha' + (falhas === 1 ? '' : 's'));
