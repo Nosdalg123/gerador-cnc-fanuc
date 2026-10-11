@@ -269,7 +269,10 @@
     if(!work.cadOrigem||!work.cadOrigem.incompleto)return;
     if(!confirm('Confirmo que reconstruí/conferi o PERFIL COMPLETO a partir do CAD original: contornos externos e internos, degraus, raios, chanfros, roscas, comprimentos, face Z0 e fixação. Entendo que ainda devo validar o código e simular antes de usinar.'))return;
     work.cadOrigem.incompleto=false;work.cadOrigem.verificado=true;work.cadOrigem.editadoDepoisDaImportacao=false;
-    persistWork();tela();avisaMudou(work.id);
+    if(!salvar()){
+      work.cadOrigem.incompleto=true;work.cadOrigem.verificado=false;
+      persistWork();tela();alert('Informe o nome do desenho e tente salvar novamente. A confirmação não foi registrada.');
+    }
   };
   $('#dsDup').onclick = function () {
     if (!work.id) return; var c = clone(work); c.id = uid(); c.nome = work.nome + ' (cópia)'; c.criado = c.alterado = new Date().toISOString();
