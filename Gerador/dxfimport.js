@@ -266,6 +266,9 @@ projected.addEventListener('pointerup',function(e){
  const svg=projected.querySelector('svg');if(!svg)return;
  const box=E.rectBounds([projDrag.x,projDrag.y],[viewPoint(e,svg).x,viewPoint(e,svg).y]);
  projDrag=null;skipProjectedClick=true;cancelDrag(projected);
+ // O clique sintético gerado pelo fim do arraste pode chegar nesta mesma tarefa;
+ // nunca descartar o PRIMEIRO clique real seguinte em outra linha.
+ setTimeout(()=>{skipProjectedClick=false},0);
  if(box.x2-box.x1<3||box.y2-box.y1<3){status('Desenhe um retângulo maior para excluir linhas.',true);return}
  const candidates=P.segments(doc.geometry,rect,hidden);
  const ids=E.selectRectSegments(candidates,box,rect,val('#dxfFace'));
