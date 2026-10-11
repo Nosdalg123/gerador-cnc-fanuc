@@ -9,6 +9,7 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 ---
 
 ## 2.8.0 — 11/10/2026 — Importação assistida de desenho PDF (branch isolada)
+- Reconhecimento automático inicial de anéis cilíndricos com duas cotas de diâmetro e uma de comprimento (caso de teste: Peça1.pdf, Ø50/Ø20/30 mm). Pré-preenche os trechos externo e interno e exige confirmação da seção. Ainda não interpreta automaticamente peças escalonadas, cones múltiplos nem PDFs rasterizados.
 - Nova opção "Importar desenho PDF" dentro de Desenho da peça, sem remover editor manual.
 - Visualização do PDF original, escolha de página, zoom, rotação e arraste.
 - Extração de texto e diâmetros candidatos de PDFs com texto via PDF.js (CDN; requer conexão); PDFs digitalizados usam conferência e transcrição manual.
