@@ -204,6 +204,8 @@
 <div id="pdfReviewRows" role="list" aria-live="polite"></div></details>
 <h3>4 · Conferir orientação e salvar</h3>
 <div class="pdf-orientation-control"><div class="field"><label for="pdfFaceChoice"><strong>Face do desenho que será Z0 no torno CNC</strong></label>
+<div id="pdfSuggestedFace" class="note" role="status">Orientação sugerida após a leitura do contorno.</div>
+<button type="button" class="btn sm" id="pdfAcceptOrientation" hidden>Usar orientação sugerida e conferir</button>
 <select id="pdfFaceChoice"><option value="">Selecione a face de usinagem (obrigatório)</option><option value="start">Face esquerda da vista lateral (ou superior, se a vista estiver vertical)</option><option value="end">Face direita da vista lateral (ou inferior, se a vista estiver vertical)</option></select></div>
 <p class="note">O eixo de rotação corresponde ao centro da peça (X0). A usinagem avança da face Z0 em direção ao fundo (Z negativo). Escolher outra face inverte a ordem das cotas no CNC.</p></div>
 <p class="note">Clique diretamente nas cotas em azul ou num trecho da peça projetada para editar. O desenho se atualiza em escala proporcional; alterações exigem uma nova confirmação.</p>
