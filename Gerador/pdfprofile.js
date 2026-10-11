@@ -17,7 +17,7 @@ function analyze(rows,total){
   var a=num(r.a),b=num(r.b),c=num(r.c),tp=r.tipo,side=String(r.side||'1');
   if(['cil','cone','icil','icone'].indexOf(tp)<0||['1','2'].indexOf(side)<0){errors.push('Cota '+(i+1)+': elemento não suportado no editor CNC.');return}
   if(!valid(a)||!valid(b)||(tp.indexOf('cone')>=0&&!valid(c))){errors.push('Cota '+(i+1)+': diâmetro ou comprimento inválido.');return}
-  items.push({side:side,tipo:tp,a:a,b:tp.indexOf('cone')>=0?c:b,...(tp.indexOf('cone')>=0?{c:b}:{})});
+  items.push({tipo:tp,side:side,a:a,b:tp.indexOf('cone')>=0?c:b,...(tp.indexOf('cone')>=0?{c:b}:{})});
   sum[side][tp[0]==='i'?'int':'ext']+=b;
  });
  if(valid(length))['1','2'].forEach(function(side){['ext','int'].forEach(function(cat){
