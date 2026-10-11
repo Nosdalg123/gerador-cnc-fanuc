@@ -93,8 +93,8 @@ async function recognizePage(){
     var horizontal=candidates.filter(c=>!c.vertical&&!c.diam);
     if(horizontal.length>1)diam=horizontal;
    }
-   if(axial.length===1&&diam.length>=1){
-    dims={externo:Math.max.apply(null,diam.map(c=>c.n)),interno:null,comprimento:axial[0].n,approximate:true};
+   if(axial.length>=1&&diam.length>=1){
+    dims={externo:Math.max.apply(null,diam.map(c=>c.n)),interno:null,comprimento:Math.max.apply(null,axial.map(c=>c.n)),approximate:true};
    }
   }
   if(dims&&root.CNCPDFVetorial&&library.OPS){
@@ -114,7 +114,7 @@ async function recognizePage(){
     if(ex&&inn){ex.a=recognized.externo;inn.a=recognized.interno;ex.b=length;inn.b=length;}
    }
    invalidate();
-   status('Contorno vetorial identificado e projetado. '+drawn.warning+' '+vectorWarning);
+   status('Contorno vetorial identificado ('+drawn.axis+') e projetado. '+drawn.warning+' '+vectorWarning);
   }else if(recognized.ok){
    model=[{tipo:'cil',side:'1',a:recognized.externo,b:recognized.comprimento,c:''},{tipo:'icil',side:'1',a:recognized.interno,b:recognized.comprimento,c:''}];
    length=recognized.comprimento;
