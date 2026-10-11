@@ -3,7 +3,7 @@
 (function(root){
 'use strict';
 var $=q=>document.querySelector(q),url=null,doc=null,fileBytes=null,page=1,totalPages=1,zoom=1,rotation=0;
-var model=[],length='',picked=null,selectMode=false,down=null,viewport=null,pg=null,library=null,savedId=null,renderSeq=0,edit=null,possibleViews=[],previewZoom=1,activeFace='',recognizeSeq=0,unsupportedFeatures=[];
+var model=[],length='',picked=null,selectMode=false,down=null,viewport=null,pg=null,library=null,savedId=null,renderSeq=0,edit=null,possibleViews=[],previewZoom=1,activeFace='',recognizeSeq=0,unsupportedFeatures=[],vectorSvg=null;
 var pdfjsUrl='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
 var workerUrl='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 function status(t,error){$('#pdfStatus').textContent=t;$('#pdfStatus').style.color=error?'#be4936':'';}
@@ -19,7 +19,7 @@ function faceOptions(){
  activeFace='';select.value='';
 }
 function fresh(){
- model=[];length='';picked=null;selectMode=false;possibleViews=[];unsupportedFeatures=[];
+ model=[];length='';picked=null;selectMode=false;possibleViews=[];unsupportedFeatures=[];vectorSvg=null;
  $('#pdfCncAxis').value='';$('#pdfCncAxis').dataset.previous='';faceOptions();invalidate();drawSelection();
 }
 function loadPdfjs(){
@@ -39,8 +39,8 @@ function renderPreview(){
   $('#pdfProfileMsg').textContent=(r.warnings.length?r.warnings.join(' · ')+' · ':'')+'Clique em uma cota azul ou sobre a peça para editar.';
   $('#pdfScaleInfo').textContent='X e Ø em proporção 1:1 · escala automática de visualização';
  }else{
-  host.innerHTML='<p class="note" style="padding:18px">A projeção geométrica aparece quando a vista tem cotas suficientes. Use “Selecionar vista” ou acrescente o perfil diretamente no desenho.</p>';
-  $('#pdfProfileMsg').textContent=r.errors.join(' · ');
+  host.innerHTML=vectorSvg||'<p class="note" style="padding:18px">A projeção geométrica aparece quando a vista tem cotas suficientes. Use “Selecionar vista” ou acrescente o perfil diretamente no desenho.</p>';
+  $('#pdfProfileMsg').textContent=(vectorSvg?'Traços vetoriais encontrados no PDF, mas ainda não associados às cotas reais; não representam perfil CNC validado. · ':'')+r.errors.join(' · ');
   $('#pdfScaleInfo').textContent='Escala proporcional X = Ø';
  }
  $('#pdfComprimento').value=length;
@@ -119,6 +119,7 @@ async function recognizePage(){
     var ops=await pg.getOperatorList();if(seq!==recognizeSeq)return;
     var lines=root.CNCPDFVetorial.extract(ops,library.OPS,viewport);
     var rect={x1:picked.x1*viewport.width,y1:picked.y1*viewport.height,x2:picked.x2*viewport.width,y2:picked.y2*viewport.height};
+    vectorSvg=root.CNCPDFVetorial.svg(lines,rect);
     var complexity=root.CNCPDFVetorial.complexity(lines,rect);
     if(complexity.complexo){
       unsupportedFeatures.push('contorno vetorial complexo ('+complexity.segmentos+' segmentos)');
