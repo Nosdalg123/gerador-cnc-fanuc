@@ -16,7 +16,7 @@ assert(!inHole.verified,'Ø da frontal sem vínculo não confirma automaticament
 assert(inHole.suggestions.includes('f-furo'),'Ø20 da frontal deve ser sugerido');
 const bound=R.bind(model,30,'seg:1:a',start.dimensions.find(d=>d.id==='f-furo'));
 assert(bound&&bound.model[1].a===20,'Cota pode completar o furo após vínculo explícito');
-const manual={'seg:0:b':true,'seg:1:b':true};
+const manual={total:true,'seg:0:b':true,'seg:1:b':true};
 const linked=R.evaluate(bound.model,30,dimensions,{'seg:1:a':'f-furo'},manual,{targetView:'lateral'});
 assert(linked.ready,'Vínculos únicos e medidas revisadas devem liberar perfil simples');
 const conflict=R.evaluate([{tipo:'cil',side:'1',a:50,b:30}],30,dimensions.concat([
