@@ -13,6 +13,11 @@
 .pdf-save-strip{display:flex;align-items:end;flex-wrap:wrap;gap:12px;margin:14px 0;padding:16px;border:2px solid var(--border,#a4bad0);border-radius:10px;background:var(--surface,#e9f3fc)}
 .pdf-save-strip .pdf-name{flex:1 1 260px;min-width:0}.pdf-save-strip input{width:100%;min-height:44px}.pdf-save-button{padding:14px 22px!important;min-height:48px;white-space:normal;font-size:1rem!important;font-weight:800!important;flex:0 1 auto}.pdf-save-button:disabled{opacity:.55;cursor:not-allowed}
 .pdf-confirm{margin-top:15px;display:flex;align-items:center;gap:8px;font-weight:600}.pdf-edit-dialog{min-width:min(94vw,480px);max-width:600px}.pdf-edit-dialog::backdrop{background:#0008}
+</style><style>
+.pdf-orientation-control{margin:12px 0;padding:13px;border:1px solid var(--border,#91a4bb);border-radius:8px}
+.pdf-orientation-control select{min-height:46px;width:100%}
+#pdfCotas .pdf-dimension{border:1px solid #aec3d9;border-radius:7px;padding:5px 9px;display:inline-flex;gap:4px;background:#edf4fa;color:#253b53;font-size:13px}
+#pdfCotas .pdf-dimension small{opacity:.7}#pdfOrientationStatus{padding:8px;border-radius:6px}
 </style></head>
 <body>
 <div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="loginTit">
@@ -183,17 +188,21 @@
 <div class="note" id="pdfStatus" role="status">Escolha um PDF. O texto vetorial é lido quando houver acesso ao PDF.js; documentos digitalizados exigem conferência manual.</div>
 <div class="toolbar" style="margin-top:10px"><button class="btn sm" id="pdfAnterior" type="button">Página anterior</button><span id="pdfPage">Página 1 / 1</span><button class="btn sm" id="pdfProxima" type="button">Próxima página</button><button class="btn sm" id="pdfMenos" type="button">− Zoom</button><button class="btn sm" id="pdfMais" type="button">+ Zoom</button><button class="btn sm" id="pdfGirar" type="button">Girar 90°</button><button class="btn sm" id="pdfReset" type="button">Centralizar</button></div>
 <div class="note" id="pdfTransform"></div>
-<div class="toolbar" style="margin:8px 0"><button type="button" class="btn primary" id="pdfSelectView">Selecionar vista no PDF</button><button type="button" class="btn" id="pdfClearView">Página inteira</button><span id="pdfViewState" class="note">Vista: página inteira</span></div><div id="pdfViews" class="toolbar" style="margin:6px 0" aria-label="Vistas localizadas por legenda"></div><div class="pdf-workspace"><div class="pdf-original"><div class="pdf-workspace-title"><strong>1 · PDF original</strong><span> Referência para conferência</span></div><div id="pdfStage" style="height:460px;overflow:hidden;position:relative;background:#777;touch-action:none;cursor:grab"><div id="pdfCanvasWrap" style="position:relative;display:inline-block;transform-origin:top left"><canvas id="pdfCanvas" style="display:block;max-width:none"></canvas><svg id="pdfSelectionOverlay" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></svg></div><iframe title="PDF original (visualizador de reserva)" id="pdfFrame" hidden style="height:100%;width:100%;border:0"></iframe></div>
+<div class="toolbar" style="margin:8px 0"><button type="button" class="btn primary" id="pdfSelectView">Selecionar vista no PDF</button><button type="button" class="btn" id="pdfClearView">Página inteira</button><span id="pdfViewState" class="note">Vista: página inteira</span></div><div id="pdfViews" class="toolbar" style="margin:6px 0" aria-label="Vistas encontradas no desenho"></div><div class="pdf-workspace"><div class="pdf-original"><div class="pdf-workspace-title"><strong>1 · PDF original</strong><span> Referência para conferência</span></div><div id="pdfStage" style="height:460px;overflow:hidden;position:relative;background:#777;touch-action:none;cursor:grab"><div id="pdfCanvasWrap" style="position:relative;display:inline-block;transform-origin:top left"><canvas id="pdfCanvas" style="display:block;max-width:none"></canvas><svg id="pdfSelectionOverlay" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></svg></div><iframe title="PDF original (visualizador de reserva)" id="pdfFrame" hidden style="height:100%;width:100%;border:0"></iframe></div>
 <p class="note">Clique em “Selecionar vista no PDF” e arraste um retângulo incluindo a vista e suas cotas. Assim, as medidas de outra vista não se misturam. Zoom e rotação não alteram medidas.</p></div>
 <div id="pdfProfilePanel" class="pdf-projection">
 <div class="pdf-workspace-title"><strong>2 · Peça reconstruída para CNC</strong><span id="pdfScaleInfo">Escala proporcional (X = Ø)</span></div>
 <div class="toolbar" style="margin-bottom:8px"><button type="button" class="btn sm" id="pdfAddExt">Acrescentar ao contorno externo</button><button type="button" class="btn sm" id="pdfAddInt">Acrescentar ao contorno interno</button><button type="button" class="btn sm" id="pdfReverseProfile">Inverter face Z0</button><button type="button" class="btn sm" id="pdfPreviewZoomIn">+ Zoom</button><button type="button" class="btn sm" id="pdfPreviewZoomOut">− Zoom</button><button type="button" class="btn sm" id="pdfPreviewZoomReset">Ajustar</button><select id="pdfProfileSide" aria-label="Lado projetado"><option value="1">Lado 1</option><option value="2">Lado 2</option></select></div>
 <div id="pdfProfileSvg" class="pdf-profile-svg" aria-live="polite"><p class="note">A projeção aparecerá aqui após reconhecer ou informar as cotas.</p></div>
 <div id="pdfProfileMsg" class="note" role="status">Confira as cotas projetadas com o PDF original.</div>
+<div id="pdfOrientationStatus" class="note" role="status" style="margin:8px 0;font-weight:650">Face de referência não confirmada.</div>
 </div></div>
 <details class="pdf-extracted"><summary>Texto e cotas detectadas no PDF</summary><label for="pdfTexto">Texto extraído do PDF (quando disponível)</label><textarea id="pdfTexto" rows="3" readonly placeholder="PDF digitalizado: copie as cotas visualmente para os campos abaixo."></textarea>
-<div id="pdfCotas" class="toolbar" aria-label="Diâmetros candidatos encontrados"></div></details>
-<h3>3 · Conferir e salvar</h3>
+<div id="pdfCotas" class="toolbar" aria-label="Cotas identificadas para conferência"></div></details>
+<h3>3 · Conferir orientação, cotas e salvar</h3>
+<div class="pdf-orientation-control"><div class="field"><label for="pdfFaceChoice"><strong>Face do desenho que será Z0 no torno CNC</strong></label>
+<select id="pdfFaceChoice"><option value="">Selecione a face de usinagem (obrigatório)</option><option value="start">Face esquerda da vista lateral (ou superior, se a vista estiver vertical)</option><option value="end">Face direita da vista lateral (ou inferior, se a vista estiver vertical)</option></select></div>
+<p class="note">O eixo de rotação corresponde ao centro da peça (X0). A usinagem avança da face Z0 em direção ao fundo (Z negativo). Escolher outra face inverte a ordem das cotas no CNC.</p></div>
 <p class="note">Clique diretamente nas cotas em azul ou num trecho da peça projetada para editar. O desenho se atualiza em escala proporcional; alterações exigem uma nova confirmação.</p>
 <input type="hidden" id="pdfComprimento">
 <label class="chk pdf-confirm"><input type="checkbox" id="pdfConfirmado"> Confirmo que a geometria projetada, a vista selecionada e todas as cotas correspondem ao PDF original.</label>
@@ -458,6 +467,9 @@
 <script src="pecaview.js"></script>
 <script src="desenho.js"></script>
 <script src="pdfrecognizer.js"></script>
+<script src="pdfdimensions.js"></script>
+<script src="pdfviews.js"></script>
+<script src="pdforientation.js"></script>
 <script src="pdfprofile.js"></script>
 <script src="pdfvector.js"></script>
 <script src="pdfimport.js"></script>
