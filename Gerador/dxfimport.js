@@ -2,10 +2,10 @@
    confirmada de entidades geometricamente representáveis. Sem exportar curvas omitidas. */
 (function(root){
 'use strict';
-const $=q=>document.querySelector(q),DX=root.CNCDXF,P=root.CNCDXFPerfil,E=root.CNCDXFEdicao;
+const $=q=>document.querySelector(q),DX=root.CNCDXF,P=root.CNCDXFPerfil,E=root.CNCDXFEdicao,A=root.CNCDXFAssistente;
 let doc=null,sourceDoc=null,rect=null,axis=NaN,suggest=null,active=false,start=null,zoom=1,fileName='',
  selected={externo:new Set(),interno:new Set()},chainInfo=null,hidden=new Set(),undo=[],pendingExtension=null,
- editCount=0,dragRect=null,projDrag=null,skipProjectedClick=false;
+ editCount=0,dragRect=null,projDrag=null,skipProjectedClick=false,activeView='lateral',views=[],contextId=null,focusIssue=null,quickRepairs=[];
 const KEY='cnc_dxf_rascunhos_v1';
 const val=id=>$(id).value;
 const fmt=n=>Number(n).toLocaleString('pt-BR',{maximumFractionDigits:3});
@@ -33,6 +33,95 @@ function updateZ0(face){
  $('#dxfZ0Hint').textContent=face?'Z0 na face '+face+' (confirmar na preparação e simulação).':
   'Z0 pendente — permitido salvar rascunho, CNC bloqueado.';
  resetConfirm();renderProjection();
+}
+function showOriginal(show){
+ const visible=!!show;
+ $('#dxfOriginalPane').hidden=!visible;
+ $('#dxfPanel').classList.toggle('show-original',visible);
+ $('#dxfChangeView').setAttribute('aria-expanded',String(visible));
+}
+function showPicker(show){
+ $('#dxfViewPicker').hidden=!show;
+ if(show){showOriginal(true);renderViewChoices()}
+}
+function renderViewChoices(){
+ const host=$('#dxfViewOptions');host.replaceChildren();
+ if(!doc){host.textContent='Importe um DXF para selecionar uma vista.';return}
+ views=A.views(sourceDoc||doc);
+ for(const option of views){
+  const btn=document.createElement('button');btn.type='button';btn.className='dxf-view-choice';
+  btn.setAttribute('aria-pressed',String(activeView===option.id));
+  const svg=document.createElement('div');
+  // Prévia vetorial de cada vista em escala uniforme; não é o contorno CNC.
+  svg.innerHTML=P.svg(sourceDoc||doc,option.rect);
+  const name=document.createElement('strong');name.textContent=option.name;
+  const hint=document.createElement('small');hint.textContent=option.hint;
+  btn.append(svg,name,hint);
+  btn.onclick=function(){
+   activeView=option.id;$('#dxfAxis').value=option.profile?Number(option.axis).toFixed(5):'';
+   view(option.rect);
+   $('#dxfGuidance').textContent=option.profile?
+     'Seção selecionada: o contorno foi sugerido. Confira os pontos destacados.':
+     'Vista de referência selecionada. Troque para a seção longitudinal para reconhecer o perfil CNC.';
+   showPicker(false);
+   status('Vista '+option.name+' selecionada. '+(option.profile?'Confira a proposta de contorno.':'Esta vista é somente referência para conferência.'));
+  };
+  host.appendChild(btn);
+ }
+}
+function focusAt(point){
+ const svg=$('#dxfProjected svg');
+ if(!svg||!point||!rect)return;
+ svg.querySelector('#dxfIssueTarget')?.remove();
+ const coord=E.viewTransform(rect,val('#dxfFace'))(point);
+ const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
+ ring.id='dxfIssueTarget';ring.setAttribute('cx',coord[0]);ring.setAttribute('cy',coord[1]);
+ ring.setAttribute('r','11');ring.setAttribute('fill','none');ring.setAttribute('stroke','#d98d23');
+ ring.setAttribute('stroke-width','3');ring.setAttribute('stroke-dasharray','4 3');
+ ring.style.pointerEvents='none';svg.appendChild(ring);
+ $('#dxfProjected').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function renderProblems(external,internal){
+ const host=$('#dxfSimpleProblems');host.replaceChildren();
+ if(!rect){host.textContent='Selecione uma vista longitudinal para obter o diagnóstico.';return}
+ const problems=A.diagnostics({external,internal,doc,selected,hidden,axis,rect});
+ const selectedIds=new Set([...selected.externo,...selected.interno]);
+ quickRepairs=A.repairOptions(P.segments(doc.geometry,rect,hidden),selectedIds,3);
+ // Reparar somente ligações unívocas, mediante confirmação explícita.
+ if(quickRepairs.length){
+  const fix=quickRepairs[0];
+  problems.unshift({type:'repair',title:'Pequena lacuna com correção sugerida',
+   detail:'Estender '+fmt(fix.mm)+' mm a linha '+fix.uid+' até outra extremidade do perfil.',
+   repair:fix,point:fix.target});
+ }
+ if(!problems.length){
+  const line=document.createElement('div');line.className='note';
+  line.textContent='Nenhuma falha topológica simples detectada. Confira cotas, raios, roscas e fixação antes de usar no torno.';
+  host.appendChild(line);return;
+ }
+ for(const item of problems.slice(0,5)){
+  const row=document.createElement('div');row.className='dxf-problem';
+  const body=document.createElement('div'),heading=document.createElement('strong'),detail=document.createElement('small');
+  heading.textContent=item.title;detail.textContent=item.detail;body.append(heading,detail);row.appendChild(body);
+  if(item.point||item.repair){
+   const b=document.createElement('button');b.type='button';b.className='btn';
+   b.textContent=item.repair?'Visualizar correção':'Localizar';
+   b.onclick=function(){
+    if(item.point)focusAt(item.point);
+    if(item.repair){
+     const r=item.repair;
+     if(!root.confirm('Proposta: estender a linha '+r.uid+' em '+fmt(r.mm)+' mm até a extremidade de '+r.to+'. Confirmar alteração na cópia de trabalho?'))return;
+     remember();
+     const outcome=E.extendLine(doc.geometry,r.uid,r.which,r.mm);
+     if(!outcome.ok){undo.pop();$('#dxfUndo').disabled=undo.length===0;status(outcome.reason,true);return}
+     markEdited();status('Extensão de '+fmt(r.mm)+' mm aplicada. Confira as cotas e o perfil antes de salvar.');
+    }
+   };
+   row.appendChild(b);
+  }
+  host.appendChild(row);
+ }
+ if(problems.length>5){const more=document.createElement('p');more.className='note';more.textContent='Há '+(problems.length-5)+' pontos adicionais. Consulte Edição avançada.';host.appendChild(more)}
 }
 function draftList(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(_){return []}}
 function refreshDrafts(){
