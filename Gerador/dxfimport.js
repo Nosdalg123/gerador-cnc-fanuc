@@ -341,8 +341,9 @@ $('#dxfRestore').onclick=function(){
 $('#dxfSaveDraft').onclick=function(){
  if(!doc){status('Selecione um DXF antes de salvar.',true);return}
  let nome=val('#dxfNome').trim();if(!nome){status('Informe o nome do rascunho.',true);return}
- let draft={nome,data:new Date().toLocaleString('pt-BR'),fileName,doc,rect,axis:val('#dxfAxis'),
-  face:val('#dxfFace'),length:val('#dxfLength'),externo:[...selected.externo],interno:[...selected.interno]};
+ let draft={nome,data:new Date().toLocaleString('pt-BR'),fileName,doc,sourceDoc,rect,axis:val('#dxfAxis'),
+  face:val('#dxfFace'),length:val('#dxfLength'),externo:[...selected.externo],interno:[...selected.interno],
+  hidden:[...hidden],editCount};
  try{
   let ls=draftList();ls.unshift(draft);localStorage.setItem(KEY,JSON.stringify(ls.slice(0,8)));refreshDrafts();
   $('#dxfSaved').textContent='Rascunho "'+nome+'" salvo localmente, sem liberar CNC.';
@@ -351,9 +352,12 @@ $('#dxfSaveDraft').onclick=function(){
 };
 $('#dxfOpenDraft').onclick=function(){
  let id=Number(val('#dxfDraftList')),entry=draftList()[id];if(!entry)return;
- doc=entry.doc;rect=entry.rect;fileName=entry.fileName;zoom=1;
+ doc=entry.doc;sourceDoc=entry.sourceDoc||clone(entry.doc);rect=entry.rect;fileName=entry.fileName;zoom=1;
+ hidden=new Set(entry.hidden||[]);editCount=entry.editCount||0;undo=[];pendingExtension=null;
+ $('#dxfUndo').disabled=true;$('#dxfRestore').disabled=false;
  $('#dxfNome').value=entry.nome;$('#dxfAxis').value=entry.axis||'';
  $('#dxfFace').value=entry.face||'';$('#dxfLength').value=entry.length||'';
+ updateZ0(entry.face||'');
  selected.externo=new Set(entry.externo||[]);selected.interno=new Set(entry.interno||[]);
  ['#dxfSuggest','#dxfSelect','#dxfAll','#dxfAuto','#dxfClear'].forEach(q=>$(q).disabled=false);
  resetConfirm();renderSource();renderMeasures();renderProjection();status('Rascunho CAD carregado. Confira todas as cotas e a fixação.');
@@ -371,12 +375,12 @@ function toItems(mode,ana,face){
 }
 $('#dxfSaveCNC').onclick=function(){
  let e=analyse('externo'),i=analyse('interno'),length=Number(val('#dxfLength')),face=val('#dxfFace');
- const cn=P.analyze(doc,rect,axis,face,new Set()).candidate;
+ const cn=P.analyze(doc,rect,axis,face,new Set(),hidden).candidate;
  const aud=root.CNCDXFAuditoria.check({doc,axis,face,length,external:e,internal:i,nativeDimensions:dimsForRect(),
   candidateSegments:cn,unsupportedCurves:DX.cut(doc.geometry,rect).filter(q=>q.type==='SPLINE'||q.type==='ELLIPSE').length,
   threadNotes:DX.annotations(doc.entities,rect,26).filter(q=>/\b(?:M\s*\d+|ROSCA|FURO|THREAD)\b/i.test(q.text||'')).length});
  if(!aud.ok){status('Perfil CAD ainda incompleto: '+aud.problems.join(' · '),true);return}
- if(!e||!checked()||!e.canExport||(i&&i.selected.length&&!i.canExport)||!Number.isFinite(length)||length<=0||doc.units!==4||!['esquerda','direita'].includes(face)){
+ if(!e||!checked()||!e.canExport||editCount>0||hidden.size>0||(i&&i.selected.length&&!i.canExport)||!Number.isFinite(length)||length<=0||doc.units!==4||!['esquerda','direita'].includes(face)){
   status('Não é possível salvar: confirme a escala, vista, Z0, cotas e continuidade de todas as entidades.',true);return;
  }
  let items=toItems('externo',e,face).concat(i&&i.selected.length?toItems('interno',i,face):[]);
@@ -401,7 +405,7 @@ $('#dxfEditManual').onclick=function(){
  let max=Math.max(...items.filter(q=>q.tipo[0]!=='i').map(q=>Math.max(q.a,q.tipo==='cone'?q.b:q.a)));
  if(!Number.isFinite(max)){status('Selecione algum contorno externo.',true);return}
  let ok=root.CNCDesenhos&&root.CNCDesenhos.importarPDF({nome:val('#dxfNome')||'Rascunho DXF',lPeca:len,dRef:Math.ceil(max+4),items,
-  cadOrigem:{arquivo:fileName,unidade:doc.unitName,faceZ0:face,eixoCAD:axis,verificado:false,incompleto:true}});
+  cadOrigem:{arquivo:fileName,unidade:doc.unitName,faceZ0:face,eixoCAD:axis,verificado:false,incompleto:true,alteradoCAD:editCount>0,segmentosExcluidos:hidden.size}});
  if(!ok){status('O editor não aceitou a transferência de rascunho.',true);return}
  $('#dxfPanel').hidden=true;$('#pdfManual').hidden=false;
  alert('Rascunho aberto no editor manual. Revise raios, roscas, cavidades e descontinuidades antes de salvar no Gerador.');
@@ -409,5 +413,5 @@ $('#dxfEditManual').onclick=function(){
 $('#dxfModo').onclick=function(){$('#dxfPanel').hidden=false;$('#pdfPanel').hidden=true;$('#pdfManual').hidden=true;refreshDrafts()};
 $('#dxfVoltar').onclick=function(){$('#dxfPanel').hidden=true;$('#pdfManual').hidden=false};
 refreshDrafts();
-root.CNCDXFImport={getModel:()=>doc,getRegion:()=>rect,getSelected:()=>selected};
+root.CNCDXFImport={getModel:()=>doc,getOriginal:()=>sourceDoc,getRegion:()=>rect,getSelected:()=>selected,getHidden:()=>hidden};
 })(window);
