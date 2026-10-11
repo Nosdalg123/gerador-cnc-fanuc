@@ -241,7 +241,7 @@
     });
     listas(); grafico();
   }
-  function mudou() { persistWork(); tela(); }
+  function mudou() { if(work.pdfOrientacao)work.pdfOrientacao.editadoDepoisDaImportacao=true;persistWork(); tela(); }
 
   /* ---------- salvar / abrir / excluir ---------- */
   function abrirId(id) {
@@ -427,6 +427,7 @@
       novo.nome = String(dados.nome || 'Desenho PDF').trim();
       novo.lPeca = dados.lPeca;
       novo.dRef = dados.dRef;
+      if(dados.pdfOrientacao) novo.pdfOrientacao = clone(dados.pdfOrientacao);
       novo.lados = dados.items.some(function (it) { return it.side === '2'; }) ? '2' : '1';
       dados.items.forEach(function (it) {
         var el = { id: uid(), tipo: it.tipo, a: it.a, b: it.b };
