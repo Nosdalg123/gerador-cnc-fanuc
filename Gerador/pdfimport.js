@@ -82,26 +82,29 @@ function showPage(rescan){
   if(rescan)await recognizePage();
  }).catch(function(e){status('Falha ao renderizar PDF: '+(e.message||e),true);showFallback()});
 }
-function cropItems(items){
- if(!picked||!library||!viewport)return items;
- return items.filter(function(it){
-  var p=library.Util.transform(viewport.transform,it.transform||[1,0,0,1,0,0]);
-  var x=p[4]/viewport.width,y=p[5]/viewport.height;
-  return x>=picked.x1&&x<=picked.x2&&y>=picked.y1&&y<=picked.y2;
- });
-}
+function cropItems(items){return root.CNCPDFRegioes.filter(items,viewport,library.Util,picked)}
 async function recognizePage(){
  if(!pg)return;
  var seq=++recognizeSeq;
  try{
   var content=await pg.getTextContent();if(seq!==recognizeSeq)return;
+  var captions=content.items.map(function(it){return {s:String(it.str||'').trim(),transform:it.transform}}).filter(t=>/^(?:SE[CÇ][AÃ]O|CORTE|SECTION|VISTA|DETALHE|DETAIL)\b/i.test(t.s));
+  possibleViews=captions.map(function(t){var p=library.Util.transform(viewport.transform,t.transform);return {name:t.s.slice(0,45),x:p[4],y:p[5]};});
+  paintSuggestions();
+  if(!picked){
+    model=[];length='';unsupportedFeatures=[];
+    $('#pdfTexto').value='Selecione uma vista para listar somente as cotas pertencentes a ela.';
+    $('#pdfCotas').replaceChildren();invalidate();
+    status('A página contém várias vistas e notas. Delimite uma vista e suas cotas antes de reconstruir o perfil CNC.');
+    return;
+  }
   var items=cropItems(content.items);
   $('#pdfTexto').value=items.map(t=>t.str).join(' ');
   var list=root.CNCPDFCotas.summary(items),box=$('#pdfCotas');
   box.replaceChildren();
   list.dims.forEach(function(d){
     var chip=document.createElement('span');chip.className='pdf-dim-tag';chip.dataset.dimKind=d.kind;
-    var caption={diametro:'Ø',linear_sem_tipo:'Cota sem tipo',raio:'Raio',rosca:'Rosca',angulo:'Ângulo'}[d.kind]||'Cota';
+    var caption={diametro:'Ø',linear_sem_tipo:'Cota sem tipo',raio:'Raio',rosca:'Rosca',angulo:'Ângulo',marcador_vista:'Legenda'}[d.kind]||'Cota';
     chip.textContent=caption+': '+d.label+(d.kind==='linear_sem_tipo'?' · conferir símbolo':'');
     box.appendChild(chip);
   });
@@ -140,20 +143,21 @@ async function recognizePage(){
    invalidate();
    status('Geometria COMPLETA não reconhecida. O sistema não inventará comprimentos nem diâmetros. Selecione a vista lateral com as cotas ou complete no editor manual. '+recognized.reason,true);
   }
-  var views=content.items.map(function(it){return {s:String(it.str||'').toUpperCase(),transform:it.transform}})
-    .filter(function(it){return /SE[CÇ][AÃ]O|CORTE |SECTION|VISTA /.test(it.s)});
-  possibleViews=views.map(function(t,i){var p=library.Util.transform(viewport.transform,t.transform),nx=p[4]/viewport.width,ny=p[5]/viewport.height;
-    return {name:t.s.slice(0,40),view:{x1:Math.max(0,nx-.25),y1:Math.max(0,ny-.45),x2:Math.min(1,nx+.25),y2:Math.min(1,ny+.03)}}
-  });
-  paintSuggestions();
+  // As legendas apenas ajudam a encontrar a vista; nunca criam um recorte de tamanho presumido.
  }catch(e){status('Não foi possível ler as cotas desta página: '+(e.message||e),true)}
 }
 function paintSuggestions(){
  var rootEl=$('#pdfViews');if(!rootEl)return;
  rootEl.replaceChildren();
  possibleViews.forEach(function(v,i){
-  var b=document.createElement('button');b.type='button';b.className='btn sm';b.textContent='Selecionar '+v.name;
-  b.onclick=function(){picked=v.view;selectMode=false;invalidate();drawSelection();recognizePage();};rootEl.appendChild(b);
+  var b=document.createElement('button');b.type='button';b.className='btn sm';b.textContent='Localizar '+v.name;
+  b.onclick=function(){
+   var stage=$('#pdfStage');
+   stage.scrollLeft=Math.max(0,v.x-stage.clientWidth/2);
+   stage.scrollTop=Math.max(0,v.y-stage.clientHeight/2);
+   selectMode=true;
+   status('Legenda '+v.name+' localizada. Arraste um retângulo incluindo a vista desejada e TODAS as cotas correspondentes.');
+  };rootEl.appendChild(b);
  });
 }
 function drawSelection(temp){
