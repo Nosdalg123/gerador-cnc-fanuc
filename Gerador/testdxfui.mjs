@@ -37,10 +37,14 @@ try{
  browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:1400,height:900}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const consoleErrors=[];page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
  await page.goto('http://127.0.0.1:'+port+'/index.html',{waitUntil:'load',timeout:30000});
  await page.evaluate(()=>{document.querySelector('#view-desenho').hidden=false;document.querySelector('#dxfModo').click()});
  await page.locator('#dxfFile').setInputFiles({name:'synthetic-turning.dxf',mimeType:'application/dxf',buffer:Buffer.from(cad,'utf8')});
- await page.waitForFunction(()=>document.querySelector('#dxfStatus').textContent.includes('DXF CAD carregado:'),{timeout:20000});
+ await page.waitForTimeout(1000);
+ console.log('Importação DXF no navegador — status:',await page.locator('#dxfStatus').innerText(),
+  'erros:',errors,'console:',consoleErrors.slice(0,5));
+ await page.waitForFunction(()=>document.querySelector('#dxfStatus').textContent.includes('DXF CAD carregado:'),null,{timeout:10000});
  assert.equal(await page.locator('#dxfSource svg').count(),1,'Prévia do CAD precisa aparecer');
  assert.equal(await page.locator('#dxfProjected svg').count(),1,'Projeção CNC precisa aparecer');
  assert(Number(await page.locator('#dxfAxis').inputValue())===100,'Eixo X0 sugerido pelos círculos');
