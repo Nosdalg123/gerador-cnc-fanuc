@@ -51,6 +51,9 @@ function renderMeasures(){
  dims.forEach(d=>{
    let el=document.createElement('span');
    let p=(d.text||'').replace(/%%c/gi,'Ø').replace('<>',d.measure===null?'?':fmt(d.measure));
+   if(d.kind===4&&p[0]!=='R')p='R'+p;
+   if(d.kind===5&&p[0]!=='Ø')p='Ø'+p;
+   if(d.kind===2)p='Ângulo CAD (conferir lado e suplemento): '+p;
    el.textContent=p==='<'+'>'?'Medida não resolvida':p;
    el.title='DIMENSION nativa; tipo '+d.kind+'; '+(d.measure===null?'medição indisponível':fmt(d.measure)+' mm');
    host.appendChild(el);
@@ -201,7 +204,7 @@ $('#dxfSaveCNC').onclick=function(){
  if(!api||!api.salvarPDF){status('Editor CNC não disponível.',true);return}
  let id=api.salvarPDF({nome:val('#dxfNome').trim(),lPeca:length,dRef:Math.ceil(max+4),items,
    cadOrigem:{arquivo:fileName,unidade:doc.unitName,faceZ0:face,eixoCAD:axis,verificado:true,entidadesSelecionadas:e.selected.length+(i?.selected.length||0)}});
- if(id){$('#dxfSaved').textContent='Perfil enviado ao Gerador: '+val('#dxfNome');resetConfirm();status('Perfil CNC salvo. Revise fixação, ferramentas e simulação antes de usinar.')}
+ if(id){resetConfirm();$('#dxfSaved').textContent='Perfil enviado ao Gerador: '+val('#dxfNome');status('Perfil CNC salvo. Revise fixação, ferramentas e simulação antes de usinar.')}
 };
 $('#dxfModo').onclick=function(){$('#dxfPanel').hidden=false;$('#pdfPanel').hidden=true;$('#pdfManual').hidden=true;refreshDrafts()};
 $('#dxfVoltar').onclick=function(){$('#dxfPanel').hidden=true;$('#pdfManual').hidden=false};
