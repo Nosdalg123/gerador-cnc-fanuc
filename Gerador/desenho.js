@@ -428,6 +428,7 @@
       novo.lPeca = dados.lPeca;
       novo.dRef = dados.dRef;
       if(dados.pdfOrientacao) novo.pdfOrientacao = clone(dados.pdfOrientacao);
+      if(dados.cadOrigem) novo.cadOrigem=clone(dados.cadOrigem);
       novo.lados = dados.items.some(function (it) { return it.side === '2'; }) ? '2' : '1';
       dados.items.forEach(function (it) {
         var el = { id: uid(), tipo: it.tipo, a: it.a, b: it.b };
