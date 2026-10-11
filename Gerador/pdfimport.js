@@ -44,7 +44,7 @@ function showFallback(){
 function showCanvas(){
  $('#pdfFrame').hidden=true;$('#pdfCanvasWrap').hidden=false;
 }
-function showPage(){
+function showPage(rescan){
  if(!doc)return;
  var local=++renderSeq;
  doc.getPage(page).then(async function(p){
@@ -63,7 +63,7 @@ function showPage(){
   setText('#pdfPage','Página '+page+' / '+totalPages);
   setText('#pdfTransform','Zoom '+Math.round(zoom*100)+'% · rotação '+rotation+'° · arraste para selecionar a vista');
   drawSelection();
-  await recognizePage();
+  if(rescan)await recognizePage();
  }).catch(function(e){status('Falha ao renderizar PDF: '+(e.message||e),true);showFallback()});
 }
 function cropItems(items){
@@ -142,25 +142,25 @@ $('#pdfFile').onchange=async function(){
  status('Carregando PDF e procurando geometria e cotas…');
  try{
   fileBytes=await f.arrayBuffer();var lib=await loadPdfjs();
-  doc=await lib.getDocument({data:new Uint8Array(fileBytes.slice(0))}).promise;totalPages=doc.numPages;showPage();
+  doc=await lib.getDocument({data:new Uint8Array(fileBytes.slice(0))}).promise;totalPages=doc.numPages;showPage(true);
  }catch(e){status(e.message||String(e),true);showFallback()}
 };
-$('#pdfAnterior').onclick=function(){if(doc&&page>1){page--;picked=null;fresh();showPage()}};
+$('#pdfAnterior').onclick=function(){if(doc&&page>1){page--;picked=null;fresh();showPage(true)}};
 $('#pdfProxima').onclick=function(){if(doc&&page<totalPages){page++;picked=null;fresh();showPage()}};
-$('#pdfMais').onclick=function(){zoom=Math.min(4,zoom*1.25);showPage()};
-$('#pdfMenos').onclick=function(){zoom=Math.max(.5,zoom/1.25);showPage()};
-$('#pdfGirar').onclick=function(){rotation=(rotation+90)%360;picked=null;fresh();showPage()};
-$('#pdfReset').onclick=function(){zoom=1;rotation=0;picked=null;fresh();showPage()};
+$('#pdfMais').onclick=function(){zoom=Math.min(4,zoom*1.25);showPage(false)};
+$('#pdfMenos').onclick=function(){zoom=Math.max(.5,zoom/1.25);showPage(false)};
+$('#pdfGirar').onclick=function(){rotation=(rotation+90)%360;picked=null;fresh();showPage(true)};
+$('#pdfReset').onclick=function(){zoom=1;rotation=0;picked=null;fresh();showPage(true)};
 function openEditor(index,key,add){
  edit={index:index,key:key,add:add||null};
- var item=index==null?{tipo:add==='int'?'icil':'cil',a:40,b:valid(length)?Number(length):30,c:'',side:$('#pdfProfileSide').value}:model[index];
+ var item=(index==null||index===-1)?{tipo:add==='int'?'icil':'cil',a:40,b:valid(length)?Number(length):30,c:'',side:$('#pdfProfileSide').value}:model[index];
  var total=index===-1;
  $('#pdfEditTitle').textContent=total?'Comprimento total da peça':add?'Acrescentar trecho ao contorno':'Editar cota / trecho';
  $('#pdfEditTipo').value=item.tipo;$('#pdfEditDiam').value=item.a;
  $('#pdfEditComp').value=total?length:item.b;$('#pdfEditFinal').value=item.c||'';
  $('#pdfEditLado').value=item.side||'1';
  $('#pdfEditFields').querySelectorAll('.field').forEach(function(el){el.hidden=total&&el.querySelector('label').htmlFor!=='pdfEditComp'});
- $('#pdfEditRemover').hidden=total||!!add;$('#pdfEditError').hidden=true;
+ $('#pdfEditRemover').hidden=total||!!add;$('#pdfEditError').hidden=true;$('#pdfEditTipo').onchange();
  var dlg=$('#pdfEditDialog');if(!dlg.open)dlg.showModal();
  if(total)$('#pdfEditComp').focus();else $('#pdfEditDiam').focus();
 }
