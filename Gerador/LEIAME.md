@@ -2,6 +2,21 @@
 
 Abrir: dois cliques em `index.html` (Chrome ou Edge). O Gerador funciona localmente; a importação automática de texto do PDF precisa carregar a biblioteca PDF.js na primeira utilização.
 
+## Importar CAD DXF — geometria real (v2.13.0)
+1. Em **Desenho da peça**, clique em **Importar CAD DXF (geometria real)**. Aceita DXF ASCII em milímetros (DWG requer exportação; DXF binário não suportado).
+2. Selecione seu DXF. O sistema desenha as entidades CAD e sugere uma vista longitudinal com base nos círculos concêntricos da vista frontal. Ajuste o recorte se necessário.
+3. No segundo painel aparece a **geometria vetorial efetiva**, em escala uniforme, incluindo linhas e arcos; uma SPLINE NURBS é desenhada por amostragem da curva original. **Isso ainda não é programa CNC**.
+4. Informe/confira eixo X0 e qual face será Z0. Rascunhos podem ser salvos com Z0 pendente; para o CNC é obrigatório defini-lo.
+5. Em **Marcar no perfil**, selecione Externo ou Interno e clique nas entidades da projeção. A cadeia sugerida automaticamente é apenas um ponto de partida; retire linhas auxiliares e incorpore raios/entalhes.
+6. Confira **Cotas e elementos reconhecidos**: usam entidades DIMENSION nativas, não estimativas a partir da imagem. Ângulos CAD podem usar o suplemento (ex.: 174° quando a peça indica 6°), então confirme a cotagem.
+7. O painel avisa onde há pontas soltas, múltiplos grupos, ramificações, raios sem tradução e notas de rosca. **Salvar rascunho CAD** nunca libera CNC.
+8. **Corrigir trechos no editor manual** transfere somente cilindros e cones escolhidos e marca `cadOrigem.incompleto=true`. O Gerador BLOQUEIA código para esses rascunhos até clicar em **Confirmar revisão completa do CAD** após realmente completar as operações.
+9. O botão de salvar diretamente na lista do Gerador só habilita para perfil longitudinal simples, conectado, completamente conferido, sem elementos CAD pendentes e com origem definida; revise o programa e simule.
+
+No módulo PDF original, contornos complexos sem associação de cotas passam a ter **prévia vetorial para comparação**, mas não são promovidos a perfil usinável.
+
+Veja `TESTE-DXF-REAIS.md` para resultados obtidos diretamente com os anexos e limitações.
+
 ## Separação de vistas e detalhes — teste Copo 7″ (v2.12.0)
 - Ao abrir um PDF, selecione manualmente uma vista com o botão **Selecionar vista no PDF**. Não se reconstrói um contorno com todas as vistas da página misturadas.
 - Atalhos de “SEÇÃO Y-Y” ou “DETALHE Z” **localizam legendas**, mas não escolhem uma caixa de tamanho adivinhado. Arraste o retângulo em torno da vista e de suas cotas.
