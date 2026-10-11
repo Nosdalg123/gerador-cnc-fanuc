@@ -8,6 +8,16 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.16.0 — 11/10/2026 — Importador inteligente com fluxo de três etapas (branch isolada)
+- A importação CAD abre diretamente com **contorno externo/interno sugerido**, sem expor dezenas de comandos.
+- **Trocar vista** exibe miniaturas vetoriais da seção longitudinal, vista frontal e desenho completo; vista não longitudinal é referência, não gera perfil CNC.
+- **Um clique** inclui ou retira linhas do perfil; painel contextual só mostra ações pertinentes ao trecho selecionado.
+- Lista curta **Pontos a conferir** destaca lacunas, bifurcações, arcos, roscas e curvas especiais, com botão para localizar o problema.
+- Pequenas lacunas colineares podem ser corrigidas por extensão **sugerida**, com tolerâncias conservadoras e confirmação do usuário.
+- Os controles técnicos da 2.15.0 permanecem em **Edição avançada**. O salvamento como rascunho e a escolha de Z0 pendente permanecem disponíveis.
+- Novos `dxfassist.js` e `testdxfassist.js`; smoke Chromium cobre escolha de vista e edição contextual. Veja `IMPORTADOR-INTELIGENTE-2.16.md`.
+- Proposta automática não libera código CNC nem substitui conferência de raios, roscas, cavidades e fixação.
+
 ## 2.15.0 — 11/10/2026 — Editor CAD assistido com seleção automática e retângulo visível (branch isolada)
 - Primeira proposta automática ao carregar a vista lateral de DXF: separação axial/radial de cadeias candidatas externas e internas. **Sugestão, não geometria CNC validada.**
 - Corrigida delimitação da vista: **retângulo azul desenhado durante o arraste**, mantendo caixa visível após soltar o mouse.
