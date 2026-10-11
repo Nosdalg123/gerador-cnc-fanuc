@@ -2644,6 +2644,7 @@
     },
 
     gerar: function (f, tools, meta) {
+      if(f.pdfPendente)return {erros:['Este desenho PDF contém cotas ou detalhes não resolvidos. Conclua e verifique a geometria antes de gerar programa CNC.'],avisos:[]};
       var erros = [], avisos = [];
       var n = lerCampos(f, ['dBruto', 'lBruto', 'lPeca', 'sobre1', 'grip1', 'grip2']);
       if (f.grip1 === undefined) n.grip1 = GRIP_PADRAO;
