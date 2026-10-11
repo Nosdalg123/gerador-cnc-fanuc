@@ -17,6 +17,9 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 - `desenho.js`: **corrigida persistência da confirmação de revisão completa do CAD** na lista usada pelo Gerador, impedindo que rascunhos confirmados permaneçam bloqueados por dados antigos.
 - Status de carregamento de arquivos grandes e alternância exclusiva entre os painéis DXF/PDF.
 - `testdxfchains.js`, `testdxfaudit.js`, `testdxfreal.js` e relatório `TESTE-DXF-CADEIAS.md`.
+- Corrigido erro **`root is not defined`** que impedia a inicialização do painel DXF no navegador (a versão 2.13 passava nos testes Node, mas não carregava a projeção).
+- Corrigida escala SVG `NaN` quando o desenho era recortado por vista: largura/altura agora são derivadas do retângulo CAD.
+- Adicionados testes Chromium/Playwright da importação, prévia original, projeção, eixo, cadeias, salvamento de rascunho e bloqueio CNC sem Z0. Regressão via GitHub Actions na branch.
 - Limitação intencional: ainda não transforma integralmente geometrias complexas com arcos, roscas e cavidades em CNC sem revisão; não liberar perfis parciais.
 
 ## 2.13.0 — 11/10/2026 — Importação DXF real, topologia e prévia PDF (branch isolada)
