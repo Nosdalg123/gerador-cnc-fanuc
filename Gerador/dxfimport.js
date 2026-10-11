@@ -123,7 +123,13 @@ function renderProjection(){
  if(special.length)issues.push(special.length+' entidades curvas não circulares: revise o perfil e o raio real.');
  if(src.some(q=>q.type==='ARC')&&!e.selected.some(s=>s.kind==='arc')&&!i.selected.some(s=>s.kind==='arc'))
    issues.push('A vista contém arcos que não foram associados ao perfil CNC.');
- let out=issues.length?issues.map((t,k)=>(k+1)+'. '+t).join('\n'):'Perfil selecionado sem advertências topológicas básicas. Conferir todos os detalhes, furos e fixação.';
+ const more=root.CNCDXFAuditoria.check({
+  doc,axis:a,face:val('#dxfFace'),length:val('#dxfLength'),external:e,internal:i,
+  nativeDimensions:dimsForRect(),candidateSegments:cand,
+  unsupportedCurves:special.length,threadNotes:notes.length+dimNotes.length
+ });
+ more.problems.forEach(problem=>{if(!issues.includes(problem))issues.push(problem)});
+  let out=issues.length?issues.map((t,k)=>(k+1)+'. '+t).join('\n'):'Perfil selecionado sem advertências topológicas básicas. Conferir todos os detalhes, furos e fixação.';
  warn.textContent=out;warn.style.whiteSpace='pre-line';
  $('#dxfSaveCNC').disabled=!(checked()&&!issues.length&&e.canExport&&(!i.selected.length||i.canExport)&&doc.units===4);
 }
@@ -224,6 +230,11 @@ function toItems(mode,ana,face){
 }
 $('#dxfSaveCNC').onclick=function(){
  let e=analyse('externo'),i=analyse('interno'),length=Number(val('#dxfLength')),face=val('#dxfFace');
+ const cn=P.analyze(doc,rect,axis,face,new Set()).candidate;
+ const aud=root.CNCDXFAuditoria.check({doc,axis,face,length,external:e,internal:i,nativeDimensions:dimsForRect(),
+  candidateSegments:cn,unsupportedCurves:DX.cut(doc.geometry,rect).filter(q=>q.type==='SPLINE'||q.type==='ELLIPSE').length,
+  threadNotes:DX.annotations(doc.entities,rect,26).filter(q=>/\\b(?:M\\s*\\d+|ROSCA|FURO|THREAD)\\b/i.test(q.text||'')).length});
+ if(!aud.ok){status('Perfil CAD ainda incompleto: '+aud.problems.join(' · '),true);return}
  if(!e||!checked()||!e.canExport||!Number.isFinite(length)||length<=0||doc.units!==4||!['esquerda','direita'].includes(face)){
   status('Não é possível salvar: confirme a escala, vista, Z0, cotas e continuidade de todas as entidades.',true);return;
  }
