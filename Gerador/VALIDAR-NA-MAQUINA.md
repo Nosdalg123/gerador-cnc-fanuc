@@ -78,3 +78,12 @@ O leitor segue os mesmos critérios dos geradores; o que não foi confirmado na 
 - [ ] As entidades visualizadas em DXF não equivalem a código CNC completo. Não programar raios ou SPLINE como linhas substitutas sem tratamento geométrico.
 - [ ] Rascunhos do editor manual marcados `cadOrigem.incompleto` estão bloqueados para geração; confirmar apenas após comparar todas as superfícies com a fonte CAD.
 - [ ] Realizar simulação, verificação a seco e conferência da máquina/controlador e das ferramentas antes da produção.
+
+## DXF com cadeias ramificadas — v2.14.0
+- [ ] Selecione especificamente cada cadeia externa/interna, sem transferir em bloco a maior componente do CAD.
+- [ ] Confirme pontas e bifurcações nas coordenadas CAD e nos diâmetros exibidos.
+- [ ] Verifique que todos os raios CAD estão associados a cantos no editor, sem converter ARC/SPLINE em linhas retas.
+- [ ] Compare comprimento do perfil com a DIMENSION axial nativa e com o desenho de fabricação.
+- [ ] Confirme a fixação, a face Z0 e os eixos X/Z. A orientação não é inferida do desenho.
+- [ ] Se um rascunho for completado no editor manual, use **Confirmar revisão completa do CAD** para persistir essa informação.
+- [ ] Execute revisão de programa/simulação, inspeção a seco e validação na máquina antes de usinar.
