@@ -225,10 +225,10 @@ function renderProjection(){
  if(none)a=NaN;
  axis=a;
  let cand=P.analyze(doc,rect,a,val('#dxfFace'),new Set(),hidden).candidate;
- host.innerHTML=P.svg(doc,rect,{axis:a,face:val('#dxfFace'),selected:all,hidden,candidate:new Set(cand.map(s=>s.uid)),dimensions:dimsForRect()});
+ host.innerHTML=P.svg(doc,rect,{axis:a,face:val('#dxfFace'),selected:all,external:selected.externo,internal:selected.interno,hidden,candidate:new Set(cand.map(s=>s.uid)),dimensions:dimsForRect()});
  drawChains();
  const e=analyse('externo'),i=analyse('interno'),warn=$('#dxfWarnings');
- if(!e){warn.textContent='Selecione a seção longitudinal do DXF. A geometria original é exibida sem conversão inventada.';$('#dxfSaveCNC').disabled=true;return}
+ if(!e){warn.textContent='Selecione a seção longitudinal do DXF. A geometria original é exibida sem conversão inventada.';$('#dxfSaveCNC').disabled=true;renderProblems(null,null);return}
  const issues=e.alerts.concat(i.selected.length?i.alerts.filter(t=>!t.includes('Nenhuma entidade')):[]);
  const src=DX.cut(doc.geometry,rect),special=src.filter(q=>q.type==='SPLINE'||q.type==='ELLIPSE');
  const notes=DX.annotations(doc.entities,rect,26).filter(q=>/\b(?:M\s*\d+|ROSCA|FURO|THREAD)\b/i.test(q.text||''));
@@ -248,6 +248,11 @@ function renderProjection(){
  if(hidden.size||editCount)issues.push('CAD editado na cópia de trabalho ('+hidden.size+' linhas ocultadas, '+editCount+' edições). Revise e confirme no editor manual antes de gerar CNC.');
  warn.textContent=issues.length?issues.map((t,k)=>(k+1)+'. '+t).join('\n'):'Perfil sem pendências topológicas detectadas; ainda requer validação da preparação.';
  $('#dxfSaveCNC').disabled=!(checked()&&!issues.length&&e.canExport&&(!i.selected.length||i.canExport)&&doc.units===4);
+ renderProblems(e,i);
+ const n=selected.externo.size+selected.interno.size;
+ $('#dxfGuidance').textContent=n?
+  n+' entidades sugeridas no contorno. Confira os pontos sinalizados; clique nas linhas para adicionar ou retirar.':
+  'Ainda não foi possível sugerir o contorno. Escolha outra vista ou clique nas linhas da seção.';
 }
 function autoRecognize(){
  if(!doc||!rect||val('#dxfAxis')==='')return;
@@ -264,11 +269,17 @@ function view(rectangle){
 function suggestView(){
  if(!doc)return;
  suggest=P.sectionSuggestion(doc);
+ activeView='lateral';
  if(suggest){
   if(!val('#dxfAxis'))$('#dxfAxis').value=suggest.axis.toFixed(5);
   view(suggest.rect);
   status('Vista lateral sugerida pelas circunferências concêntricas. Confira o recorte e defina a face Z0.');
- }else status('Não encontrei vista lateral com confiança. Use Delimitar outra vista e indique o eixo manualmente.',true);
+ }else {
+   activeView='completo';$('#dxfAxis').value='';
+   const b=DX.bounds(doc.geometry);if(b)view({x1:b.x1,y1:b.y1,x2:b.x2,y2:b.y2});
+   $('#dxfGuidance').textContent='Não foi possível escolher uma vista automaticamente. Clique em Trocar vista e selecione a seção longitudinal.';
+   status('Não encontrei vista lateral com confiança. Selecione a vista manualmente.',true);
+ }
 }
 $('#dxfFile').onchange=async function(){
  let f=this.files[0];if(!f)return;
@@ -281,6 +292,7 @@ $('#dxfFile').onchange=async function(){
   status('Analisando entidades CAD, cotas e vistas do arquivo...');
   await new Promise(resolve=>root.requestAnimationFrame?root.requestAnimationFrame(()=>resolve()):resolve());
   doc=DX.read(text);sourceDoc=clone(doc);fileName=f.name;rect=null;suggest=null;axis=NaN;zoom=1;active=false;
+  contextId=null;$('#dxfContext').hidden=true;views=[];activeView='lateral';
   hidden.clear();undo=[];editCount=0;pendingExtension=null;$('#dxfUndo').disabled=true;$('#dxfRestore').disabled=false;
   $('#dxfNome').value=f.name.replace(/\.dxf$/i,'');$('#dxfLength').value='';$('#dxfAxis').value='';$('#dxfFace').value='';
   selected.externo.clear();selected.interno.clear();chainInfo=null;$('#dxfSourceZoom').value=100;resetConfirm();
@@ -288,7 +300,8 @@ $('#dxfFile').onchange=async function(){
   ['#dxfSuggest','#dxfSelect','#dxfAll','#dxfAuto','#dxfClear'].forEach(q=>$(q).disabled=false);
   renderSource();renderMeasures();
   suggestView();
-  status('DXF CAD carregado: '+doc.geometry.length+' entidades e '+doc.dimensions.length+' cotas nativas. Selecione/ajuste a vista, analise as curvas e confirme o perfil.');
+  status('DXF CAD carregado: '+doc.geometry.length+' entidades e '+doc.dimensions.length+' cotas nativas. Perfil sugerido; confira e corrija apenas o necessário.');
+  showOriginal(false);showPicker(false);
  }catch(e){doc=null;status('Falha ao importar DXF: '+String(e.message||e),true)}
 };
 function dragOverlay(svg,from,to){
@@ -306,7 +319,7 @@ function cancelDrag(host){
 $('#dxfSuggest').onclick=suggestView;
 $('#dxfSelect').onclick=function(){
  if(!doc)return;
- active=true;source.classList.add('selecting');
+ showOriginal(true);active=true;source.classList.add('selecting');
  $('#dxfSelectionHint').textContent='Arraste sobre o desenho. O RETÂNGULO AZUL acompanhará o mouse; solte para selecionar a vista.';
  status('Arraste para delimitar a vista: o contorno azul fica visível durante a seleção.');
 };
@@ -335,7 +348,7 @@ source.addEventListener('pointerup',function(e){
  }
  active=false;source.classList.remove('selecting');
  $('#dxfSelectionHint').textContent='Vista delimitada com retângulo visível. Para ajustar, use Delimitar outra vista.';
- view(next);
+ activeView='manual';view(next);showPicker(false);
  status('Vista delimitada: '+fmt(next.x2-next.x1)+' × '+fmt(next.y2-next.y1)+' mm no CAD. Proposta de perfil gerada.');
 });
 source.addEventListener('pointercancel',()=>{start=null;cancelDrag(source)});
