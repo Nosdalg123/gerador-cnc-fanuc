@@ -33,7 +33,7 @@ function extract(list,ops,viewport){
  }
  return out;
 }
-function trace(lines,diam,length,region){
+function traceVertical(lines,diam,length,region){
  if(!(diam>0&&length>0)||!Array.isArray(lines))return null;
  var v=lines.filter(function(s){
   if(region){var mx=(s.x1+s.x2)/2,my=(s.y1+s.y2)/2;if(mx<region.x1||mx>region.x2||my<region.y1||my>region.y2)return false}
@@ -98,6 +98,15 @@ function trace(lines,diam,length,region){
  var out=modelSegments(ext,false),inn=modelSegments(inside,true);
  if(out.some(q=>!(q.b>0))||inn.some(q=>!(q.b>0)))return null;
  return {ok:true,items:out.concat(inn),confidence:'contorno-aproximado',warning:'Contorno inferido das linhas vetoriais: medidas sem cota explícita são aproximações e exigem revisão.',axis:'vertical',diameter:diam,length:length};
+}
+function trace(lines,diam,length,region){
+ var vertical=traceVertical(lines,diam,length,region);
+ if(vertical)return vertical;
+ var flipped=(lines||[]).map(s=>({x1:s.y1,y1:s.x1,x2:s.y2,y2:s.x2}));
+ var r=region?{x1:region.y1,y1:region.x1,x2:region.y2,y2:region.x2}:null;
+ var horizontal=traceVertical(flipped,diam,length,r);
+ if(horizontal)horizontal.axis='horizontal';
+ return horizontal;
 }
 return {extract,trace,multiply};
 });
