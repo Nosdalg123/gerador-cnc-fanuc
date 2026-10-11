@@ -186,6 +186,7 @@
     $$('button', el).forEach(function (b) { b.onclick = function () { abre(b.dataset.t, -1); }; });
   }
   function cabecalho() {
+    $('#dsConfirmarCAD').hidden = !(work.cadOrigem&&work.cadOrigem.incompleto);
     var h = '<option value="">— desenho novo (ainda não salvo) —</option>';
     lista.forEach(function (d) { h += '<option value="' + esc(d.id) + '"' + (d.id === work.id ? ' selected' : '') + '>' + esc(d.nome) + '</option>'; });
     $('#dsSel').innerHTML = h;
@@ -241,7 +242,7 @@
     });
     listas(); grafico();
   }
-  function mudou() { if(work.pdfOrientacao)work.pdfOrientacao.editadoDepoisDaImportacao=true;persistWork(); tela(); }
+  function mudou() { if(work.pdfOrientacao)work.pdfOrientacao.editadoDepoisDaImportacao=true;if(work.cadOrigem){work.cadOrigem.editadoDepoisDaImportacao=true;work.cadOrigem.incompleto=true;work.cadOrigem.verificado=false;}persistWork(); tela(); }
 
   /* ---------- salvar / abrir / excluir ---------- */
   function abrirId(id) {
@@ -264,6 +265,12 @@
     return true;
   }
   $('#dsSalvar').onclick = salvar;
+  $('#dsConfirmarCAD').onclick=function(){
+    if(!work.cadOrigem||!work.cadOrigem.incompleto)return;
+    if(!confirm('Confirmo que reconstruí/conferi o PERFIL COMPLETO a partir do CAD original: contornos externos e internos, degraus, raios, chanfros, roscas, comprimentos, face Z0 e fixação. Entendo que ainda devo validar o código e simular antes de usinar.'))return;
+    work.cadOrigem.incompleto=false;work.cadOrigem.verificado=true;work.cadOrigem.editadoDepoisDaImportacao=false;
+    persistWork();tela();avisaMudou(work.id);
+  };
   $('#dsDup').onclick = function () {
     if (!work.id) return; var c = clone(work); c.id = uid(); c.nome = work.nome + ' (cópia)'; c.criado = c.alterado = new Date().toISOString();
     lista.push(c); save(K_DES, lista); work = clone(c); ui.lado = 1; persistWork(); tela(); avisaMudou(); $('#dsNome').focus(); $('#dsNome').select();
