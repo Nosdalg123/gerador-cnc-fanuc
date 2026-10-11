@@ -39,7 +39,7 @@ const exploded=P.segments(disc.geometry);
 assert(exploded.some(s=>s.kind==='arc'&&Math.abs(s.r-20)<1e-7));
 assert(P.svg(disc,discHint.rect,{axis:discHint.axis}).includes('data-unit-scale='));
 assert(!P.svg(disc,discHint.rect,{axis:discHint.axis}).includes('NaN'),'SVG com recorte deve usar largura/altura calculadas');
-assert(!P.svg(cup,undefined,{axis:0}).includes('NaN'),'SVG completo também deve ter escala válida');
+
 const cup=read(
  ln('c1',120.2483983558,360.8605253536,106.2483983558,360.8605253536),
  ln('c2',167.820220627,355.8605253536,120.2483983558,360.8605253536),
@@ -50,6 +50,7 @@ const cup=read(
  rdim('c9',157.7483983558,240.8605253536,151.2483983558,240.8605253536),
  entity('SPLINE',[[5,'cs'],[71,3],[10,130],[20,290],[10,150],[20,300],[10,169],[20,307]])
 );
+assert(!P.svg(cup,undefined,{axis:0}).includes('NaN'),'SVG completo também deve ter escala válida');
 assert.strictEqual(cup.dimensions.length,3);
 assert.strictEqual(cup.dimensions[0].measure,185);
 assert.strictEqual(cup.dimensions[1].measure,185);
