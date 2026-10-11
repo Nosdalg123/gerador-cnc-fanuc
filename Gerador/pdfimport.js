@@ -60,7 +60,8 @@ function captureDimensions(allItems){
   var candidates=possibleViews.filter(v=>v.kind&&belongs(v.view));
   var label=inActive&&viewKind==='lateral'?'lateral':candidates.length===1?candidates[0].kind:
    inActive&&viewKind?'vista '+viewKind:'outra vista';
-  dimensionEvidence.push({id:'pagina'+page+':texto'+i,tipo:one.tipo,valor:one.valor,rotulo:one.rotulo,view:label,explicit:true,source:'página '+page});
+  dimensionEvidence.push({id:'pagina'+page+':texto'+i,tipo:one.tipo,valor:one.valor,rotulo:one.rotulo,view:label,explicit:true,source:'página '+page,
+   ...(one.passo?{passo:one.passo}:{}),...(one.profundidade?{profundidade:one.profundidade}:{})});
  });
 }
 function reviewUi(){
@@ -392,13 +393,15 @@ $('#pdfAplicar').onclick=function(){
  status('Desenho confirmado e salvo com o nome '+name+'.');renderPreview();
 };
 $('#pdfCompleteEditor').onclick=function(){
- var result=root.CNCPDFPerfil.analyze(model,length),nome=$('#pdfNome').value.trim();
- if(!result.ok||viewKind!=='lateral'||!faceChoice){
+ var result=root.CNCPDFPerfil.analyze(model,length),nome=$('#pdfNome').value.trim(),audit=reviewData();
+ if(!result.ok||!audit||audit.summary.missing||audit.summary.conflicts||viewKind!=='lateral'||!faceChoice){
   status('Para enviar ao editor completo, defina a face Z0 e complete primeiro o contorno principal com dimensões válidas.',true);return;
  }
  var ex=result.items.filter(q=>q.tipo[0]!=='i'),dia=Math.max(...ex.map(q=>Math.max(q.a,q.tipo==='cone'?q.b:q.a)));
  if(!root.CNCDesenhos||!root.CNCDesenhos.importarPDF){status('Editor completo indisponível.',true);return}
- if(!root.CNCDesenhos.importarPDF({nome:nome||'Desenho PDF em revisão',lPeca:Number(length),dRef:Math.ceil(dia+4),items:result.items})){status('A transferência foi cancelada para preservar o desenho atual.',true);return}
+ if(!root.CNCDesenhos.importarPDF({nome:nome||'Desenho PDF em revisão',lPeca:Number(length),dRef:Math.ceil(dia+4),items:result.items,
+  pendencias:audit.details.map(d=>({tipo:d.tipo,valor:d.valor,passo:d.passo,profundidade:d.profundidade,rotulo:d.rotulo,view:d.view})),
+  orientacao:{face:faceChoice,vista:viewKind,axis:profileAxis}})){status('A transferência foi cancelada para preservar o desenho atual.',true);return}
  $('#pdfPanel').hidden=true;$('#pdfManual').hidden=false;
  status('Rascunho transferido. Insira raios, roscas e detalhes no editor completo e salve somente após conferir toda a geometria.');
 };
