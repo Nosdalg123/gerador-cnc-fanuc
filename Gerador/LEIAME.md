@@ -2,6 +2,13 @@
 
 Abrir: dois cliques em `index.html` (Chrome ou Edge). O Gerador funciona localmente; a importação automática de texto do PDF precisa carregar a biblioteca PDF.js na primeira utilização.
 
+## PDF complexo, escolha da face Z0 e orientações (v2.11.0)
+- Teste de referência: disco 7″ com 3 vistas (lateral, frontal, isométrica). Selecionar a **vista longitudinal** para definir X em diâmetro e Z a partir de uma face; a vista frontal serve para conferência, mas não fornece comprimento axial.
+- As cotas do PDF são classificadas em comprimento, diâmetro, raio, ângulo e roscas. **Escolha a face Z0 obrigatoriamente**: face esquerda/topo ou direita/baixo da vista. O botão de inversão atualiza a ordem do perfil e início/fim dos cones.
+- A reconstrução por vetores pode produzir um contorno EXTERNO aproximado com cilindros e cones. **Raios, ângulos, roscas e certos detalhes internos não são garantidos**. Não é permitido salvar automaticamente uma representação que omita recursos explicitamente reconhecidos.
+- Para um PDF com esses recursos, use **Concluir raios, roscas e detalhes no editor completo**. O perfil é enviado como rascunho, não como desenho salvo, e deve ser corrigido e confirmado no editor CNC existente.
+- O Gerador continua validando G71, Z negativo, fixação, colisões e outras regras após selecionar o desenho salvo; a escolha da face no PDF não substitui a checagem na máquina.
+
 ## PDF com escala geométrica proporcional (v2.10.0)
 1. Abra **Desenho da peça → Importar desenho PDF**.
 2. Se houver várias vistas, clique em **Selecionar vista no PDF** e arraste um retângulo incluindo o contorno e as cotas de UMA vista. Legendas 'SEÇÃO', 'CORTE' e 'VISTA' podem gerar atalhos de seleção.
