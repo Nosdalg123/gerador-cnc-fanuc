@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-10-11 (atualização do índice da branch 2.10.0)",
+  "gerado_em": "2026-10-11 (branch v2.11.0)",
   "como_ler": "simbolos = [nome, tipo, linha_inicio, linha_fim, pai]; linhas comecam em 1. Leia so a faixa necessaria (Read com offset/limit).",
   "regerar": "python indexer.py",
   "ignorado": [
@@ -21,12 +21,12 @@
     "versoes"
   ],
   "totais": {
-    "arquivos": 31,
-    "simbolos": 979,
+    "arquivos": 35,
+    "simbolos": 1145,
     "por_linguagem": {
       "md": 4,
       "py": 1,
-      "js": 24,
+      "js": 28,
       "html": 1,
       "css": 1
     }
@@ -312,480 +312,501 @@
     },
     "Gerador/CHANGELOG.md": {
       "lang": "md",
-      "linhas": 193,
+      "linhas": 204,
       "simbolos": [
         [
           "Histórico de versões — Gerador CNC Torno",
           "h1",
           1,
-          193,
+          1,
+          ""
+        ],
+        [
+          "2.11.0 — 11/10/2026 — Testes com Disco de Pressão 7″, orientação de torno e leitura por vi",
+          "h2",
+          11,
+          11,
           ""
         ],
         [
           "2.10.0 — 11/10/2026 — Escala proporcional, edição sobre cotas e seleção de vista no PDF",
           "h2",
-          11,
-          20,
+          22,
+          22,
           ""
         ],
         [
           "2.9.0 — 11/10/2026 — Projeção CNC de PDF, confirmação e salvamento direto (branch isolada)",
           "h2",
-          21,
-          30,
+          32,
+          32,
           ""
         ],
         [
           "2.8.0 — 11/10/2026 — Importação assistida de desenho PDF (branch isolada)",
           "h2",
-          31,
-          41,
+          42,
+          42,
           ""
         ],
         [
           "2.7.1 — 09/10/2026 — Leitor entende o modo ISO do Siemens 802D sl (G291, G290 e G92 S)",
           "h2",
-          42,
-          49,
+          53,
+          53,
           ""
         ],
         [
           "2.7.0 — 09/10/2026 — Diagnóstico de erros do programa, com causa e solução para cada tipo",
           "h2",
-          50,
-          59,
+          61,
+          61,
           ""
         ],
         [
           "2.6.0 — 09/10/2026 — Gerador gera G73 e G41/G42 + ângulo do suporte no banco de ferramenta",
           "h2",
-          60,
-          67,
+          71,
+          71,
           ""
         ],
         [
           "2.5.0 — 09/10/2026 — programa decodificado também no Gerador + programas do COPO BRUTO P2/",
           "h2",
-          68,
-          74,
+          79,
+          79,
           ""
         ],
         [
           "2.4.0 — 08/10/2026 — Simulação: programa decodificado, G73 e G41/G42",
           "h2",
-          75,
-          83,
+          86,
+          86,
           ""
         ],
         [
           "2.3.0 — 08/10/2026 — acesso por usuário (tela de entrada)",
           "h2",
-          84,
-          93,
+          95,
+          95,
           ""
         ],
         [
           "2.2.1 — 07/10/2026 — Simulação: janela em painel próprio e desenho com inserto e suporte",
           "h2",
-          94,
-          97,
+          105,
+          105,
           ""
         ],
         [
           "2.2.0 — 07/10/2026 — módulo Simulação (programa pronto colado)",
           "h2",
-          98,
-          106,
+          109,
+          109,
           ""
         ],
         [
           "2.1.2 — 06/10/2026 — desenho do porta-matriz maior e sem cruzamentos",
           "h2",
-          107,
-          110,
+          118,
+          118,
           ""
         ],
         [
           "2.1.1 — 06/10/2026 — cota M no porta-matriz",
           "h2",
-          111,
-          113,
+          122,
+          122,
           ""
         ],
         [
           "2.1.0 — 06/10/2026 — porta-matriz com desenho e 2 lados",
           "h2",
-          114,
-          117,
+          125,
+          125,
           ""
         ],
         [
           "2.0.0 — 06/10/2026 — revisão final",
           "h2",
-          118,
-          122,
+          129,
+          129,
           ""
         ],
         [
           "1.9.0 — 06/10/2026 — rosca externa e interna (G76)",
           "h2",
-          123,
-          129,
+          134,
+          134,
           ""
         ],
         [
           "1.8.0 — 06/10/2026 — canal interno",
           "h2",
-          130,
-          135,
+          141,
+          141,
           ""
         ],
         [
           "1.7.0 — 06/10/2026 — geometria Alimentador padrão",
           "h2",
-          136,
-          140,
+          147,
+          147,
           ""
         ],
         [
           "1.6.0 — 06/10/2026 — geometria Porta-matriz",
           "h2",
-          141,
-          146,
+          152,
+          152,
           ""
         ],
         [
           "1.5.0 — 06/10/2026 — geometria BA / BAT",
           "h2",
-          147,
-          149,
+          158,
+          158,
           ""
         ],
         [
           "1.4.0 — 06/10/2026 — elementos em sequência (canal sequencial)",
           "h2",
-          150,
-          155,
+          161,
+          161,
           ""
         ],
         [
           "1.3.1 — 06/10/2026 — correção: desenho não chegava ao Gerador",
           "h2",
-          156,
-          161,
+          167,
+          167,
           ""
         ],
         [
           "1.3.0 — 06/10/2026 — operação “Desenho da peça”",
           "h2",
-          162,
-          167,
+          173,
+          173,
           ""
         ],
         [
           "1.2.0 — 06/10/2026 — menu lateral, painéis independentes, tema Alumasa padrão, cantos esco",
           "h2",
-          168,
-          175,
+          179,
+          179,
           ""
         ],
         [
           "1.1.0 — 05/10/2026 — cabeçalho fixo, Configurações, telas mais enxutas",
           "h2",
-          176,
+          187,
           187,
           ""
         ],
         [
           "1.0.0 — ponto de partida (antes da rodada de 05/10/2026)",
           "h2",
-          188,
-          193,
+          199,
+          199,
           ""
         ]
       ]
     },
     "Gerador/LEIAME.md": {
       "lang": "md",
-      "linhas": 241,
+      "linhas": 248,
       "simbolos": [
         [
           "Gerador CNC Torno",
           "h1",
           1,
-          241,
+          1,
+          ""
+        ],
+        [
+          "PDF complexo, escolha da face Z0 e orientações (v2.11.0)",
+          "h2",
+          5,
+          5,
           ""
         ],
         [
           "PDF com escala geométrica proporcional (v2.10.0)",
           "h2",
-          5,
-          14,
+          12,
+          12,
           ""
         ],
         [
           "Desenho a partir de PDF (v2.9.0)",
           "h2",
-          15,
-          24,
+          22,
+          22,
           ""
         ],
         [
           "Fluxo",
           "h2",
-          25,
-          30,
+          32,
+          32,
           ""
         ],
         [
           "Geometrias",
           "h2",
-          31,
-          77,
+          38,
+          38,
           ""
         ],
         [
           "Peça simples (desenho salvo)",
           "h3",
-          46,
-          77,
+          53,
+          53,
           ""
         ],
         [
           "O que usinar: externo, interno ou ambos",
           "h4",
-          56,
-          60,
+          63,
+          63,
           ""
         ],
         [
           "Trechos internos (furo + mandrilamento)",
           "h4",
-          61,
-          71,
+          68,
+          68,
           ""
         ],
         [
           "Bruto com furo existente (recolhido)",
           "h4",
-          72,
-          77,
+          79,
+          79,
           ""
         ],
         [
           "Campos recolhidos (\"Raios e folgas\")",
           "h2",
-          78,
-          80,
+          85,
+          85,
           ""
         ],
         [
           "Sentido do desbaste (longitudinal × transversal)",
           "h2",
-          81,
-          100,
+          88,
+          88,
           ""
         ],
         [
           "Espina",
           "h3",
-          92,
-          100,
+          99,
+          99,
           ""
         ],
         [
           "Fixação na placa (todas as geometrias)",
           "h2",
-          101,
-          104,
+          108,
+          108,
           ""
         ],
         [
           "Banco de ferramentas",
           "h2",
-          105,
-          108,
+          112,
+          112,
           ""
         ],
         [
           "Incrementos de corte (card 4)",
           "h2",
-          109,
+          116,
           116,
           ""
         ],
         [
           "Simulador (corte 2D XZ, meia seção)",
           "h2",
-          117,
-          126,
+          124,
+          124,
           ""
         ],
         [
           "Simulação de programa pronto (v2.2.0)",
           "h2",
-          127,
-          142,
+          134,
+          134,
           ""
         ],
         [
           "Desbaste G73, compensação G41/G42 e ângulo do suporte (v2.6.0)",
           "h2",
-          143,
-          147,
+          150,
+          150,
           ""
         ],
         [
           "Diagnóstico de erros do programa (v2.7.0)",
           "h2",
-          148,
-          153,
+          155,
+          155,
           ""
         ],
         [
           "Comando Siemens 802D sl em modo ISO (v2.7.1)",
           "h2",
-          154,
-          156,
+          161,
+          161,
           ""
         ],
         [
           "Desenvolvimento",
           "h2",
-          157,
-          161,
+          164,
+          164,
           ""
         ],
         [
           "Tela e temas",
           "h2",
-          162,
+          169,
           169,
           ""
         ],
         [
           "Raio zero",
           "h2",
-          170,
-          172,
+          177,
+          177,
           ""
         ],
         [
           "Cabeçalho fixo, Configurações e explicações (v1.1.0)",
           "h2",
-          173,
-          181,
+          180,
+          180,
           ""
         ],
         [
           "Desenho da peça (v1.3.0)",
           "h2",
-          182,
-          190,
+          189,
+          189,
           ""
         ],
         [
           "Chanfro e raio em um canto escolhido (v1.2.0)",
           "h2",
-          191,
-          199,
+          198,
+          198,
           ""
         ],
         [
           "Elementos em sequência (v1.4.0)",
           "h2",
-          200,
-          206,
+          207,
+          207,
           ""
         ],
         [
           "Porta-matriz (v1.6.0, refeito em 2 lados na v2.1.0)",
           "h2",
-          207,
+          214,
           214,
           ""
         ],
         [
           "Alimentador padrão (v1.7.0)",
           "h2",
-          215,
-          223,
+          222,
+          222,
           ""
         ],
         [
           "Canal interno (v1.8.0)",
           "h2",
-          224,
+          231,
           231,
           ""
         ],
         [
           "Rosca externa e interna (v1.9.0)",
           "h2",
-          232,
-          241,
+          239,
+          239,
           ""
         ]
       ]
     },
     "Gerador/VALIDAR-NA-MAQUINA.md": {
       "lang": "md",
-      "linhas": 60,
+      "linhas": 65,
       "simbolos": [
         [
           "Itens para validar na máquina (ML-600L)",
           "h1",
           1,
-          60,
+          1,
           ""
         ],
         [
           "Antes de qualquer programa novo",
           "h2",
           5,
-          10,
+          5,
           ""
         ],
         [
           "Por geometria",
           "h2",
           11,
-          24,
+          11,
           ""
         ],
         [
           "Módulo Simulação (programa colado) — suposições do leitor",
           "h2",
           25,
-          38,
+          25,
           ""
         ],
         [
           "Diagnóstico de programa (2.7.0) — regras que seguem o padrão Fanuc, a conferir na máquina",
           "h2",
           39,
-          46,
+          39,
           ""
         ],
         [
           "Comando Siemens 802D sl em modo ISO (2.7.1)",
           "h2",
           47,
-          51,
+          47,
           ""
         ],
         [
           "O que o simulador não mostra",
           "h2",
           52,
-          55,
+          52,
           ""
         ],
         [
           "Desenhos convertidos de PDF (2.10.0)",
           "h2",
           56,
-          60,
+          56,
+          ""
+        ],
+        [
+          "PDF do Disco 7″ — v2.11.0",
+          "h2",
+          61,
+          61,
           ""
         ]
       ]
@@ -4077,7 +4098,7 @@
     },
     "Gerador/index.html": {
       "lang": "html",
-      "linhas": 468,
+      "linhas": 480,
       "simbolos": [
         [
           "style.css",
@@ -6791,7 +6812,7 @@
     },
     "Gerador/pdfvector.js": {
       "lang": "js",
-      "linhas": 113,
+      "linhas": 188,
       "simbolos": [
         [
           "transform",
@@ -6815,6 +6836,13 @@
           ""
         ],
         [
+          "matrix",
+          "object",
+          12,
+          12,
+          ""
+        ],
+        [
           "point",
           "function",
           13,
@@ -6829,6 +6857,27 @@
           ""
         ],
         [
+          "fn",
+          "object",
+          16,
+          16,
+          ""
+        ],
+        [
+          "operation",
+          "object",
+          21,
+          21,
+          ""
+        ],
+        [
+          "op",
+          "object",
+          23,
+          23,
+          ""
+        ],
+        [
           "traceVertical",
           "function",
           35,
@@ -6836,10 +6885,101 @@
           ""
         ],
         [
+          "v",
+          "object",
+          37,
+          37,
+          ""
+        ],
+        [
+          "vertical",
+          "object",
+          41,
+          41,
+          ""
+        ],
+        [
+          "tallest",
+          "object",
+          44,
+          44,
+          ""
+        ],
+        [
+          "expected",
+          "object",
+          46,
+          46,
+          ""
+        ],
+        [
+          "x1",
+          "object",
+          48,
+          48,
+          ""
+        ],
+        [
+          "overlap",
+          "object",
+          49,
+          49,
+          ""
+        ],
+        [
+          "size",
+          "object",
+          51,
+          51,
+          ""
+        ],
+        [
+          "best",
+          "object",
+          56,
+          56,
+          ""
+        ],
+        [
           "pairedAt",
           "function",
           58,
           58,
+          ""
+        ],
+        [
+          "points",
+          "object",
+          59,
+          59,
+          ""
+        ],
+        [
+          "target",
+          "object",
+          61,
+          61,
+          ""
+        ],
+        [
+          "samples",
+          "object",
+          66,
+          66,
+          ""
+        ],
+        [
+          "pp",
+          "object",
+          68,
+          68,
+          ""
+        ],
+        [
+          "coverage",
+          "object",
+          74,
+          74,
           ""
         ],
         [
@@ -6857,6 +6997,34 @@
           ""
         ],
         [
+          "rows",
+          "object",
+          78,
+          78,
+          ""
+        ],
+        [
+          "rad",
+          "object",
+          80,
+          80,
+          ""
+        ],
+        [
+          "roundD",
+          "object",
+          82,
+          82,
+          ""
+        ],
+        [
+          "ext",
+          "object",
+          88,
+          88,
+          ""
+        ],
+        [
           "modelSegments",
           "function",
           90,
@@ -6864,23 +7032,247 @@
           ""
         ],
         [
+          "next",
+          "object",
+          93,
+          93,
+          ""
+        ],
+        [
+          "out",
+          "object",
+          97,
+          97,
+          ""
+        ],
+        [
+          "traceOutline",
+          "function",
+          104,
+          104,
+          ""
+        ],
+        [
+          "byPath",
+          "object",
+          106,
+          106,
+          ""
+        ],
+        [
+          "group",
+          "object",
+          108,
+          108,
+          ""
+        ],
+        [
+          "groups",
+          "object",
+          111,
+          111,
+          ""
+        ],
+        [
+          "segs",
+          "object",
+          113,
+          113,
+          ""
+        ],
+        [
+          "xx",
+          "object",
+          114,
+          114,
+          ""
+        ],
+        [
+          "minX",
+          "object",
+          115,
+          115,
+          ""
+        ],
+        [
+          "delta",
+          "object",
+          118,
+          118,
+          ""
+        ],
+        [
+          "inverse",
+          "object",
+          120,
+          120,
+          ""
+        ],
+        [
+          "best",
+          "object",
+          125,
+          125,
+          ""
+        ],
+        [
+          "w",
+          "object",
+          128,
+          128,
+          ""
+        ],
+        [
+          "x",
+          "object",
+          130,
+          130,
+          ""
+        ],
+        [
+          "y",
+          "object",
+          134,
+          134,
+          ""
+        ],
+        [
+          "d",
+          "object",
+          138,
+          138,
+          ""
+        ],
+        [
+          "distance",
+          "function",
+          142,
+          142,
+          ""
+        ],
+        [
+          "dx",
+          "object",
+          143,
+          143,
+          ""
+        ],
+        [
+          "rdp",
+          "function",
+          146,
+          146,
+          ""
+        ],
+        [
+          "far",
+          "object",
+          148,
+          148,
+          ""
+        ],
+        [
+          "selected",
+          "object",
+          155,
+          155,
+          ""
+        ],
+        [
+          "items",
+          "object",
+          158,
+          158,
+          ""
+        ],
+        [
+          "a",
+          "object",
+          160,
+          160,
+          ""
+        ],
+        [
+          "da",
+          "object",
+          162,
+          162,
+          ""
+        ],
+        [
+          "others",
+          "object",
+          169,
+          169,
+          ""
+        ],
+        [
           "trace",
           "function",
-          101,
-          101,
+          176,
+          176,
+          ""
+        ],
+        [
+          "vertical",
+          "object",
+          177,
+          177,
+          ""
+        ],
+        [
+          "flipped",
+          "object",
+          179,
+          179,
+          ""
+        ],
+        [
+          "r",
+          "object",
+          180,
+          180,
+          ""
+        ],
+        [
+          "horizontal",
+          "object",
+          181,
+          181,
           ""
         ]
       ]
     },
     "Gerador/pdfimport.js": {
       "lang": "js",
-      "linhas": 261,
+      "linhas": 317,
       "simbolos": [
         [
           "$",
-          "arrow",
+          "object",
           4,
           4,
+          ""
+        ],
+        [
+          "model",
+          "object",
+          5,
+          5,
+          ""
+        ],
+        [
+          "pdfjsUrl",
+          "object",
+          6,
+          6,
+          ""
+        ],
+        [
+          "workerUrl",
+          "object",
+          7,
+          7,
           ""
         ],
         [
@@ -6926,94 +7318,458 @@
           ""
         ],
         [
+          "resetOrientation",
+          "function",
+          18,
+          18,
+          ""
+        ],
+        [
+          "orientationStatus",
+          "function",
+          21,
+          21,
+          ""
+        ],
+        [
+          "target",
+          "object",
+          22,
+          22,
+          ""
+        ],
+        [
+          "side",
+          "object",
+          27,
+          27,
+          ""
+        ],
+        [
+          "g",
+          "object",
+          28,
+          28,
+          ""
+        ],
+        [
           "loadPdfjs",
           "function",
-          14,
-          14,
+          31,
+          31,
+          ""
+        ],
+        [
+          "s",
+          "object",
+          34,
+          34,
           ""
         ],
         [
           "renderPreview",
           "function",
-          23,
-          23,
+          40,
+          40,
+          ""
+        ],
+        [
+          "host",
+          "object",
+          41,
+          41,
+          ""
+        ],
+        [
+          "graph",
+          "object",
+          44,
+          44,
+          ""
+        ],
+        [
+          "canSave",
+          "object",
+          56,
+          56,
           ""
         ],
         [
           "showFallback",
           "function",
-          40,
-          40,
+          60,
+          60,
+          ""
+        ],
+        [
+          "frame",
+          "object",
+          61,
+          61,
           ""
         ],
         [
           "showCanvas",
           "function",
-          44,
-          44,
+          64,
+          64,
           ""
         ],
         [
           "showPage",
           "function",
-          47,
-          47,
+          67,
+          67,
+          ""
+        ],
+        [
+          "local",
+          "object",
+          69,
+          69,
+          ""
+        ],
+        [
+          "fit",
+          "object",
+          73,
+          73,
+          ""
+        ],
+        [
+          "canvas",
+          "object",
+          75,
+          75,
+          ""
+        ],
+        [
+          "wrap",
+          "object",
+          78,
+          78,
           ""
         ],
         [
           "cropItems",
           "function",
-          69,
-          69,
+          89,
+          89,
           ""
         ],
         [
-          "recognizePage",
-          "function",
-          77,
-          77,
+          "p",
+          "object",
+          92,
+          92,
+          ""
+        ],
+        [
+          "x",
+          "object",
+          93,
+          93,
+          ""
+        ],
+        [
+          "content",
+          "object",
+          100,
+          100,
+          ""
+        ],
+        [
+          "typed",
+          "object",
+          102,
+          102,
+          ""
+        ],
+        [
+          "chip",
+          "object",
+          106,
+          106,
+          ""
+        ],
+        [
+          "recognized",
+          "object",
+          114,
+          114,
+          ""
+        ],
+        [
+          "dims",
+          "object",
+          116,
+          116,
+          ""
+        ],
+        [
+          "ops",
+          "object",
+          124,
+          124,
+          ""
+        ],
+        [
+          "lines",
+          "object",
+          125,
+          125,
+          ""
+        ],
+        [
+          "rect",
+          "object",
+          126,
+          126,
+          ""
+        ],
+        [
+          "ex",
+          "object",
+          137,
+          137,
+          ""
+        ],
+        [
+          "views",
+          "object",
+          152,
+          152,
+          ""
+        ],
+        [
+          "texts",
+          "object",
+          154,
+          154,
+          ""
+        ],
+        [
+          "shapes",
+          "object",
+          157,
+          157,
+          ""
+        ],
+        [
+          "detectedLines",
+          "object",
+          160,
+          160,
+          ""
+        ],
+        [
+          "key",
+          "object",
+          162,
+          162,
+          ""
+        ],
+        [
+          "boxes",
+          "object",
+          166,
+          166,
+          ""
+        ],
+        [
+          "g",
+          "object",
+          167,
+          167,
           ""
         ],
         [
           "paintSuggestions",
           "function",
-          136,
-          136,
+          176,
+          176,
+          ""
+        ],
+        [
+          "rootEl",
+          "object",
+          177,
+          177,
+          ""
+        ],
+        [
+          "b",
+          "object",
+          180,
+          180,
           ""
         ],
         [
           "drawSelection",
           "function",
-          144,
-          144,
+          184,
+          184,
+          ""
+        ],
+        [
+          "overlay",
+          "object",
+          185,
+          185,
+          ""
+        ],
+        [
+          "v",
+          "object",
+          186,
+          186,
+          ""
+        ],
+        [
+          "ns",
+          "object",
+          187,
+          187,
           ""
         ],
         [
           "pointer",
           "function",
-          152,
-          152,
+          192,
+          192,
+          ""
+        ],
+        [
+          "bounds",
+          "object",
+          194,
+          194,
+          ""
+        ],
+        [
+          "stage",
+          "object",
+          197,
+          197,
+          ""
+        ],
+        [
+          "next",
+          "object",
+          212,
+          212,
+          ""
+        ],
+        [
+          "f",
+          "object",
+          221,
+          221,
           ""
         ],
         [
           "openEditor",
           "function",
-          186,
-          186,
+          238,
+          238,
+          ""
+        ],
+        [
+          "item",
+          "object",
+          240,
+          240,
+          ""
+        ],
+        [
+          "total",
+          "object",
+          241,
+          241,
+          ""
+        ],
+        [
+          "dlg",
+          "object",
+          248,
+          248,
           ""
         ],
         [
           "closeEditor",
           "function",
-          199,
-          199,
+          251,
+          251,
           ""
         ],
         [
-          "kind",
-          "arrow",
-          224,
-          224,
+          "val",
+          "object",
+          256,
+          256,
+          ""
+        ],
+        [
+          "type",
+          "object",
+          259,
+          259,
+          ""
+        ],
+        [
+          "q",
+          "object",
+          261,
+          261,
+          ""
+        ],
+        [
+          "side",
+          "object",
+          274,
+          274,
+          ""
+        ],
+        [
+          "node",
+          "object",
+          282,
+          282,
+          ""
+        ],
+        [
+          "r",
+          "object",
+          290,
+          290,
+          ""
+        ],
+        [
+          "max",
+          "object",
+          292,
+          292,
+          ""
+        ],
+        [
+          "api",
+          "object",
+          293,
+          293,
+          ""
+        ],
+        [
+          "result",
+          "object",
+          299,
+          299,
+          ""
+        ],
+        [
+          "ex",
+          "object",
+          303,
+          303,
           ""
         ]
       ]
@@ -7067,6 +7823,436 @@
       "lang": "js",
       "linhas": 33,
       "simbolos": []
+    },
+    "Gerador/pdfdimensions.js": {
+      "lang": "js",
+      "linhas": 52,
+      "simbolos": [
+        [
+          "val",
+          "function",
+          8,
+          8,
+          ""
+        ],
+        [
+          "text",
+          "function",
+          9,
+          9,
+          ""
+        ],
+        [
+          "raw",
+          "object",
+          10,
+          10,
+          ""
+        ],
+        [
+          "extract",
+          "function",
+          26,
+          26,
+          ""
+        ],
+        [
+          "axis",
+          "object",
+          27,
+          27,
+          ""
+        ],
+        [
+          "data",
+          "object",
+          29,
+          29,
+          ""
+        ],
+        [
+          "t",
+          "object",
+          30,
+          30,
+          ""
+        ],
+        [
+          "vertical",
+          "object",
+          32,
+          32,
+          ""
+        ],
+        [
+          "inferred",
+          "object",
+          33,
+          33,
+          ""
+        ],
+        [
+          "summary",
+          "function",
+          39,
+          39,
+          ""
+        ],
+        [
+          "all",
+          "object",
+          40,
+          40,
+          ""
+        ],
+        [
+          "lengths",
+          "object",
+          41,
+          41,
+          ""
+        ],
+        [
+          "candidateLength",
+          "object",
+          42,
+          42,
+          ""
+        ],
+        [
+          "candidateDiameter",
+          "object",
+          43,
+          43,
+          ""
+        ]
+      ]
+    },
+    "Gerador/pdforientation.js": {
+      "lang": "js",
+      "linhas": 37,
+      "simbolos": [
+        [
+          "reverse",
+          "function",
+          8,
+          8,
+          ""
+        ],
+        [
+          "sid",
+          "object",
+          9,
+          9,
+          ""
+        ],
+        [
+          "group",
+          "object",
+          10,
+          10,
+          ""
+        ],
+        [
+          "out",
+          "object",
+          11,
+          11,
+          ""
+        ],
+        [
+          "indexes",
+          "object",
+          13,
+          13,
+          ""
+        ],
+        [
+          "n",
+          "object",
+          16,
+          16,
+          ""
+        ],
+        [
+          "inspect",
+          "function",
+          23,
+          23,
+          ""
+        ],
+        [
+          "ext",
+          "object",
+          24,
+          24,
+          ""
+        ],
+        [
+          "problems",
+          "object",
+          25,
+          25,
+          ""
+        ]
+      ]
+    },
+    "Gerador/pdfviews.js": {
+      "lang": "js",
+      "linhas": 45,
+      "simbolos": [
+        [
+          "boxes",
+          "function",
+          7,
+          7,
+          ""
+        ],
+        [
+          "arr",
+          "object",
+          8,
+          8,
+          ""
+        ],
+        [
+          "round",
+          "object",
+          9,
+          9,
+          ""
+        ],
+        [
+          "side",
+          "object",
+          10,
+          10,
+          ""
+        ],
+        [
+          "front",
+          "object",
+          13,
+          13,
+          ""
+        ],
+        [
+          "gap",
+          "object",
+          15,
+          15,
+          ""
+        ],
+        [
+          "n",
+          "function",
+          16,
+          16,
+          ""
+        ],
+        [
+          "region",
+          "function",
+          17,
+          17,
+          ""
+        ],
+        [
+          "minY",
+          "object",
+          18,
+          18,
+          ""
+        ],
+        [
+          "lat",
+          "object",
+          19,
+          19,
+          ""
+        ],
+        [
+          "fr",
+          "object",
+          20,
+          20,
+          ""
+        ],
+        [
+          "extractGroups",
+          "function",
+          24,
+          24,
+          ""
+        ],
+        [
+          "groups",
+          "object",
+          26,
+          26,
+          ""
+        ],
+        [
+          "args",
+          "object",
+          29,
+          29,
+          ""
+        ],
+        [
+          "minX",
+          "object",
+          30,
+          30,
+          ""
+        ],
+        [
+          "p",
+          "object",
+          32,
+          32,
+          ""
+        ]
+      ]
+    },
+    "Gerador/testpdfdisco.js": {
+      "lang": "js",
+      "linhas": 52,
+      "simbolos": [
+        [
+          "assert",
+          "object",
+          2,
+          2,
+          ""
+        ],
+        [
+          "D",
+          "object",
+          3,
+          3,
+          ""
+        ],
+        [
+          "G",
+          "object",
+          4,
+          4,
+          ""
+        ],
+        [
+          "H",
+          "object",
+          5,
+          5,
+          ""
+        ],
+        [
+          "Z",
+          "object",
+          6,
+          6,
+          ""
+        ],
+        [
+          "typed",
+          "object",
+          7,
+          7,
+          ""
+        ],
+        [
+          "box",
+          "function",
+          18,
+          18,
+          ""
+        ],
+        [
+          "regions",
+          "object",
+          19,
+          19,
+          ""
+        ],
+        [
+          "K",
+          "object",
+          27,
+          27,
+          ""
+        ],
+        [
+          "line",
+          "object",
+          28,
+          28,
+          ""
+        ],
+        [
+          "x0",
+          "object",
+          29,
+          29,
+          ""
+        ],
+        [
+          "interp",
+          "function",
+          30,
+          30,
+          ""
+        ],
+        [
+          "p",
+          "object",
+          32,
+          32,
+          ""
+        ],
+        [
+          "xs",
+          "object",
+          36,
+          36,
+          ""
+        ],
+        [
+          "path",
+          "object",
+          38,
+          38,
+          ""
+        ],
+        [
+          "side",
+          "object",
+          40,
+          40,
+          ""
+        ],
+        [
+          "region",
+          "object",
+          41,
+          41,
+          ""
+        ],
+        [
+          "traced",
+          "object",
+          42,
+          42,
+          ""
+        ],
+        [
+          "backwards",
+          "object",
+          47,
+          47,
+          ""
+        ]
+      ]
     }
   }
 }
