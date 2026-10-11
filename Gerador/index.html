@@ -245,6 +245,12 @@
             <input type="file" id="dsFile" accept=".json,application/json" hidden>
           </div>
           <div class="note" id="dsEstado"></div>
+          <div id="dsPdfRevisao" hidden style="margin-top:10px;padding:12px;border:2px solid #be8d44;border-radius:8px">
+            <strong>Desenho importado de PDF — detalhes pendentes</strong>
+            <p id="dsPdfPendencias" class="note"></p>
+            <button type="button" class="btn" id="dsPdfVerificar">Verificar detalhes na geometria e liberar salvamento</button>
+            <p class="note">O botão só libera quando as dimensões pendentes forem representadas por elementos do desenho, mantendo a revisão humana obrigatória.</p>
+          </div>
         </div>
         <div class="card">
           <h2>2 · Elementos<button type="button" class="info" data-alvo="#dsPalDica" aria-expanded="false" aria-label="Explicação" title="Explicação">i</button></h2>
