@@ -282,7 +282,7 @@ $('#pdfAplicar').onclick=function(){
  status('Desenho confirmado e salvo com o nome '+name+'.');renderPreview();
 };
 $('#pdfAbrirGerador').onclick=function(){var nav=$('#nav-gerador');if(nav&&!nav.hidden)nav.click()};
-$('#pdfModo').onclick=function(){$('#pdfPanel').hidden=false;$('#pdfManual').hidden=true;renderPreview()};
+$('#pdfModo').onclick=function(){$('#pdfPanel').hidden=false;if($('#dxfPanel'))$('#dxfPanel').hidden=true;$('#pdfManual').hidden=true;renderPreview()};
 $('#pdfVoltar').onclick=function(){$('#pdfPanel').hidden=true;$('#pdfManual').hidden=false};
 renderPreview();
 root.CNCPDFImport={getModel:function(){return model.map(q=>({...q}))},getSelectedView:function(){return picked}};
