@@ -111,7 +111,7 @@ function svg(doc,rect,options){
  if(options.dimensions)options.dimensions.slice(0,75).forEach(d=>{
   let p=pos(d.position);if(p[0]>=10&&p[0]<=W-15&&p[1]>=15&&p[1]<=H-15){
     out+='<text x="'+p[0].toFixed(2)+'" y="'+p[1].toFixed(2)+'" font-size="11" fill="#6d4983">'+
-    (d.diameter?'Ø':'')+(d.measure===null?d.text:fmt(d.measure))+'</text>';
+    (d.diameter||d.kind===5?'Ø':d.kind===4?'R':'')+(d.measure===null?d.text:fmt(d.measure))+'</text>';
   }
  });
  out+='</svg>';return out;
