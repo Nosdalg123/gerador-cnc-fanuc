@@ -385,6 +385,7 @@ projected.addEventListener('click',function(e){
  if(skipProjectedClick){skipProjectedClick=false;return}
  const target=e.target.closest('[data-cad-segment]');if(!target||!doc)return;
  const id=target.getAttribute('data-cad-segment'),currentMode=mode();
+ contextId=id;$('#dxfContext').hidden=false;$('#dxfContextTitle').textContent='Trecho '+id+' · escolha uma correção se necessário';
  const entity=rect?P.segments(doc.geometry,rect,hidden).find(t=>t.uid===id):null;
  if(entity){
   const info=P.classify(entity,axis,val('#dxfFace')||'esquerda');
@@ -396,6 +397,12 @@ projected.addEventListener('click',function(e){
   $('#dxfEntityInfo').textContent='Entidade '+id+': '+caption+'. '+(info.reason||'');
  }
  if(currentMode==='quadro')return;
+ if(!$('#dxfPanel').classList.contains('advanced')){
+  remember();
+  if(selected.externo.has(id)||selected.interno.has(id)){selected.externo.delete(id);selected.interno.delete(id)}
+  else selected.externo.add(id);
+  resetConfirm();renderProjection();return;
+ }
  if(currentMode==='estender'){
   pendingExtension=id;$('#dxfExtendSelected').textContent='Linha selecionada: '+id+
    (entity&&entity.type==='LINE'?' — pronta para extensão.':' — escolha entidade LINE (não curva).');
@@ -410,6 +417,51 @@ projected.addEventListener('click',function(e){
  }
  resetConfirm();renderProjection();
 });
+function contextEdit(action){
+ if(!contextId||!doc)return;
+ if(action==='extend'){
+  $('#dxfPanel').classList.add('advanced');$('#dxfAdvancedToggle').setAttribute('aria-expanded','true');
+  document.querySelector('input[name=dxfAssign][value=estender]').checked=true;
+  $('#dxfExtendControls').hidden=false;
+  pendingExtension=contextId;
+  $('#dxfExtendSelected').textContent='Linha '+contextId+' selecionada. Defina a ponta e a medida a estender.';
+  $('#dxfExtendControls').scrollIntoView({behavior:'smooth',block:'nearest'});
+  status('Extensão manual: escolha a ponta, a medida em milímetros e confirme.');
+  return;
+ }
+ if(action==='delete'){removeLine(contextId);status('Linha removida da cópia de trabalho. O CAD original foi preservado.');}
+ else{
+  remember();
+  selected.externo.delete(contextId);selected.interno.delete(contextId);
+  if(action==='external')selected.externo.add(contextId);
+  if(action==='internal')selected.interno.add(contextId);
+  resetConfirm();renderProjection();
+ }
+}
+$('#dxfContextExternal').onclick=()=>contextEdit('external');
+$('#dxfContextInternal').onclick=()=>contextEdit('internal');
+$('#dxfContextRemove').onclick=()=>contextEdit('remove');
+$('#dxfContextDelete').onclick=()=>contextEdit('delete');
+$('#dxfContextExtend').onclick=()=>contextEdit('extend');
+$('#dxfChangeView').onclick=function(){
+ const open=$('#dxfViewPicker').hidden;
+ showPicker(open);
+ if(open)status('Escolha uma das vistas sugeridas ou delimite uma nova região no CAD original.');
+};
+$('#dxfPickRegion').onclick=function(){showPicker(false);$('#dxfSelect').click()};
+$('#dxfAdvancedToggle').onclick=function(){
+ const on=!$('#dxfPanel').classList.contains('advanced');
+ $('#dxfPanel').classList.toggle('advanced',on);
+ this.setAttribute('aria-expanded',String(on));
+ this.textContent=on?'Ocultar edição avançada':'Edição avançada';
+ if(!on){
+  document.querySelector('input[name=dxfAssign][value=externo]').checked=true;
+  $('#dxfExtendControls').hidden=true;
+  projected.classList.remove('box-deleting');
+  renderProjection();
+ }
+};
+$('#dxfQuickUndo').onclick=function(){$('#dxfUndo').click()};
 $('#dxfAxis').oninput=function(){resetConfirm();autoRecognize()};
 $('#dxfFace').onchange=function(){updateZ0(val('#dxfFace'))};
 $('#dxfZ0Left').onclick=()=>updateZ0('esquerda');
@@ -527,7 +579,12 @@ $('#dxfEditManual').onclick=function(){
  $('#dxfPanel').hidden=true;$('#pdfManual').hidden=false;
  alert('Rascunho aberto no editor manual. Revise raios, roscas, cavidades e descontinuidades antes de salvar no Gerador.');
 };
-$('#dxfModo').onclick=function(){$('#dxfPanel').hidden=false;$('#pdfPanel').hidden=true;$('#pdfManual').hidden=true;refreshDrafts()};
+$('#dxfModo').onclick=function(){
+ $('#dxfPanel').hidden=false;$('#pdfPanel').hidden=true;$('#pdfManual').hidden=true;
+ $('#dxfPanel').classList.remove('advanced');$('#dxfAdvancedToggle').textContent='Edição avançada';
+ $('#dxfAdvancedToggle').setAttribute('aria-expanded','false');
+ showOriginal(false);showPicker(false);refreshDrafts();
+};
 $('#dxfVoltar').onclick=function(){$('#dxfPanel').hidden=true;$('#pdfManual').hidden=false};
 refreshDrafts();
 root.CNCDXFImport={getModel:()=>doc,getOriginal:()=>sourceDoc,getRegion:()=>rect,getSelected:()=>selected,getHidden:()=>hidden};
