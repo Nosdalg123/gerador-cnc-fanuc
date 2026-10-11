@@ -110,7 +110,7 @@ async function recognizePage(){
    status('Vista frontal selecionada: adequada para conferir furos e diâmetros, mas não define o contorno longitudinal em Z. Selecione a vista lateral para reconstruir a peça.',true);
   }
   var recognized=viewKind==='lateral'&&root.CNCPDFRecon.recognize(items);
-  if(typed.complex)recognized={ok:false,reason:'Desenho possui múltiplos diâmetros, comprimentos, raios ou roscas: é necessária análise do contorno e conferência das cotas.'};
+  if(typed.complex&&(!recognized||!recognized.ok))recognized={ok:false,reason:'Desenho possui múltiplos diâmetros, comprimentos, raios ou roscas: é necessária análise do contorno e conferência das cotas.'};
   var dims=recognized&&recognized.ok?recognized:null,drawn=null,vectorWarning='';
   // O total axial e o Ø máximo devem ser encontrados em UMA vista longitudinal.
   // Nunca usar qualquer número não identificado como comprimento/diâmetro.
