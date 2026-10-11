@@ -8,6 +8,17 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.12.0 — 11/10/2026 — Teste do Copo 7″: seleção de vista e cotas de detalhe (branch isolada)
+- Testado contra textos e posições reais do PDF **Copo 7″ / Empurrador P2**: seção Y–Y, vista frontal, Detalhe Z e quadro de revisões.
+- `pdfdimensions.js`: classifica **m10** minúsculo, M64 P4, 6°, R3/R6,50, distingue legendas de vistas e números sem Ø.
+- `pdfregions.js`: novo recorte por extensão orientada da cota. Não depende só da posição de origem da primeira letra.
+- `pdfimport.js`: exige delimitar uma vista antes de tentar reconstruir o perfil; legenda da seção/detail apenas localiza o texto, não recorta automaticamente uma caixa de dimensões arbitrárias.
+- `pdfvector.js`: regiões com alta densidade de segmentos vetoriais acionam bloqueio conservador de perfil supostamente completo (roscas/raios/arcos não representados).
+- `testpdfcopo.js`: testes de separação de regiões, detalhes, revisão, roscas e verificação de que a geometria complexa não vira um anel falso.
+- Documento `TESTE-COPO7.md` registra medidas lidas do arquivo real, limitações e pendências.
+- Escala de desenho impressa 1:10 NÃO define o fator da projeção CNC; mede-se a geometria pelas cotas e pela escala uniforme de tela.
+- `main` 2.7.1 e branches anteriores 2.10.0 e 2.11.0 preservadas. **Não há reconstrução automática integral do Copo 7″ nem liberação para usinagem.**
+
 ## 2.11.0 — 11/10/2026 — Orientação CNC validada com PDF Disco 7″ (branch isolada)
 - Exame da página real com vista lateral, frontal e isométrica. Extração de 15 trechos dimensionais: cotas lineares, raios, ângulos e roscas.
 - Corrigida extrapolação indevida em `pdfimport.js`: não confundir o maior número horizontal com Ø nem o maior vertical com comprimento; somente reconstruir contornos fundamentados nas cotas reconhecidas.
