@@ -38,6 +38,8 @@ assert(discHint.rect.x2<337.7286,'Vista frontal não deve entrar na seção');
 const exploded=P.segments(disc.geometry);
 assert(exploded.some(s=>s.kind==='arc'&&Math.abs(s.r-20)<1e-7));
 assert(P.svg(disc,discHint.rect,{axis:discHint.axis}).includes('data-unit-scale='));
+assert(!P.svg(disc,discHint.rect,{axis:discHint.axis}).includes('NaN'),'SVG com recorte deve usar largura/altura calculadas');
+assert(!P.svg(cup,undefined,{axis:0}).includes('NaN'),'SVG completo também deve ter escala válida');
 const cup=read(
  ln('c1',120.2483983558,360.8605253536,106.2483983558,360.8605253536),
  ln('c2',167.820220627,355.8605253536,120.2483983558,360.8605253536),
