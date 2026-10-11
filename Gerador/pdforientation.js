@@ -32,5 +32,12 @@
   return {ok:problems.length===0,problems:problems,
    note:problems.length?'O desbaste G71 tipo I pode rejeitar esta orientação. Verifique a face escolhida ou outra estratégia no Gerador.':'Sentido externo compatível com a regra de crescimento de diâmetro do G71 tipo I (não comprova fixação segura).'};
  }
- return {reverse:reverse,inspect:inspect};
+ function suggest(model,side){
+   var first=inspect(model,side),last=inspect(reverse(model,side),side);
+   if(first.ok&&!last.ok)return {face:'start',confidence:'estratégia preliminar',reason:'A face inicial evita diâmetro decrescente no G71 longitudinal; confirme castanhas, suporte e ferramenta.',needsConfirmation:true};
+   if(last.ok&&!first.ok)return {face:'end',confidence:'estratégia preliminar',reason:'A face oposta evita diâmetro decrescente no G71 longitudinal; confirme castanhas, suporte e ferramenta.',needsConfirmation:true};
+   if(first.ok&&last.ok)return {face:null,confidence:'ambígua',reason:'As duas orientações são geometricamente possíveis. Escolha pela fixação e acesso das ferramentas.',needsConfirmation:true};
+   return {face:null,confidence:'não determinada',reason:'Nenhuma orientação satisfaz sozinha a regra do G71. Considere duas fixações ou outra estratégia; não inverter automaticamente.',needsConfirmation:true};
+ }
+ return {reverse:reverse,inspect:inspect,suggest:suggest};
 });
