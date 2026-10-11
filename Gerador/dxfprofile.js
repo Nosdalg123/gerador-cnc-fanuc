@@ -97,7 +97,7 @@ function svg(doc,rect,options){
  let eList=rect?DX.cut(doc.geometry,rect):doc.geometry;
  eList.forEach(e=>{
   if(e.type==='CIRCLE'){let p=pos(e.c);out+='<circle cx="'+p[0].toFixed(2)+'" cy="'+p[1].toFixed(2)+'" r="'+(e.r*scale).toFixed(2)+'" fill="none" stroke="'+color.CIRCLE+'" stroke-width="1.15"/>';return}
-  let source=DX.explode(e);if(!source.length&&e.type==='SPLINE'){let pts=e.fit.length?e.fit:e.control;if(pts.length>1){out+='<path d="'+polyPath(pts,pos)+'" fill="none" stroke="#9a679c" stroke-dasharray="6 3" stroke-width="1.8"/>'}return}
+  let source=DX.explode(e);if(!source.length&&e.type==='SPLINE'){let pts=DX.splinePoints(e,120);if(pts.length>1){out+='<path d="'+polyPath(pts,pos)+'" fill="none" stroke="#9a679c" stroke-dasharray="6 3" stroke-width="1.8"/>'}return}
   source.forEach((s,i)=>{
    let pts=DX.sample(s,28),id=e.id+':'+i,selected=options.selected&&options.selected.has(id);
    let emphasis=selected?'#ea6700':(options.candidate&&options.candidate.has(id)?'#087e96':(color[e.type]||'#53728c'));
