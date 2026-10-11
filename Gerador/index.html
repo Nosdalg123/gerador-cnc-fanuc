@@ -13,7 +13,17 @@
 .pdf-save-strip{display:flex;align-items:end;flex-wrap:wrap;gap:12px;margin:14px 0;padding:16px;border:2px solid var(--border,#a4bad0);border-radius:10px;background:var(--surface,#e9f3fc)}
 .pdf-save-strip .pdf-name{flex:1 1 260px;min-width:0}.pdf-save-strip input{width:100%;min-height:44px}.pdf-save-button{padding:14px 22px!important;min-height:48px;white-space:normal;font-size:1rem!important;font-weight:800!important;flex:0 1 auto}.pdf-save-button:disabled{opacity:.55;cursor:not-allowed}
 .pdf-confirm{margin-top:15px;display:flex;align-items:center;gap:8px;font-weight:600}.pdf-edit-dialog{min-width:min(94vw,480px);max-width:600px}.pdf-edit-dialog::backdrop{background:#0008}
-</style><style>.pdf-cnc-orientation{border:2px solid #9fbada;background:rgba(120,171,214,.08);padding:12px;border-radius:9px;margin-bottom:12px}.pdf-cnc-orientation .row{display:flex;gap:12px;flex-wrap:wrap}.pdf-cnc-orientation .field{flex:1 1 220px}.pdf-dimensions{margin:12px 0;padding-top:10px;border-top:1px solid #a9bdcc}.pdf-dimension-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.pdf-dim-tag{padding:5px 9px;border-radius:6px;background:#f1f5f9;color:#23374e;border:1px solid #c5d4e3;font-size:12px}.pdf-dim-tag[data-dim-kind="rosca"],.pdf-dim-tag[data-dim-kind="raio"],.pdf-dim-tag[data-dim-kind="angulo"]{background:#fff2dd;border-color:#e6c996}.pdf-dim-tag[data-dim-kind="linear_sem_tipo"]{border-style:dashed}</style></head>
+</style><style>.pdf-cnc-orientation{border:2px solid #9fbada;background:rgba(120,171,214,.08);padding:12px;border-radius:9px;margin-bottom:12px}.pdf-cnc-orientation .row{display:flex;gap:12px;flex-wrap:wrap}.pdf-cnc-orientation .field{flex:1 1 220px}.pdf-dimensions{margin:12px 0;padding-top:10px;border-top:1px solid #a9bdcc}.pdf-dimension-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.pdf-dim-tag{padding:5px 9px;border-radius:6px;background:#f1f5f9;color:#23374e;border:1px solid #c5d4e3;font-size:12px}.pdf-dim-tag[data-dim-kind="rosca"],.pdf-dim-tag[data-dim-kind="raio"],.pdf-dim-tag[data-dim-kind="angulo"]{background:#fff2dd;border-color:#e6c996}.pdf-dim-tag[data-dim-kind="linear_sem_tipo"]{border-style:dashed}</style><style>
+.dxf-graphics{border:1px solid #cbd5e1;background:white;min-height:270px;max-height:540px;overflow:auto;border-radius:8px;cursor:crosshair}
+.dxf-graphics svg{display:block;width:100%;height:auto;min-width:530px}
+.dxf-graphics svg [data-cad-segment]:hover{stroke:#f97316;stroke-width:5}
+.dxf-save-bar{display:flex;flex-wrap:wrap;align-items:end;gap:12px;padding:14px;background:rgba(56,132,189,.08);border:2px solid #7eabcb;border-radius:9px;margin:14px 0}
+.dxf-save-bar .field{flex:1 1 220px}.dxf-save-bar input{min-height:42px;width:100%}
+.dxf-save-bar button{padding:14px 20px;font-size:1rem;font-weight:800}
+.dxf-measures{display:flex;flex-wrap:wrap;gap:6px;max-height:190px;overflow:auto}
+.dxf-measures span{display:inline-block;background:#eef5fa;color:#28445d;padding:5px 8px;border-radius:5px;border:1px solid #c4d4e4;font-size:12px}
+.dxf-setting-row{display:flex;gap:10px;flex-wrap:wrap}.dxf-setting-row .field{flex:1 1 180px}
+</style></head>
 <body>
 <div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="loginTit">
   <form class="login-box" id="loginForm" autocomplete="off">
@@ -176,7 +186,39 @@
   </section>
 
   <!-- ===== DESENHO DA PEÇA ===== -->
-  <section id="view-desenho" hidden><div class="card" style="margin-bottom:12px"><div class="toolbar"><button class="btn" id="pdfModo" type="button">Importar desenho PDF</button><span class="note">Alternativa à montagem manual. Requer conferência de todas as cotas.</span></div></div>
+  <section id="view-desenho" hidden><div class="card" style="margin-bottom:12px"><div class="toolbar"><button class="btn" id="pdfModo" type="button">Importar desenho PDF</button><button class="btn primary" id="dxfModo" type="button">Importar CAD DXF (geometria real)</button><span class="note">Alternativa à montagem manual. Requer conferência de todas as cotas.</span></div></div>
+<div id="dxfPanel" hidden>
+<div class="card"><h2>Importação CAD DXF — geometria e cotas nativas</h2>
+<div class="toolbar"><button class="btn" id="dxfVoltar" type="button">Voltar ao editor manual</button><input id="dxfFile" type="file" accept=".dxf,.DXF"></div>
+<div id="dxfStatus" class="note" role="status">Selecione um arquivo DXF ASCII. Arquivos DWG devem ser exportados para DXF.</div>
+<div class="toolbar"><button class="btn primary" id="dxfSuggest" type="button" disabled>Localizar vista principal sugerida</button><button class="btn" id="dxfSelect" type="button" disabled>Delimitar outra vista</button><button class="btn" id="dxfAll" type="button" disabled>Ver folha inteira</button></div>
+<div class="pdf-workspace">
+<div class="pdf-original"><div class="pdf-workspace-title"><strong>1 · Geometria CAD original</strong><span>Entidades LINE, ARC, CIRCLE, POLYLINE e SPLINE</span></div>
+<div id="dxfSource" class="dxf-graphics" aria-label="Desenho vetorial do DXF"></div>
+<div class="note">Arraste um retângulo na vista para delimitá-la. Linhas azuis são geometria; cotas vêm das entidades DIMENSION.</div>
+<div class="toolbar"><label for="dxfSourceZoom">Zoom da folha</label><input id="dxfSourceZoom" type="range" min="70" max="250" value="100"></div></div>
+<div class="pdf-projection"><div class="pdf-workspace-title"><strong>2 · Reconstrução vetorial para o torno</strong><span id="dxfScale">Escala uniforme X / Z · CAD em mm</span></div>
+<div class="row dxf-setting-row">
+<div class="field"><label for="dxfAxis">Eixo central da peça (coordenada Y CAD)</label><input type="number" id="dxfAxis" step="any" placeholder="Identificar no desenho"></div>
+<div class="field"><label for="dxfFace">Face Z0 voltada à ferramenta</label><select id="dxfFace"><option value="">Definir na preparação</option><option value="esquerda">Esquerda do CAD</option><option value="direita">Direita do CAD</option></select></div>
+</div>
+<div class="toolbar"><span>Marcar no perfil:</span><label><input type="radio" name="dxfAssign" value="externo" checked> Externo</label><label><input type="radio" name="dxfAssign" value="interno"> Interno</label><label><input type="radio" name="dxfAssign" value="remover"> Remover</label></div>
+<div id="dxfProjected" class="dxf-graphics" aria-label="Projeção CAD vetorial com seleção do contorno CNC"></div>
+<div class="toolbar"><button class="btn" id="dxfAuto" type="button" disabled>Sugerir cadeia de contorno</button><button class="btn" id="dxfClear" type="button" disabled>Limpar seleção do perfil</button></div>
+<div id="dxfWarnings" class="note" role="status">A geometria CAD aparece aqui antes da conversão. Clique nas linhas e nos arcos para definir o perfil.</div></div>
+</div>
+<div class="card"><h3>Cotas e elementos reconhecidos</h3><div id="dxfMetrics" class="note"></div>
+<div id="dxfDimensions" class="dxf-measures" aria-label="Cotas CAD medidas por suas entidades"></div>
+<h3>Conferência e salvamento</h3><div class="note">O rascunho preserva a seleção CAD mesmo com Z0 indefinido. O envio ao Gerador é bloqueado se houver curvas, conexões abertas, detalhes ou medidas sem representação confirmada.</div>
+<div class="dxf-save-bar">
+<div class="field"><label for="dxfNome"><strong>Nome do desenho</strong></label><input id="dxfNome" placeholder="Ex.: Copo 7 polegadas" autocomplete="off"></div>
+<div class="field"><label for="dxfLength"><strong>Comprimento nominal cotado (mm)</strong></label><input id="dxfLength" type="number" min="0.001" step="any" placeholder="Ex.: 185"></div>
+<button type="button" id="dxfSaveDraft" class="btn primary">Salvar rascunho CAD</button>
+</div>
+<label class="chk"><input id="dxfChecked" type="checkbox"> Confirmei as cotas, os perfis e a orientação. Todos os elementos necessários estão representados no CNC.</label>
+<div class="toolbar"><button type="button" class="btn primary" id="dxfSaveCNC" disabled>Salvar perfil confirmado na lista do Gerador</button><span id="dxfSaved" class="note"></span></div>
+<h4>Rascunhos CAD locais</h4><div class="toolbar"><select id="dxfDraftList" aria-label="Rascunhos salvos"></select><button class="btn" type="button" id="dxfOpenDraft">Abrir rascunho</button></div>
+</div></div></div>
 <div id="pdfPanel" hidden>
 <div class="card"><h2>Importação assistida de PDF</h2>
 <div class="toolbar"><button class="btn" id="pdfVoltar" type="button">Voltar ao editor manual</button><input type="file" id="pdfFile" accept=".pdf,application/pdf"></div>
@@ -473,6 +515,9 @@
 <script src="pdforientation.js"></script>
 <script src="pdfvector.js"></script>
 <script src="pdfimport.js"></script>
+<script src="dxfcore.js"></script>
+<script src="dxfprofile.js"></script>
+<script src="dxfimport.js"></script>
 <script src="app.js"></script>
 <script src="acesso.js"></script>
 </body>
