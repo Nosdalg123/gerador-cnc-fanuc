@@ -114,12 +114,18 @@ async function recognizePage(){
   // O PDF Disco 7" contém 162,80, 121,39, 109,50, M39, raios e ângulo.
   // Escolher max(vertical) e max(horizontal) fabricava Ø109,50 x 121,39.
   var dims=recognized.ok?recognized:null,drawn=null,vectorWarning='';
-  if(dims&&root.CNCPDFVetorial&&library.OPS){
+  if(root.CNCPDFVetorial&&library.OPS&&picked){
    try{
     var ops=await pg.getOperatorList();if(seq!==recognizeSeq)return;
     var lines=root.CNCPDFVetorial.extract(ops,library.OPS,viewport);
-    var rect=picked?{x1:picked.x1*viewport.width,y1:picked.y1*viewport.height,x2:picked.x2*viewport.width,y2:picked.y2*viewport.height}:null;
-    drawn=root.CNCPDFVetorial.trace(lines,dims.externo,dims.comprimento,rect);
+    var rect={x1:picked.x1*viewport.width,y1:picked.y1*viewport.height,x2:picked.x2*viewport.width,y2:picked.y2*viewport.height};
+    var complexity=root.CNCPDFVetorial.complexity(lines,rect);
+    if(complexity.complexo){
+      unsupportedFeatures.push('contorno vetorial complexo ('+complexity.segmentos+' segmentos)');
+      vectorWarning=complexity.reason;
+    }else if(dims){
+      drawn=root.CNCPDFVetorial.trace(lines,dims.externo,dims.comprimento,rect);
+    }
    }catch(vectorError){vectorWarning='Não foi possível analisar as linhas vetoriais: '+vectorError.message;}
   }
   if(drawn&&drawn.ok&&drawn.items.length>=1){
@@ -141,7 +147,7 @@ async function recognizePage(){
   }else{
    model=[];length='';
    invalidate();
-   status('Geometria COMPLETA não reconhecida. O sistema não inventará comprimentos nem diâmetros. Selecione a vista lateral com as cotas ou complete no editor manual. '+recognized.reason,true);
+   status('Geometria COMPLETA não reconhecida. Não serão inventados Ø nem comprimentos. '+(recognized.reason||'')+' '+vectorWarning+' Corrija no editor manual quando houver raios, roscas ou detalhes adicionais.',true);
   }
   // As legendas apenas ajudam a encontrar a vista; nunca criam um recorte de tamanho presumido.
  }catch(e){status('Não foi possível ler as cotas desta página: '+(e.message||e),true)}
