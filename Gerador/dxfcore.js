@@ -133,7 +133,11 @@ function bounds(entities){let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity;
 }
 function inRect(b,r){return !!b&&b.x2>=r.x1&&b.x1<=r.x2&&b.y2>=r.y1&&b.y1<=r.y2}
 function cut(entities,rect){return (entities||[]).filter(e=>inRect(bounds([e]),rect))}
-function nativeCotas(dims,rect){return (dims||[]).filter(d=>inRect({x1:d.position[0],x2:d.position[0],y1:d.position[1],y2:d.position[1]},rect))}
+function nativeCotas(dims,rect){
+ const contains=p=>p&&Number.isFinite(p[0])&&Number.isFinite(p[1])&&p[0]>=rect.x1&&p[0]<=rect.x2&&p[1]>=rect.y1&&p[1]<=rect.y2;
+ return (dims||[]).filter(d=>contains(d.position)||contains(d.a)||contains(d.b)||
+   (d.kind===0||d.kind===1)&&contains([(d.a[0]+d.b[0])/2,(d.a[1]+d.b[1])/2]));
+}
 function candidateAxis(entities,rect){
  let centers=(entities||[]).filter(e=>e.type==='CIRCLE'&&e.c[0]>rect.x2&&e.c[1]>=rect.y1&&e.c[1]<=rect.y2).map(e=>e.c[1]);
  if(!centers.length)return null;centers.sort((a,b)=>a-b);
