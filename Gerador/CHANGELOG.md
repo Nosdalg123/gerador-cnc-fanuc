@@ -8,6 +8,16 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.11.0 — 11/10/2026 — Orientação CNC validada com PDF Disco 7″ (branch isolada)
+- Exame da página real com vista lateral, frontal e isométrica. Extração de 15 trechos dimensionais: cotas lineares, raios, ângulos e roscas.
+- Corrigida extrapolação indevida em `pdfimport.js`: não confundir o maior número horizontal com Ø nem o maior vertical com comprimento; somente reconstruir contornos fundamentados nas cotas reconhecidas.
+- Seleção de vista obrigatória para salvar. Eixo da peça e face Z0 voltada à ferramenta exigem escolha humana explícita; o algoritmo não determina a posição da placa apenas pelo desenho.
+- Ao trocar a face Z0, inverter ordem dos cilindros internos/externos e extremos dos cones; salvar metadados de orientação junto ao desenho.
+- O Gerador apresenta a orientação do PDF e avisa quando houve edição posterior no editor manual.
+- Mostrar cotas extraídas por tipo no painel projetado; quando há raios, roscas ou ângulos não modeláveis nesta interface, bloquear o salvamento de contorno confirmado (concluir no editor manual).
+- Testes reproduzíveis: `testpdfdisco.js` (cotas reais do arquivo), `testpdforientcnc.js` (G71 com duas orientações), além de três testes anteriores.
+- Documentação: `TESTE-DISCO7.md`. **Limitação declarada:** o arquivo complexo ainda não é reconstruído integralmente; requer CAD ou revisão manual de arcos, roscas, perfis e fixação. Não liberar programa automaticamente.
+
 ## 2.10.0 — 11/10/2026 — Escala proporcional, edição sobre cotas e seleção de vista no PDF
 - Projeção XZ usa **escala geométrica uniforme**: o mesmo fator é aplicado ao comprimento e aos diâmetros (proporção X:Ø = 1:1), ajustada ao tamanho do painel; não promete escala física 1:1 em monitor.
 - Cotas clicáveis na própria projeção, com edição de diâmetro, comprimento, cone e lado. É possível acrescentar/remover segmentos pelo painel, sem exibir uma lista técnica de partes.
