@@ -87,3 +87,11 @@ O leitor segue os mesmos critérios dos geradores; o que não foi confirmado na 
 - [ ] Confirme a fixação, a face Z0 e os eixos X/Z. A orientação não é inferida do desenho.
 - [ ] Se um rascunho for completado no editor manual, use **Confirmar revisão completa do CAD** para persistir essa informação.
 - [ ] Execute revisão de programa/simulação, inspeção a seco e validação na máquina antes de usinar.
+
+## Editor CAD interativo — v2.15.0
+- [ ] Conferir proposta automática externa/interna antes de utilizá-la; nunca interpretar a seleção inicial como contorno validado.
+- [ ] Confirmar que linhas apagadas eram auxiliares e que a exclusão não removeu entidades de usinagem.
+- [ ] Conferir no CAD e cotas nominais as extremidades estendidas e o comprimento Z total.
+- [ ] Comparar face Z0 selecionada com a fixação real e verificar origem de máquina/castanhas.
+- [ ] Verificar todos os raios, roscas, SPLINE, canais e cavidades não convertidos; não gerar G-code de rascunho incompleto.
+- [ ] Repetir simulação e prova a seco antes de produção.
