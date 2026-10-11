@@ -341,9 +341,15 @@ $('#dxfRestore').onclick=function(){
 $('#dxfSaveDraft').onclick=function(){
  if(!doc){status('Selecione um DXF antes de salvar.',true);return}
  let nome=val('#dxfNome').trim();if(!nome){status('Informe o nome do rascunho.',true);return}
- let draft={nome,data:new Date().toLocaleString('pt-BR'),fileName,doc,sourceDoc,rect,axis:val('#dxfAxis'),
+ const originals=new Map((sourceDoc.geometry||[]).filter(e=>e.type==='LINE').map(e=>[e.id,e]));
+ const lineEdits=doc.geometry.filter(e=>{
+  const old=originals.get(e.id);
+  return e.type==='LINE'&&old&&(JSON.stringify(e.a)!==JSON.stringify(old.a)||JSON.stringify(e.b)!==JSON.stringify(old.b));
+ }).map(e=>({id:e.id,a:e.a,b:e.b}));
+ // Guardar o CAD uma só vez + alterações em delta evita duplicar DXFs grandes no localStorage.
+ let draft={nome,data:new Date().toLocaleString('pt-BR'),fileName,sourceDoc,rect,axis:val('#dxfAxis'),
   face:val('#dxfFace'),length:val('#dxfLength'),externo:[...selected.externo],interno:[...selected.interno],
-  hidden:[...hidden],editCount};
+  hidden:[...hidden],lineEdits,editCount};
  try{
   let ls=draftList();ls.unshift(draft);localStorage.setItem(KEY,JSON.stringify(ls.slice(0,8)));refreshDrafts();
   $('#dxfSaved').textContent='Rascunho "'+nome+'" salvo localmente, sem liberar CNC.';
@@ -352,7 +358,13 @@ $('#dxfSaveDraft').onclick=function(){
 };
 $('#dxfOpenDraft').onclick=function(){
  let id=Number(val('#dxfDraftList')),entry=draftList()[id];if(!entry)return;
- doc=entry.doc;sourceDoc=entry.sourceDoc||clone(entry.doc);rect=entry.rect;fileName=entry.fileName;zoom=1;
+ sourceDoc=clone(entry.sourceDoc||entry.doc);
+ doc=clone(sourceDoc);
+ (entry.lineEdits||[]).forEach(edit=>{
+  const line=doc.geometry.find(e=>e.type==='LINE'&&e.id===edit.id);
+  if(line){line.a=edit.a;line.b=edit.b}
+ });
+ rect=entry.rect;fileName=entry.fileName;zoom=1;
  hidden=new Set(entry.hidden||[]);editCount=entry.editCount||0;undo=[];pendingExtension=null;
  $('#dxfUndo').disabled=true;$('#dxfRestore').disabled=false;
  $('#dxfNome').value=entry.nome;$('#dxfAxis').value=entry.axis||'';
