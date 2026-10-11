@@ -37,3 +37,9 @@ jobs:
           node testpdforientcnc.js
       - name: Original CNC generator and diagnostics suite
         run: node test.js
+      - name: Chromium UI import and draft smoke test
+        run: |
+          npm install --no-save playwright
+          npx playwright install chromium
+          node testdxfui.mjs
+
