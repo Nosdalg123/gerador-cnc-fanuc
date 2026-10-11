@@ -22,6 +22,11 @@ function resetOrientation(){
 }
 function orientationStatus(){
  var target=$('#pdfOrientationStatus'),dir=viewKind==='lateral'?'vista longitudinal':'vista sem classificação';
+ var suggestion=root.CNCPDFOrient.suggest(model,$('#pdfProfileSide').value);
+ var hint=$('#pdfSuggestedFace'),btn=$('#pdfAcceptOrientation');
+ hint.textContent='Sugestão: '+(suggestion.face==='start'?'face esquerda/superior':suggestion.face==='end'?'face direita/inferior':'sem face única')+' · '+suggestion.reason;
+ btn.hidden=!model.length||viewKind!=='lateral'||!suggestion.face||!!faceChoice;
+ btn.dataset.face=suggestion.face;
  if(!faceChoice){
   target.textContent='Escolha a face Z0 antes de salvar. O PDF sozinho não define como a peça será fixada na placa.';
   return;
@@ -281,6 +286,13 @@ $('#pdfSelectView').onclick=function(){selectMode=true;status('Arraste no PDF um
 $('#pdfClearView').onclick=function(){picked=null;selectMode=false;viewKind='';$('#pdfViewType').value='';resetOrientation();drawSelection();recognizePage()};
 $('#pdfViewType').onchange=function(){
  viewKind=this.value;resetOrientation();recognizePage();
+};
+$('#pdfAcceptOrientation').onclick=function(){
+ var face=this.dataset.face;
+ if(face!=='start'&&face!=='end')return;
+ $('#pdfFaceChoice').value=face;
+ $('#pdfFaceChoice').onchange();
+ status('Face Z0 sugerida foi aplicada somente após sua escolha. Confira a fixação e confirme.');
 };
 $('#pdfFaceChoice').onchange=function(){
  var next=this.value,old=faceChoice;
