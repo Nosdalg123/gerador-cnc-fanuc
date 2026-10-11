@@ -445,9 +445,12 @@
       novo.lPeca = dados.lPeca;
       novo.dRef = dados.dRef;
       novo.lados = dados.items.some(function (it) { return it.side === '2'; }) ? '2' : '1';
-      if(Array.isArray(dados.pendencias)&&dados.pendencias.length){
-        novo.pdfControle={origem:'PDF vetorial',status:'revisao',
-          orientacao:dados.orientacao||null,pendencias:clone(dados.pendencias)};
+      if(dados.orientacao||Array.isArray(dados.pendencias)){
+        var pend=Array.isArray(dados.pendencias)?clone(dados.pendencias):[];
+        novo.pdfControle={origem:'PDF vetorial',status:pend.length?'revisao':'confirmado',
+          orientacao:dados.orientacao||null,
+          pendencias:pend,
+          conferencias:dados.conferencias?clone(dados.conferencias):null};
       }
       dados.items.forEach(function (it) {
         var el = { id: uid(), tipo: it.tipo, a: it.a, b: it.b };
