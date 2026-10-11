@@ -63,7 +63,8 @@ function renderMeasures(){
  const geo=rect?DX.cut(doc.geometry,rect):doc.geometry;
  let types={};geo.forEach(e=>types[e.type]=(types[e.type]||0)+1);
  s.textContent='Unidades: '+doc.unitName+' · '+geo.length+' entidades geométricas nesta vista · '+dims.length+
-  ' cotas nativas · '+Object.entries(types).map(([k,n])=>k+': '+n).join(' · ');
+  ' cotas nativas · '+Object.entries(types).map(([k,n])=>k+': '+n).join(' · ')+
+  ' · Tipos ignorados/auxiliares no DXF: '+Object.entries(doc.unsupported).map(([k,n])=>k+': '+n).join(', ');
  let best=dims.filter(d=>d.measure>0&&d.kind===0&&!d.diameter&&Math.abs(Math.sin(d.angle*Math.PI/180))<.2).sort((a,b)=>b.measure-a.measure)[0];
  if(best&&!val('#dxfLength'))$('#dxfLength').value=Number(best.measure.toFixed(3));
 }
