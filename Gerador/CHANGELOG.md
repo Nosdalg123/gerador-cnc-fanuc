@@ -8,6 +8,16 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.9.0 — 11/10/2026 — Projeção CNC de PDF, confirmação e salvamento direto (branch isolada)
+- Novo painel lado a lado: original PDF à esquerda e geometria CNC reconstruída à direita, independente da imagem e com cotas projetadas (Ø externo, Ø interno, comprimento total e trechos).
+- Prévia SVG escalada somente para apresentação; os valores informados nas cotas, não os pixels, definem a geometria salva.
+- Perfil recalculado ao editar qualquer cota, diâmetro, comprimento, cone ou lado; mudanças desmarcam a confirmação.
+- Botão "Salvar desenho confirmado" só aparece após validação, nome informado e confirmação da geometria.
+- Salva imediatamente o objeto de desenho padrão no mesmo localStorage e lista já utilizados pelo Gerador, selecionando o novo desenho automaticamente.
+- Gerador de Peça simples mostra claramente "Importar desenho salvo" e lista os desenhos novos e manuais.
+- Mantém o editor manual anterior e as versões 2.7.1 (main) e 2.8.0 (branch anterior) sem alterações.
+- Limites: reconhecimento automático ainda direcionado a peça anular simples, sem OCR; dois lados requerem conferência no editor manual. É proibido rodar código CNC não validado na máquina.
+
 ## 2.8.0 — 11/10/2026 — Importação assistida de desenho PDF (branch isolada)
 - Reconhecimento automático inicial de anéis cilíndricos com duas cotas de diâmetro e uma de comprimento (caso de teste: Peça1.pdf, Ø50/Ø20/30 mm). Pré-preenche os trechos externo e interno e exige confirmação da seção. Ainda não interpreta automaticamente peças escalonadas, cones múltiplos nem PDFs rasterizados.
 - Nova opção "Importar desenho PDF" dentro de Desenho da peça, sem remover editor manual.
