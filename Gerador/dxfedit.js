@@ -22,28 +22,40 @@ function autoSelect(doc,rect,axis){
  const found=Chains.build(pieces,{axis,tol:.16});
  const candidates=found.chains.filter(c=>c.spanX>=Math.max(3,width*.08)&&c.meanRadius>=Math.max(1,(r||0)*.07));
  if(!candidates.length)return {...none,reason:'Nenhuma cadeia contínua com confiança suficiente. Clique nos elementos para construir o perfil.',chains:found};
- const list=candidates.map(c=>({c,score:c.spanX/Math.max(width,1)*95+
-  (r?Math.min(1,c.meanRadius/r)*25:Math.min(20,c.meanRadius*.15))
-  - (c.branchEnd?12:0)-Math.max(0,c.arcCount-3)*.5}));
+ const list=candidates.map(c=>({c,score:c.spanX/Math.max(width,1)*65+
+  (r?Math.min(1,c.meanRadius/r)*50:Math.min(32,c.meanRadius*.6))
+  - (c.branchEnd?10:0)-Math.max(0,c.arcCount-3)*.5}));
  list.sort((a,b)=>b.score-a.score);
- const external=list[0].c, ext=new Set(external.ids);
- // Completa por continuidade apenas se a ligação a uma ponta for inequívoca e não for bifurcação.
- let grown=true,steps=0;
- while(grown&&steps++<8){
-  grown=false;let touches=[];
-  for(const {c} of list.slice(1)){
-   if(c.ids.some(id=>ext.has(id)))continue;
-   const near=[external.start,external.end]; // também inclui pontas de cadeias adicionadas
-   for(const id of ext){const item=pieces.find(p=>p.uid===id);if(item){const ps=DX.sample(item,2);if(ps.length)near.push(ps[0],ps[ps.length-1])}}
-   const contact=[c.start,c.end].some(p=>near.some(q=>dist(p,q)<=.16));
-   if(contact&&!c.branchEnd&&c.spanX>=Math.max(2,width*.04))touches.push(c);
-  }
-  if(touches.length===1){touches[0].ids.forEach(id=>ext.add(id));grown=true}
+ const primary=list[0].c,ext=new Set(primary.ids),used=new Set([primary.id]);
+ let spans=[primary],mean=primary.meanRadius;
+ // Acrescenta trechos EXTERNOS no prolongamento axial da cadeia principal,
+ // sem engolir outras cadeias que correm sobre o mesmo intervalo de Z.
+ for(let cycle=0;cycle<4;cycle++){
+  const lo=Math.min(...spans.map(c=>c.minX)),hi=Math.max(...spans.map(c=>c.maxX));
+  const eligible=list.filter(({c})=>{
+   if(used.has(c.id)||c.spanX<Math.max(8,width*.18)||c.meanRadius<Math.max(2,(r||0)*.09))return false;
+   const gap=c.maxX<lo?lo-c.maxX:c.minX>hi?c.minX-hi:0;
+   const overlap=Math.max(0,Math.min(hi,c.maxX)-Math.max(lo,c.minX));
+   return gap>0&&gap<width*.18&&overlap<.001&&!c.branchEnd;
+  });
+  if(!eligible.length)break;
+  eligible.sort((a,b)=>a.c.spanX-b.c.spanX);
+  const c=eligible[eligible.length-1].c;
+  c.ids.forEach(id=>ext.add(id));used.add(c.id);spans.push(c);
  }
- // Segmentos internos não são presumidos quando há várias vistas e linhas auxiliares.
- // Entregar sugestões para revisão; seleção automática do contorno externo não equivale a aprovação CNC.
- return {externo:[...ext],interno:[],ambiguous:true,chains:found,
-  reason:'Proposta automática de contorno EXTERNO ('+ext.size+' entidades). Confira raios, descontinuidades e identifique manualmente o perfil interno.'};
+ // Interno: exigir sobreposição axial com a proposta externa e menor raio.
+ // Não escolher linhas de centro, nem a mesma cadeia duas vezes.
+ const validInside=list.filter(({c})=>{
+  if(used.has(c.id)||c.spanX<Math.max(9,width*.22)||c.meanRadius<Math.max(3,(r||0)*.13))return false;
+  const overlap=spans.reduce((total,ext)=>total+Math.max(0,Math.min(ext.maxX,c.maxX)-Math.max(ext.minX,c.minX)),0);
+  return overlap/c.spanX>.35 && spans.some(ext=>c.meanRadius<ext.meanRadius*.75);
+ });
+ validInside.sort((a,b)=>b.c.spanX-a.c.spanX);
+ const inside=validInside.length?validInside[0].c:null;
+ return {externo:[...ext],interno:inside?[...inside.ids]:[],ambiguous:true,chains:found,
+  reason:'Proposta automática: '+ext.size+' entidades externas em '+spans.length+' cadeia(s)'+
+    (inside?' e '+inside.ids.length+' internas':'')+
+    '. Confirme visualmente, remova linhas auxiliares e complete conexões e raios antes de salvar.'};
 }
 function extendLine(geometry,uid,which,length){
  const parts=String(uid||'').split(':'),parent=parts.slice(0,-1).join(':'),index=Number(parts[parts.length-1]);
