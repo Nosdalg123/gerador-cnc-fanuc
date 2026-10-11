@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-10-11 (branch v2.11.0)",
+  "gerado_em": "2026-10-11 (branch v2.12.0)",
   "como_ler": "simbolos = [nome, tipo, linha_inicio, linha_fim, pai]; linhas comecam em 1. Leia so a faixa necessaria (Read com offset/limit).",
   "regerar": "python indexer.py",
   "ignorado": [
@@ -21,12 +21,12 @@
     "versoes"
   ],
   "totais": {
-    "arquivos": 35,
-    "simbolos": 1145,
+    "arquivos": 39,
+    "simbolos": 1186,
     "por_linguagem": {
-      "md": 4,
+      "md": 5,
       "py": 1,
-      "js": 28,
+      "js": 31,
       "html": 1,
       "css": 1
     }
@@ -312,7 +312,7 @@
     },
     "Gerador/CHANGELOG.md": {
       "lang": "md",
-      "linhas": 204,
+      "linhas": 216,
       "simbolos": [
         [
           "Histórico de versões — Gerador CNC Torno",
@@ -322,199 +322,206 @@
           ""
         ],
         [
-          "2.11.0 — 11/10/2026 — Testes com Disco de Pressão 7″, orientação de torno e leitura por vi",
+          "2.12.0 — 11/10/2026 — Reconciliação de cotas entre vistas e auditoria CNC",
           "h2",
           11,
           11,
+          ""
+        ],
+        [
+          "2.11.0 — 11/10/2026 — Testes com Disco de Pressão 7″, orientação de torno e leitura por vi",
+          "h2",
+          23,
+          23,
           ""
         ],
         [
           "2.10.0 — 11/10/2026 — Escala proporcional, edição sobre cotas e seleção de vista no PDF",
           "h2",
-          22,
-          22,
+          34,
+          34,
           ""
         ],
         [
           "2.9.0 — 11/10/2026 — Projeção CNC de PDF, confirmação e salvamento direto (branch isolada)",
           "h2",
-          32,
-          32,
+          44,
+          44,
           ""
         ],
         [
           "2.8.0 — 11/10/2026 — Importação assistida de desenho PDF (branch isolada)",
           "h2",
-          42,
-          42,
+          54,
+          54,
           ""
         ],
         [
           "2.7.1 — 09/10/2026 — Leitor entende o modo ISO do Siemens 802D sl (G291, G290 e G92 S)",
           "h2",
-          53,
-          53,
+          65,
+          65,
           ""
         ],
         [
           "2.7.0 — 09/10/2026 — Diagnóstico de erros do programa, com causa e solução para cada tipo",
           "h2",
-          61,
-          61,
+          73,
+          73,
           ""
         ],
         [
           "2.6.0 — 09/10/2026 — Gerador gera G73 e G41/G42 + ângulo do suporte no banco de ferramenta",
           "h2",
-          71,
-          71,
+          83,
+          83,
           ""
         ],
         [
           "2.5.0 — 09/10/2026 — programa decodificado também no Gerador + programas do COPO BRUTO P2/",
           "h2",
-          79,
-          79,
+          91,
+          91,
           ""
         ],
         [
           "2.4.0 — 08/10/2026 — Simulação: programa decodificado, G73 e G41/G42",
           "h2",
-          86,
-          86,
+          98,
+          98,
           ""
         ],
         [
           "2.3.0 — 08/10/2026 — acesso por usuário (tela de entrada)",
           "h2",
-          95,
-          95,
+          107,
+          107,
           ""
         ],
         [
           "2.2.1 — 07/10/2026 — Simulação: janela em painel próprio e desenho com inserto e suporte",
           "h2",
-          105,
-          105,
+          117,
+          117,
           ""
         ],
         [
           "2.2.0 — 07/10/2026 — módulo Simulação (programa pronto colado)",
           "h2",
-          109,
-          109,
+          121,
+          121,
           ""
         ],
         [
           "2.1.2 — 06/10/2026 — desenho do porta-matriz maior e sem cruzamentos",
           "h2",
-          118,
-          118,
+          130,
+          130,
           ""
         ],
         [
           "2.1.1 — 06/10/2026 — cota M no porta-matriz",
           "h2",
-          122,
-          122,
+          134,
+          134,
           ""
         ],
         [
           "2.1.0 — 06/10/2026 — porta-matriz com desenho e 2 lados",
           "h2",
-          125,
-          125,
+          137,
+          137,
           ""
         ],
         [
           "2.0.0 — 06/10/2026 — revisão final",
           "h2",
-          129,
-          129,
+          141,
+          141,
           ""
         ],
         [
           "1.9.0 — 06/10/2026 — rosca externa e interna (G76)",
           "h2",
-          134,
-          134,
+          146,
+          146,
           ""
         ],
         [
           "1.8.0 — 06/10/2026 — canal interno",
           "h2",
-          141,
-          141,
+          153,
+          153,
           ""
         ],
         [
           "1.7.0 — 06/10/2026 — geometria Alimentador padrão",
           "h2",
-          147,
-          147,
+          159,
+          159,
           ""
         ],
         [
           "1.6.0 — 06/10/2026 — geometria Porta-matriz",
           "h2",
-          152,
-          152,
+          164,
+          164,
           ""
         ],
         [
           "1.5.0 — 06/10/2026 — geometria BA / BAT",
           "h2",
-          158,
-          158,
+          170,
+          170,
           ""
         ],
         [
           "1.4.0 — 06/10/2026 — elementos em sequência (canal sequencial)",
           "h2",
-          161,
-          161,
+          173,
+          173,
           ""
         ],
         [
           "1.3.1 — 06/10/2026 — correção: desenho não chegava ao Gerador",
           "h2",
-          167,
-          167,
+          179,
+          179,
           ""
         ],
         [
           "1.3.0 — 06/10/2026 — operação “Desenho da peça”",
           "h2",
-          173,
-          173,
+          185,
+          185,
           ""
         ],
         [
           "1.2.0 — 06/10/2026 — menu lateral, painéis independentes, tema Alumasa padrão, cantos esco",
           "h2",
-          179,
-          179,
+          191,
+          191,
           ""
         ],
         [
           "1.1.0 — 05/10/2026 — cabeçalho fixo, Configurações, telas mais enxutas",
           "h2",
-          187,
-          187,
+          199,
+          199,
           ""
         ],
         [
           "1.0.0 — ponto de partida (antes da rodada de 05/10/2026)",
           "h2",
-          199,
-          199,
+          211,
+          211,
           ""
         ]
       ]
     },
     "Gerador/LEIAME.md": {
       "lang": "md",
-      "linhas": 248,
+      "linhas": 265,
       "simbolos": [
         [
           "Gerador CNC Torno",
@@ -524,227 +531,234 @@
           ""
         ],
         [
-          "PDF complexo, escolha da face Z0 e orientações (v2.11.0)",
+          "Reconciliação de cotas em múltiplas vistas (v2.12.0)",
           "h2",
           5,
           5,
+          ""
+        ],
+        [
+          "PDF complexo, escolha da face Z0 e orientações (v2.11.0)",
+          "h2",
+          22,
+          22,
           ""
         ],
         [
           "PDF com escala geométrica proporcional (v2.10.0)",
           "h2",
-          12,
-          12,
+          29,
+          29,
           ""
         ],
         [
           "Desenho a partir de PDF (v2.9.0)",
           "h2",
-          22,
-          22,
+          39,
+          39,
           ""
         ],
         [
           "Fluxo",
           "h2",
-          32,
-          32,
+          49,
+          49,
           ""
         ],
         [
           "Geometrias",
           "h2",
-          38,
-          38,
+          55,
+          55,
           ""
         ],
         [
           "Peça simples (desenho salvo)",
           "h3",
-          53,
-          53,
+          70,
+          70,
           ""
         ],
         [
           "O que usinar: externo, interno ou ambos",
           "h4",
-          63,
-          63,
+          80,
+          80,
           ""
         ],
         [
           "Trechos internos (furo + mandrilamento)",
           "h4",
-          68,
-          68,
+          85,
+          85,
           ""
         ],
         [
           "Bruto com furo existente (recolhido)",
           "h4",
-          79,
-          79,
+          96,
+          96,
           ""
         ],
         [
           "Campos recolhidos (\"Raios e folgas\")",
           "h2",
-          85,
-          85,
+          102,
+          102,
           ""
         ],
         [
           "Sentido do desbaste (longitudinal × transversal)",
           "h2",
-          88,
-          88,
+          105,
+          105,
           ""
         ],
         [
           "Espina",
           "h3",
-          99,
-          99,
+          116,
+          116,
           ""
         ],
         [
           "Fixação na placa (todas as geometrias)",
           "h2",
-          108,
-          108,
+          125,
+          125,
           ""
         ],
         [
           "Banco de ferramentas",
           "h2",
-          112,
-          112,
+          129,
+          129,
           ""
         ],
         [
           "Incrementos de corte (card 4)",
           "h2",
-          116,
-          116,
+          133,
+          133,
           ""
         ],
         [
           "Simulador (corte 2D XZ, meia seção)",
           "h2",
-          124,
-          124,
+          141,
+          141,
           ""
         ],
         [
           "Simulação de programa pronto (v2.2.0)",
           "h2",
-          134,
-          134,
+          151,
+          151,
           ""
         ],
         [
           "Desbaste G73, compensação G41/G42 e ângulo do suporte (v2.6.0)",
           "h2",
-          150,
-          150,
+          167,
+          167,
           ""
         ],
         [
           "Diagnóstico de erros do programa (v2.7.0)",
           "h2",
-          155,
-          155,
+          172,
+          172,
           ""
         ],
         [
           "Comando Siemens 802D sl em modo ISO (v2.7.1)",
           "h2",
-          161,
-          161,
+          178,
+          178,
           ""
         ],
         [
           "Desenvolvimento",
           "h2",
-          164,
-          164,
+          181,
+          181,
           ""
         ],
         [
           "Tela e temas",
           "h2",
-          169,
-          169,
+          186,
+          186,
           ""
         ],
         [
           "Raio zero",
           "h2",
-          177,
-          177,
+          194,
+          194,
           ""
         ],
         [
           "Cabeçalho fixo, Configurações e explicações (v1.1.0)",
           "h2",
-          180,
-          180,
+          197,
+          197,
           ""
         ],
         [
           "Desenho da peça (v1.3.0)",
           "h2",
-          189,
-          189,
+          206,
+          206,
           ""
         ],
         [
           "Chanfro e raio em um canto escolhido (v1.2.0)",
           "h2",
-          198,
-          198,
+          215,
+          215,
           ""
         ],
         [
           "Elementos em sequência (v1.4.0)",
           "h2",
-          207,
-          207,
+          224,
+          224,
           ""
         ],
         [
           "Porta-matriz (v1.6.0, refeito em 2 lados na v2.1.0)",
           "h2",
-          214,
-          214,
+          231,
+          231,
           ""
         ],
         [
           "Alimentador padrão (v1.7.0)",
           "h2",
-          222,
-          222,
+          239,
+          239,
           ""
         ],
         [
           "Canal interno (v1.8.0)",
           "h2",
-          231,
-          231,
+          248,
+          248,
           ""
         ],
         [
           "Rosca externa e interna (v1.9.0)",
           "h2",
-          239,
-          239,
+          256,
+          256,
           ""
         ]
       ]
     },
     "Gerador/VALIDAR-NA-MAQUINA.md": {
       "lang": "md",
-      "linhas": 65,
+      "linhas": 71,
       "simbolos": [
         [
           "Itens para validar na máquina (ML-600L)",
@@ -807,6 +821,13 @@
           "h2",
           61,
           61,
+          ""
+        ],
+        [
+          "Conferência de cotas cruzadas (v2.12.0)",
+          "h2",
+          66,
+          66,
           ""
         ]
       ]
@@ -882,7 +903,7 @@
     },
     "Gerador/app.js": {
       "lang": "js",
-      "linhas": 698,
+      "linhas": 699,
       "simbolos": [
         [
           "$",
@@ -1658,7 +1679,7 @@
     },
     "Gerador/core.js": {
       "lang": "js",
-      "linhas": 2911,
+      "linhas": 2912,
       "simbolos": [
         [
           "fmt",
@@ -3134,7 +3155,7 @@
     },
     "Gerador/desenho.js": {
       "lang": "js",
-      "linhas": 458,
+      "linhas": 482,
       "simbolos": [
         [
           "$",
@@ -4098,7 +4119,7 @@
     },
     "Gerador/index.html": {
       "lang": "html",
-      "linhas": 480,
+      "linhas": 493,
       "simbolos": [
         [
           "style.css",
@@ -7245,7 +7266,7 @@
     },
     "Gerador/pdfimport.js": {
       "lang": "js",
-      "linhas": 317,
+      "linhas": 419,
       "simbolos": [
         [
           "$",
@@ -7930,7 +7951,7 @@
     },
     "Gerador/pdforientation.js": {
       "lang": "js",
-      "linhas": 37,
+      "linhas": 44,
       "simbolos": [
         [
           "reverse",
@@ -8250,6 +8271,296 @@
           "object",
           47,
           47,
+          ""
+        ]
+      ]
+    },
+    "Gerador/pdfreconcile.js": {
+      "lang": "js",
+      "linhas": 113,
+      "simbolos": [
+        [
+          "num",
+          "function",
+          9,
+          9,
+          ""
+        ],
+        [
+          "nearly",
+          "function",
+          10,
+          10,
+          ""
+        ],
+        [
+          "klass",
+          "function",
+          11,
+          11,
+          ""
+        ],
+        [
+          "id",
+          "function",
+          12,
+          12,
+          ""
+        ],
+        [
+          "slots",
+          "function",
+          13,
+          13,
+          ""
+        ],
+        [
+          "normal",
+          "function",
+          25,
+          25,
+          ""
+        ],
+        [
+          "uniqueDims",
+          "function",
+          31,
+          31,
+          ""
+        ],
+        [
+          "evaluate",
+          "function",
+          36,
+          36,
+          ""
+        ],
+        [
+          "bind",
+          "function",
+          69,
+          69,
+          ""
+        ],
+        [
+          "solveAxial",
+          "function",
+          86,
+          86,
+          ""
+        ]
+      ]
+    },
+    "Gerador/pdfaudit.js": {
+      "lang": "js",
+      "linhas": 28,
+      "simbolos": [
+        [
+          "near",
+          "function",
+          10,
+          10,
+          ""
+        ],
+        [
+          "verify",
+          "function",
+          11,
+          11,
+          ""
+        ]
+      ]
+    },
+    "Gerador/testpdfreconcile.js": {
+      "lang": "js",
+      "linhas": 56,
+      "simbolos": [
+        [
+          "assert",
+          "function",
+          3,
+          3,
+          ""
+        ],
+        [
+          "R",
+          "function",
+          4,
+          4,
+          ""
+        ],
+        [
+          "model",
+          "function",
+          5,
+          5,
+          ""
+        ],
+        [
+          "dimensions",
+          "function",
+          6,
+          6,
+          ""
+        ],
+        [
+          "start",
+          "function",
+          11,
+          11,
+          ""
+        ],
+        [
+          "inHole",
+          "function",
+          14,
+          14,
+          ""
+        ],
+        [
+          "bound",
+          "function",
+          17,
+          17,
+          ""
+        ],
+        [
+          "manual",
+          "function",
+          19,
+          19,
+          ""
+        ],
+        [
+          "linked",
+          "function",
+          20,
+          20,
+          ""
+        ],
+        [
+          "conflict",
+          "function",
+          22,
+          22,
+          ""
+        ],
+        [
+          "selected",
+          "function",
+          27,
+          27,
+          ""
+        ],
+        [
+          "blockedDetail",
+          "function",
+          32,
+          32,
+          ""
+        ],
+        [
+          "radius",
+          "function",
+          34,
+          34,
+          ""
+        ],
+        [
+          "screw",
+          "function",
+          36,
+          36,
+          ""
+        ],
+        [
+          "orient",
+          "function",
+          38,
+          38,
+          ""
+        ],
+        [
+          "axial",
+          "function",
+          41,
+          41,
+          ""
+        ],
+        [
+          "diff",
+          "function",
+          47,
+          47,
+          ""
+        ],
+        [
+          "unanchored",
+          "function",
+          53,
+          53,
+          ""
+        ]
+      ]
+    },
+    "Gerador/PROJETO-RECONHECIMENTO-MULTIVISTAS.md": {
+      "lang": "md",
+      "linhas": 54,
+      "simbolos": [
+        [
+          "Projeto técnico — interpretação multivistas para torno CNC (v2.12.0)",
+          "h1",
+          1,
+          1,
+          ""
+        ],
+        [
+          "Escopo aprovado",
+          "h2",
+          3,
+          3,
+          ""
+        ],
+        [
+          "Modelo de dados e responsabilidades",
+          "h2",
+          11,
+          11,
+          ""
+        ],
+        [
+          "Algoritmo planejado para reconhecimento extensivo",
+          "h2",
+          19,
+          19,
+          ""
+        ],
+        [
+          "Entregue na v2.12.0",
+          "h2",
+          30,
+          30,
+          ""
+        ],
+        [
+          "NÃO entregue — restrições reais",
+          "h2",
+          38,
+          38,
+          ""
+        ],
+        [
+          "Critérios de aceite para versões seguintes",
+          "h2",
+          45,
+          45,
+          ""
+        ],
+        [
+          "Regra de projeto",
+          "h2",
+          52,
+          52,
           ""
         ]
       ]
