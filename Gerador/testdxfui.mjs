@@ -55,6 +55,29 @@ try{
  assert(!hasNaN,'Geometria vetorial projetada não pode conter coordenadas NaN');
  assert(Number(await page.locator('#dxfAxis').inputValue())===100,'Eixo X0 sugerido pelos círculos');
  assert(await page.evaluate(()=>window.CNCDXFImport.getSelected().externo.size>0),'Proposta automática de perfil logo após importar');
+ assert(await page.locator('#dxfOriginalPane').isHidden(),'Tela simplificada abre somente com o perfil');
+ assert(await page.locator('#dxfSimpleProblems').count()===1,'Diagnóstico simples deve existir');
+ assert(await page.locator('#dxfAdvancedToggle').getAttribute('aria-expanded')==='false','Ferramentas avançadas ocultas por padrão');
+ const originalSelected=await page.evaluate(()=>window.CNCDXFImport.getSelected().externo.size);
+ await page.locator('#dxfProjected [data-cad-segment="ln1:0"]').evaluate(el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+ assert((await page.evaluate(()=>window.CNCDXFImport.getSelected().externo.size))===originalSelected-1,
+  'Um clique simples retira linha da proposta');
+ assert(await page.locator('#dxfContext').isVisible(),'Correções contextuais aparecem ao clicar na linha');
+ await page.locator('#dxfContextExternal').click();
+ assert((await page.evaluate(()=>window.CNCDXFImport.getSelected().externo.size))===originalSelected,
+  'Correção contextual recoloca linha no perfil');
+ await page.locator('#dxfChangeView').click();
+ assert(await page.locator('#dxfViewPicker').isVisible(),'Troca de vista abre escolhas');
+ assert((await page.locator('.dxf-view-choice').count())>=3,'Opções de seção frontal e desenho completo');
+ await page.locator('.dxf-view-choice').filter({hasText:'Vista frontal'}).click();
+ assert.equal(await page.locator('#dxfAxis').inputValue(),'','Vista frontal não pode presumir eixo de torneamento');
+ assert.equal(await page.evaluate(()=>window.CNCDXFImport.getSelected().externo.size),0,
+  'Vista frontal é referência, sem contorno CNC');
+ await page.locator('#dxfChangeView').click();
+ await page.locator('.dxf-view-choice').filter({hasText:'Seção principal'}).click();
+ assert(await page.evaluate(()=>window.CNCDXFImport.getSelected().externo.size>0),'A seção principal reabre com contorno sugerido');
+ await page.locator('#dxfAdvancedToggle').click();
+ assert(await page.locator('#dxfPanel').evaluate(el=>el.classList.contains('advanced')),'Ferramentas avançadas continuam disponíveis');
  await page.locator('#dxfAuto').click();
  assert((await page.locator('#dxfChains button').count())>=1,'Cadeias independentes devem aparecer');
  await page.locator('#dxfZ0Left').click();
