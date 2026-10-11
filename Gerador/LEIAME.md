@@ -2,6 +2,23 @@
 
 Abrir: dois cliques em `index.html` (Chrome ou Edge). O Gerador funciona localmente; a importação automática de texto do PDF precisa carregar a biblioteca PDF.js na primeira utilização.
 
+## Reconciliação de cotas em múltiplas vistas (v2.12.0)
+A importação vetorial agora tem a área **Conferência das cotas entre vistas**. Após selecionar a vista longitudinal, o perfil CNC é confrontado com as cotas extraídas da folha. Cada comprimento ou diâmetro aparece como conferido ou pendente. Se uma cota de outra vista parece corresponder a uma característica, ela será sugerida, **não aplicada automaticamente com base apenas no valor**.
+
+**Fluxo:**
+1. Carregue o PDF vetorial e selecione a vista longitudinal que contém o contorno axial.
+2. Confira os círculos, furos e demais dimensões nas vistas auxiliares. A referência de origem de cada cota fica visível.
+3. Para dimensões pendentes, escolha a cota correta na lista ao lado do valor ou clique **Conferi no PDF** após verificar manualmente. Duas cotas diferentes para a mesma característica exigem escolher a verdadeira; nenhuma medida é inventada.
+4. A projeção mantém escala uniforme e permite alterar medidas clicando na geometria. As modificações desmarcam a confirmação anterior.
+5. Se o sentido de desbaste do G71 indicar uma face preferível, o sistema a sugere. **Confirme a face Z0 e a fixação; a sugestão não decide como prender a peça.**
+6. O botão **Salvar desenho confirmado** só é habilitado com todas as dimensões revisadas, sem conflitos e sem detalhes técnicos não incorporados.
+7. Desenhos que contenham raio/rosca ou recursos pendentes são enviados como **rascunho** ao editor completo. A gravação deste rascunho e a geração CNC ficam bloqueadas até que as características exigidas sejam representadas e verificadas.
+8. Após salvar, em **Gerador → Peça simples → Importar desenho salvo**, a geometria e a orientação permanecem associadas ao arquivo.
+
+Há um solucionador de vínculos axiais que calcula a diferença entre comprimentos quando a linha de cota e seus dois extremos estão relacionados ao mesmo referencial Z0. Sem essa relação, o comprimento continua pendente — não se deduz pela imagem, mesmo em PDF vetorial.
+
+**Não garantido nesta versão:** identificar automaticamente qualquer geometria complexa de revolução, arcos livres, tolerâncias GD&T, roscas especiais ou relacionar todas as cotas entre vistas. O PDF do Disco 7″ contém exemplos que exigem validação manual. Peças fora do escopo de revolução são rejeitadas como operações automáticas. Sempre confira código gerado, sentido de usinagem e fixação na máquina.
+
 ## PDF complexo, escolha da face Z0 e orientações (v2.11.0)
 - Teste de referência: disco 7″ com 3 vistas (lateral, frontal, isométrica). Selecionar a **vista longitudinal** para definir X em diâmetro e Z a partir de uma face; a vista frontal serve para conferência, mas não fornece comprimento axial.
 - As cotas do PDF são classificadas em comprimento, diâmetro, raio, ângulo e roscas. **Escolha a face Z0 obrigatoriamente**: face esquerda/topo ou direita/baixo da vista. O botão de inversão atualiza a ordem do perfil e início/fim dos cones.
