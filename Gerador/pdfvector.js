@@ -99,6 +99,16 @@ function traceVertical(lines,diam,length,region){
  if(out.some(q=>!(q.b>0))||inn.some(q=>!(q.b>0)))return null;
  return {ok:true,items:out.concat(inn),confidence:'contorno-aproximado',warning:'Contorno inferido das linhas vetoriais: medidas sem cota explícita são aproximações e exigem revisão.',axis:'vertical',diameter:diam,length:length};
 }
+/* Limite conservador para PDF denso (hachuras/roscas/arcos podem estar
+   decompostos em milhares de linhas e nao em comandos de curva). */
+function complexity(lines,region){
+ var n=(lines||[]).filter(function(q){
+  if(!region)return true;
+  var x=(q.x1+q.x2)/2,y=(q.y1+q.y2)/2;
+  return x>=region.x1&&x<=region.x2&&y>=region.y1&&y<=region.y2;
+ }).length;
+ return {segmentos:n,complexo:n>900,reason:n>900?'Vista com muitos segmentos vetoriais; reconhecimento simplificado não garante raios, cavidades ou roscas.':''};
+}
 function trace(lines,diam,length,region){
  var vertical=traceVertical(lines,diam,length,region);
  if(vertical)return vertical;
@@ -108,5 +118,5 @@ function trace(lines,diam,length,region){
  if(horizontal)horizontal.axis='horizontal';
  return horizontal;
 }
-return {extract,trace,multiply};
+return {extract,trace,multiply,complexity};
 });
