@@ -1,11 +1,11 @@
 /* Projeção geométrica DXF — mesmo fator de escala em Z e X.
    Não inventa trajetória/raio e não libera programação com contorno aberto. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory();
- else root.CNCDXFPerfil=factory();
-})(typeof self!=='undefined'?self:this,function(){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./dxfcore.js'));
+ else root.CNCDXFPerfil=factory(root.CNCDXF);
+})(typeof self!=='undefined'?self:this,function(DX){
 'use strict';
-const DX=typeof module==='object'&&module.exports?require('./dxfcore.js'):root.CNCDXF;
+if(!DX)throw new Error('Biblioteca DXF ausente: carregue dxfcore.js antes de dxfprofile.js.');
 function fmt(n){return Number(n).toLocaleString('pt-BR',{maximumFractionDigits:3})}
 function esc(n){return String(n).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
 function intersect(e,r){return DX.cut([e],r).length>0}
