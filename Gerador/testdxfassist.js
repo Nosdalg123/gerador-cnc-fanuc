@@ -2,9 +2,10 @@
 const assert=require('assert'),DX=require('./dxfcore.js'),P=require('./dxfprofile.js'),A=require('./dxfassist.js');
 const line=(uid,a,b)=>({uid,kind:'line',a,b});
 const doc={units:4,geometry:[
- {id:'a',type:'LINE',a:[0,20],b:[20,20]},
- {id:'b',type:'LINE',a:[20.8,20],b:[40,20]},
- {id:'c',type:'LINE',a:[50,10],b:[80,10]},
+ {id:'a',type:'LINE',a:[15,20],b:[40,20]},
+ {id:'b',type:'LINE',a:[40.8,20],b:[65,20]},
+ {id:'c',type:'LINE',a:[70,10],b:[110,10]},
+ {id:'d',type:'LINE',a:[25,35],b:[90,35]},
  {id:'f1',type:'CIRCLE',c:[200,20],r:40},
  {id:'f2',type:'CIRCLE',c:[200,20],r:30},
  {id:'f3',type:'CIRCLE',c:[200,20],r:20}
