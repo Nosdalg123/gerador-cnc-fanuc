@@ -156,8 +156,19 @@ async function recognizePage(){
     return {name:t.s.slice(0,40),kind:'',view:{x1:Math.max(0,nx-.25),y1:Math.max(0,ny-.45),x2:Math.min(1,nx+.25),y2:Math.min(1,ny+.03)}};
   });
   var shapes=[];
-  if(library.OPS&&root.CNCPDFVistas){
-   try{shapes=root.CNCPDFVistas.extractGroups(await pg.getOperatorList(),library.OPS,viewport);}catch(e){shapes=[];}
+  if(library.OPS&&root.CNCPDFVistas&&root.CNCPDFVetorial){
+   try{
+    var detectedLines=root.CNCPDFVetorial.extract(await pg.getOperatorList(),library.OPS,viewport),groups={};
+    detectedLines.forEach(function(line){
+     var key=String(line.path),g=groups[key]||(groups[key]={x1:Infinity,x2:-Infinity,y1:Infinity,y2:-Infinity,count:0});
+     g.x1=Math.min(g.x1,line.x1,line.x2);g.x2=Math.max(g.x2,line.x1,line.x2);
+     g.y1=Math.min(g.y1,line.y1,line.y2);g.y2=Math.max(g.y2,line.y1,line.y2);g.count++;
+    });
+    var boxes=Object.keys(groups).map(function(key){
+     var g=groups[key];return Object.assign(g,{width:g.x2-g.x1,height:g.y2-g.y1,cx:(g.x1+g.x2)/2,cy:(g.y1+g.y2)/2});
+    });
+    shapes=root.CNCPDFVistas.boxes(boxes,viewport.width,viewport.height);
+   }catch(e){shapes=[];}
   }
   possibleViews=shapes.concat(texts);
   paintSuggestions();
