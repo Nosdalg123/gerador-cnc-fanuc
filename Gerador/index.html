@@ -30,6 +30,16 @@
 .dxf-chain-list .chosen{outline:2px solid #ea6700}
 #dxfWarnings{border-left:3px solid #be6a19;padding:7px 10px;line-height:1.5}
 .dxf-graphics svg [data-cad-segment]{touch-action:manipulation}
+</style><style>
+#dxfSource.selecting,#dxfProjected.box-deleting{cursor:crosshair!important;outline:3px solid #267ccb;outline-offset:-3px}
+#dxfSource svg,#dxfProjected svg{user-select:none}
+#dxfSource svg{touch-action:none}
+.dxf-drag-rect{fill:#3685d6;fill-opacity:.20;stroke:#1262c7;stroke-width:3;stroke-dasharray:8 5;pointer-events:none}
+.dxf-z0-actions{padding:8px;border:1px dashed #a4c4db;border-radius:8px;margin:9px 0}
+.dxf-z0-actions button[aria-pressed=true]{background:#d9edf9;color:#103e66;border:2px solid #2577b6}
+.dxf-extend-controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px;margin-bottom:8px;background:#eef6fa;color:#21445d;border-radius:8px;border:1px solid #b5d1e6}
+.dxf-extend-controls[hidden]{display:none}
+.dxf-extend-controls input{width:90px;min-height:34px}
 </style></head>
 <body>
 <div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="loginTit">
@@ -201,7 +211,7 @@
 <div class="toolbar"><button class="btn primary" id="dxfSuggest" type="button" disabled>Localizar vista principal sugerida</button><button class="btn" id="dxfSelect" type="button" disabled>Delimitar outra vista</button><button class="btn" id="dxfAll" type="button" disabled>Ver folha inteira</button></div>
 <div class="pdf-workspace">
 <div class="pdf-original"><div class="pdf-workspace-title"><strong>1 · Geometria CAD original</strong><span>Entidades LINE, ARC, CIRCLE, POLYLINE e SPLINE</span></div>
-<div id="dxfSource" class="dxf-graphics" aria-label="Desenho vetorial do DXF"></div>
+<div id="dxfSource" class="dxf-graphics" aria-label="Desenho vetorial do DXF"></div><div class="note" id="dxfSelectionHint" role="status">Ao delimitar, o retângulo azul será visível durante o arraste. O CAD original não é alterado.</div>
 <div class="note">Arraste um retângulo na vista para delimitá-la. Linhas azuis são geometria; cotas vêm das entidades DIMENSION.</div>
 <div class="toolbar"><label for="dxfSourceZoom">Zoom da folha</label><input id="dxfSourceZoom" type="range" min="70" max="250" value="100"></div></div>
 <div class="pdf-projection"><div class="pdf-workspace-title"><strong>2 · Reconstrução vetorial para o torno</strong><span id="dxfScale">Escala uniforme X / Z · CAD em mm</span></div>
@@ -209,12 +219,32 @@
 <div class="field"><label for="dxfAxis">Eixo central da peça (coordenada Y CAD)</label><input type="number" id="dxfAxis" step="any" placeholder="Identificar no desenho"></div>
 <div class="field"><label for="dxfFace">Face Z0 voltada à ferramenta</label><select id="dxfFace"><option value="">Definir na preparação</option><option value="esquerda">Esquerda do CAD</option><option value="direita">Direita do CAD</option></select></div>
 </div>
-<div class="toolbar"><span>Marcar no perfil:</span><label><input type="radio" name="dxfAssign" value="externo" checked> Externo</label><label><input type="radio" name="dxfAssign" value="interno"> Interno</label><label><input type="radio" name="dxfAssign" value="remover"> Remover</label></div>
+<div class="toolbar dxf-z0-actions">
+ <span><strong>Z0 da peça:</strong></span>
+ <button type="button" class="btn" id="dxfZ0Left">Z0 na esquerda</button>
+ <button type="button" class="btn" id="dxfZ0Right">Z0 na direita</button>
+ <button type="button" class="btn" id="dxfZ0Pending">Z0 pendente</button>
+ <span id="dxfZ0Hint" class="note">Selecione a face livre voltada à ferramenta quando conhecer a fixação.</span>
+</div>
+<div class="toolbar"><span>Marcar no perfil:</span><label><input type="radio" name="dxfAssign" value="externo" checked> Externo</label><label><input type="radio" name="dxfAssign" value="interno"> Interno</label><label><input type="radio" name="dxfAssign" value="remover"> Desmarcar perfil</label>
+<label><input type="radio" name="dxfAssign" value="apagar"> <strong>Apagar linha</strong></label>
+<label><input type="radio" name="dxfAssign" value="quadro"> <strong>Apagar por retângulo</strong></label>
+<label><input type="radio" name="dxfAssign" value="estender"> <strong>Estender linha</strong></label></div>
+<div id="dxfExtendControls" class="dxf-extend-controls" hidden>
+ <strong>Estender linha selecionada</strong>
+ <span id="dxfExtendSelected">Clique numa linha LINE para selecionar.</span>
+ <label>Extremidade <select id="dxfExtendEnd"><option value="fim">Final</option><option value="ini">Inicial</option></select></label>
+ <label>Extensão (mm) <input id="dxfExtendAmount" type="number" min="0.001" max="10000" step="0.1" value="5"></label>
+ <button class="btn primary" type="button" id="dxfExtendApply">Aplicar extensão</button>
+</div>
 <div id="dxfProjected" class="dxf-graphics" aria-label="Projeção CAD vetorial com seleção do contorno CNC"></div><div id="dxfEntityInfo" class="note" role="status">Clique em uma linha, cone, degrau ou raio para inspecionar as dimensões CAD reais.</div>
-<div class="toolbar"><button class="btn" id="dxfAuto" type="button" disabled>Localizar cadeias reais</button><button class="btn" id="dxfClear" type="button" disabled>Limpar seleção do perfil</button></div>
+<div class="toolbar"><button class="btn primary" id="dxfAuto" type="button" disabled>Reconhecer perfil automaticamente</button>
+<button class="btn" id="dxfClear" type="button" disabled>Limpar seleção do perfil</button>
+<button class="btn" id="dxfUndo" type="button" disabled>Desfazer edição</button>
+<button class="btn" id="dxfRestore" type="button" disabled>Restaurar desenho original</button></div>
 <div class="dxf-chain-box">
   <strong>Cadeias CAD detectadas — escolha a superfície, não a maior componente</strong>
-  <p class="note">Cada cadeia termina em uma ponta, bifurcação ou fechamento. Escolha contorno externo ou interno acima, depois clique para incorporar somente a cadeia adequada.</p>
+  <p class="note">O sistema propõe automaticamente o contorno externo. Ajuste a proposta clicando nas linhas. Para excluir elementos do desenho de trabalho, use Apagar linha ou Apagar por retângulo. O original permanece intacto no painel 1.</p>
   <div id="dxfChains" class="dxf-chain-list" aria-label="Cadeias vetoriais identificadas"></div>
 </div>
 <div id="dxfWarnings" class="note" role="status">A geometria CAD aparece aqui antes da conversão. Clique nas linhas e nos arcos para definir o perfil.</div></div>
@@ -530,6 +560,7 @@
 <script src="dxfcore.js"></script>
 <script src="dxfprofile.js"></script>
 <script src="dxfchains.js"></script>
+<script src="dxfedit.js"></script>
 <script src="dxfaudit.js"></script>
 <script src="dxfimport.js"></script>
 <script src="app.js"></script>
