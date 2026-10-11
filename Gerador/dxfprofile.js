@@ -7,6 +7,7 @@
 'use strict';
 const DX=typeof module==='object'&&module.exports?require('./dxfcore.js'):root.CNCDXF;
 function fmt(n){return Number(n).toLocaleString('pt-BR',{maximumFractionDigits:3})}
+function esc(n){return String(n).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
 function intersect(e,r){return DX.cut([e],r).length>0}
 function sectionSuggestion(doc){
  let circles=doc.geometry.filter(e=>e.type==='CIRCLE'&&e.r>6),groups=[];
@@ -101,7 +102,7 @@ function svg(doc,rect,options){
   source.forEach((s,i)=>{
    let pts=DX.sample(s,28),id=e.id+':'+i,selected=options.selected&&options.selected.has(id);
    let emphasis=selected?'#ea6700':(options.candidate&&options.candidate.has(id)?'#087e96':(color[e.type]||'#53728c'));
-   out+='<path data-cad-segment="'+id+'" d="'+polyPath(pts,pos)+'" fill="none" stroke="'+emphasis+'" stroke-width="'+(selected?4:options.candidate&&options.candidate.has(id)?2.4:1.25)+'" stroke-linejoin="round" stroke-linecap="round" style="cursor:pointer"><title>'+(s.kind==='arc'?'Raio real R'+fmt(s.r):'Linha CAD')+'</title></path>';
+   out+='<path data-cad-segment="'+esc(id)+'" d="'+polyPath(pts,pos)+'" fill="none" stroke="'+emphasis+'" stroke-width="'+(selected?4:options.candidate&&options.candidate.has(id)?2.4:1.25)+'" stroke-linejoin="round" stroke-linecap="round" style="cursor:pointer"><title>'+(s.kind==='arc'?'Raio real R'+fmt(s.r):'Linha CAD')+'</title></path>';
   });
  });
  if(Number.isFinite(options.axis)){
@@ -111,7 +112,7 @@ function svg(doc,rect,options){
  if(options.dimensions)options.dimensions.slice(0,75).forEach(d=>{
   let p=pos(d.position);if(p[0]>=10&&p[0]<=W-15&&p[1]>=15&&p[1]<=H-15){
     out+='<text x="'+p[0].toFixed(2)+'" y="'+p[1].toFixed(2)+'" font-size="11" fill="#6d4983">'+
-    (d.diameter||d.kind===5?'Ø':d.kind===4?'R':'')+(d.measure===null?d.text:fmt(d.measure))+'</text>';
+    (d.diameter||d.kind===5?'Ø':d.kind===4?'R':'')+(d.measure===null?esc(d.text):fmt(d.measure))+'</text>';
   }
  });
  out+='</svg>';return out;
