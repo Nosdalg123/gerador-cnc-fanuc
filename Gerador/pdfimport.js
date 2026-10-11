@@ -3,7 +3,7 @@
 (function(root){
 'use strict';
 var $=q=>document.querySelector(q),url=null,doc=null,fileBytes=null,page=1,totalPages=1,zoom=1,rotation=0;
-var model=[],length='',picked=null,selectMode=false,down=null,viewport=null,pg=null,library=null,savedId=null,renderSeq=0,edit=null,possibleViews=[],previewZoom=1,viewKind='',faceChoice='',profileAxis='horizontal',unresolved=[];
+var model=[],length='',picked=null,selectMode=false,down=null,viewport=null,pg=null,library=null,savedId=null,renderSeq=0,edit=null,possibleViews=[],previewZoom=1,viewKind='',faceChoice='',profileAxis='horizontal',unresolved=[],dimensionEvidence=[],reviewLinks={},reviewManual={},reviewReport=null;
 var pdfjsUrl='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
 var workerUrl='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 function status(t,error){$('#pdfStatus').textContent=t;$('#pdfStatus').style.color=error?'#be4936':'';}
@@ -13,6 +13,7 @@ function setText(id,v){$(id).textContent=v}
 function invalidate(){savedId=null;$('#pdfConfirmado').checked=false;$('#pdfAbrirGerador').hidden=true;$('#pdfSaved').textContent='';renderPreview();}
 function fresh(){
  model=[];length='';picked=null;selectMode=false;possibleViews=[];viewKind='';faceChoice='';profileAxis='horizontal';unresolved=[];
+ dimensionEvidence=[];reviewLinks={};reviewManual={};reviewReport=null;
  $('#pdfViewType').value='';$('#pdfFaceChoice').value='';
  invalidate();drawSelection();
 }
@@ -38,6 +39,67 @@ function loadPdfjs(){
   document.head.appendChild(s);
  });
 }
+function reviewData(){
+ if(!root.CNCPDFReconciliar)return null;
+ return root.CNCPDFReconciliar.evaluate(model,length,dimensionEvidence,reviewLinks,reviewManual,{targetView:'lateral'});
+}
+function captureDimensions(allItems){
+ if(!root.CNCPDFCotas||!library||!viewport)return;
+ dimensionEvidence=[];
+ (allItems||[]).forEach(function(it,i){
+  var one=root.CNCPDFCotas.extract([it],profileAxis)[0];if(!one)return;
+  var p=library.Util.transform(viewport.transform,it.transform||[1,0,0,1,0,0]);
+  var x=p[4]/viewport.width,y=p[5]/viewport.height;
+  var belongs=function(v){return v&&x>=v.x1&&x<=v.x2&&y>=v.y1&&y<=v.y2};
+  var inActive=belongs(picked);
+  var candidates=possibleViews.filter(v=>v.kind&&belongs(v.view));
+  var label=inActive&&viewKind==='lateral'?'lateral':candidates.length===1?candidates[0].kind:
+   inActive&&viewKind?'vista '+viewKind:'outra vista';
+  dimensionEvidence.push({id:'pagina'+page+':texto'+i,tipo:one.tipo,valor:one.valor,rotulo:one.rotulo,view:label,explicit:true,source:'página '+page});
+ });
+}
+function reviewUi(){
+ var rootEl=$('#pdfReviewRows'),countEl=$('#pdfReviewCount');
+ if(!rootEl||!countEl)return;
+ var review=reviewData();reviewReport=review;
+ rootEl.replaceChildren();
+ if(!review||!model.length){countEl.textContent='Aguardando reconhecimento da geometria';return}
+ countEl.textContent=review.summary.verified+' de '+review.summary.total+' medidas conferidas · '+review.summary.missing+' pendentes · '+review.summary.conflicts+' conflitos';
+ review.slots.forEach(function(slot){
+  var line=document.createElement('div');line.className='pdf-review-row';line.setAttribute('role','listitem');
+  var info=document.createElement('div');info.className='pdf-review-info';
+  var label=document.createElement('strong');label.textContent=slot.title+' — '+(slot.value==null?'sem medida':fmt(slot.value)+' mm');
+  var small=document.createElement('small');small.textContent=slot.status+(slot.evidence?' (origem: '+(review.dimensions.find(d=>d.id===slot.evidence)||{}).view+')':'');
+  info.appendChild(label);info.appendChild(small);line.appendChild(info);
+  var box=document.createElement('div');box.className='pdf-review-control';
+  if(slot.verified&&!slot.conflict){var ok=document.createElement('span');ok.textContent='✓ Conferida';box.appendChild(ok)}
+  else {
+   var select=document.createElement('select');select.setAttribute('aria-label','Cota de origem para '+slot.title);
+   var placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Associar cota de uma vista';select.appendChild(placeholder);
+   slot.possible.forEach(function(id){
+    var d=review.dimensions.find(x=>x.id===id);if(!d)return;
+    var opt=document.createElement('option');opt.value=d.id;opt.textContent=d.rotulo+' · '+d.view+(slot.suggestions.includes(id)?' · valor próximo':'');select.appendChild(opt);
+   });
+   if(reviewLinks[slot.key])select.value=reviewLinks[slot.key];
+   var apply=document.createElement('button');apply.type='button';apply.className='btn sm';apply.textContent='Usar cota';
+   apply.onclick=function(){
+    var dim=review.dimensions.find(d=>d.id===select.value);
+    var action=root.CNCPDFReconciliar.bind(model,length,slot.key,dim,reviewManual);
+    if(!action){status('Cota incompatível ou ausente.',true);return}
+    model=action.model;length=action.length;reviewLinks[slot.key]=action.dimensionId;
+    delete reviewManual[slot.key];invalidate();
+    status('Cota associada à geometria. Confira seu vínculo no desenho antes de confirmar.');
+   };
+   box.appendChild(select);box.appendChild(apply);
+   var manual=document.createElement('button');manual.type='button';manual.className='btn sm';manual.textContent='Conferi no PDF';
+   manual.onclick=function(){reviewManual[slot.key]=true;delete reviewLinks[slot.key];invalidate()};
+   box.appendChild(manual);
+  }
+  line.appendChild(box);rootEl.appendChild(line);
+ });
+ if(review.details.length){var warning=document.createElement('p');warning.className='pdf-review-issues';
+ warning.textContent='Detalhes não representados no perfil simples: '+review.details.map(d=>d.rotulo+' ('+d.view+')').join(', ')+'. Use o editor completo.';rootEl.appendChild(warning)}
+}
 function renderPreview(){
  var host=$('#pdfProfileSvg'),r=root.CNCPDFPerfil.svg(model,length,{side:$('#pdfProfileSide').value});
  if(r.ok){
@@ -52,9 +114,10 @@ function renderPreview(){
  }
  $('#pdfComprimento').value=length;
  orientationStatus();
+ reviewUi();
  $('#pdfUnresolved').textContent=unresolved.length?'Detalhes ainda não incorporados à geometria CNC: '+unresolved.join(' · ')+'. Complete esses recursos no editor de desenhos antes de salvar.':'';
  $('#pdfCompleteEditor').hidden=!r.ok;
- var canSave=!!(r.ok&&unresolved.length===0&&url&&viewKind==='lateral'&&faceChoice&&$('#pdfConfirmado').checked&&$('#pdfNome').value.trim()&&!savedId);
+ var canSave=!!(r.ok&&reviewReport&&reviewReport.ready&&unresolved.length===0&&url&&viewKind==='lateral'&&faceChoice&&$('#pdfConfirmado').checked&&$('#pdfNome').value.trim()&&!savedId);
  $('#pdfAplicar').disabled=!canSave;
  return r;
 }
@@ -180,6 +243,8 @@ async function recognizePage(){
   }
   possibleViews=shapes.concat(texts);
   paintSuggestions();
+  captureDimensions(content.items);
+  reviewUi();
  }catch(e){status('Não foi possível ler as cotas desta página: '+(e.message||e),true)}
 }
 function paintSuggestions(){
@@ -222,6 +287,7 @@ $('#pdfFaceChoice').onchange=function(){
  if(next&&next!==old&&model.length){
   if((old==='start'&&next==='end')||(old==='end'&&next==='start')||(!old&&next==='end'))
    model=root.CNCPDFOrient.reverse(model,$('#pdfProfileSide').value);
+  reviewLinks={};reviewManual={};
  }
  faceChoice=next;invalidate();
  status(next?'Face Z0 selecionada. Revise a geometria antes de confirmar.':'Escolha a face do desenho que estará voltada para a ferramenta.');
@@ -264,15 +330,23 @@ $('#pdfEditForm').onsubmit=function(e){
  e.preventDefault();
  var val=Number($('#pdfEditComp').value);
  if(!valid(val)){setText('#pdfEditError','Informe comprimento válido.');$('#pdfEditError').hidden=false;return}
- if(edit.index===-1){length=val;closeEditor();invalidate();return}
+ if(edit.index===-1){length=val;reviewManual.total=true;delete reviewLinks.total;closeEditor();invalidate();return}
  var type=$('#pdfEditTipo').value,a=Number($('#pdfEditDiam').value),c=Number($('#pdfEditFinal').value),isCone=type.indexOf('cone')>=0;
  if(!valid(a)||(isCone&&!valid(c))){setText('#pdfEditError','Informe diâmetros válidos.');$('#pdfEditError').hidden=false;return}
  var q={tipo:type,a:a,b:val,c:isCone?c:'',side:$('#pdfEditLado').value};
- if(edit.add)model.push(q);else model[edit.index]=q;
+ if(edit.add){
+   model.push(q);
+   var added=model.length-1;
+   ['a','b'].concat(isCone?['c']:[]).forEach(function(k){reviewManual['seg:'+added+':'+k]=true});
+ }else{
+   model[edit.index]=q;
+   ['a','b','c'].forEach(function(k){delete reviewLinks['seg:'+edit.index+':'+k];delete reviewManual['seg:'+edit.index+':'+k]});
+   ['a','b'].concat(isCone?['c']:[]).forEach(function(k){reviewManual['seg:'+edit.index+':'+k]=true});
+ }
  if(!valid(length))length=val;
  closeEditor();invalidate();
 };
-$('#pdfEditRemover').onclick=function(){if(edit&&edit.index>=0){model.splice(edit.index,1);closeEditor();invalidate()}};
+$('#pdfEditRemover').onclick=function(){if(edit&&edit.index>=0){model.splice(edit.index,1);reviewManual={};reviewLinks={};closeEditor();invalidate()}};
 $('#pdfAddExt').onclick=function(){openEditor(null,null,'ext')};
 $('#pdfAddInt').onclick=function(){openEditor(null,null,'int')};
 $('#pdfProfileSide').onchange=renderPreview;
@@ -282,6 +356,7 @@ $('#pdfPreviewZoomReset').onclick=function(){previewZoom=1;renderPreview()};
 $('#pdfReverseProfile').onclick=function(){
  var side=$('#pdfProfileSide').value;
  model=root.CNCPDFOrient.reverse(model,side);
+ reviewManual={};reviewLinks={};
  faceChoice=faceChoice==='start'?'end':faceChoice==='end'?'start':'';
  $('#pdfFaceChoice').value=faceChoice;
  invalidate();
@@ -297,7 +372,7 @@ $('#pdfConfirmado').onchange=renderPreview;
 $('#pdfNome').oninput=function(){savedId=null;$('#pdfAbrirGerador').hidden=true;$('#pdfSaved').textContent='';renderPreview()};
 $('#pdfAplicar').onclick=function(){
  var r=root.CNCPDFPerfil.analyze(model,length),name=$('#pdfNome').value.trim();
- if(!r.ok||unresolved.length||viewKind!=='lateral'||!faceChoice||!$('#pdfConfirmado').checked||!name||!url){status('Confirme geometria válida, nome e cotas antes de salvar.',true);return}
+ if(!r.ok||!reviewData()||!reviewData().ready||unresolved.length||viewKind!=='lateral'||!faceChoice||!$('#pdfConfirmado').checked||!name||!url){status('Confirme geometria válida, nome e cotas antes de salvar.',true);return}
  var max=Math.max(...r.items.filter(q=>q.tipo[0]!=='i').map(q=>Math.max(q.a,q.tipo==='cone'?q.b:q.a)));
  var api=root.CNCDesenhos,id=api&&api.salvarPDF&&api.salvarPDF({nome:name,lPeca:Number(length),dRef:Math.ceil(max+4),items:r.items});
  if(!id){status('Não foi possível salvar o desenho. Confira se há alterações não salvas no editor manual.',true);return}
@@ -319,6 +394,6 @@ $('#pdfAbrirGerador').onclick=function(){var nav=$('#nav-gerador');if(nav&&!nav.
 $('#pdfModo').onclick=function(){$('#pdfPanel').hidden=false;$('#pdfManual').hidden=true;renderPreview()};
 $('#pdfVoltar').onclick=function(){$('#pdfPanel').hidden=true;$('#pdfManual').hidden=false};
 renderPreview();
-root.CNCPDFImport={getModel:function(){return model.map(q=>({...q}))},getSelectedView:function(){return picked},
+root.CNCPDFImport={getModel:function(){return model.map(q=>({...q}))},getReview:function(){return reviewData()},getSelectedView:function(){return picked},
  getOrientation:function(){return {view:viewKind,face:faceChoice,axis:profileAxis}}};
 })(window);
