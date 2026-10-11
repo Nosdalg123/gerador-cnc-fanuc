@@ -260,7 +260,7 @@
   function buildCampos() {
     var g = ger(), h = '', grupo = null, vals = state.vals[state.tipo] = state.vals[state.tipo] || {}, advFeitos = {};
     if (g.desenho) h += desenhoHtml(g);
-    if (g.usaDesenho) h += '<div class="field full"><label for="selDesenho">Desenho da peça' + INFO_BTN + '</label><div class="ds-row"><select id="selDesenho"></select><button type="button" class="btn sm" id="dsEditar">Editar</button><button type="button" class="btn sm" id="dsNovoG">Novo</button></div><div class="dica">O perfil (externo e interno), o comprimento final e os lados vêm do desenho salvo na operação Desenho da peça. Aqui você só informa o bruto e como usinar.</div><div class="note" id="dsInfo"></div></div>';
+    if (g.usaDesenho) h += '<div class="field full"><label for="selDesenho">Importar desenho salvo' + INFO_BTN + '</label><div class="ds-row"><select id="selDesenho"></select><button type="button" class="btn sm" id="dsEditar">Editar desenho</button><button type="button" class="btn sm" id="dsNovoG">Novo</button></div><div class="dica">O perfil (externo e interno), o comprimento final e os lados vêm do desenho salvo na operação Desenho da peça. Aqui você só informa o bruto e como usinar.</div><div class="note" id="dsInfo"></div></div>';
     g.campos.forEach(function (c) {
       if (c.pos || c.doDesenho) return; // pos: vai no desenho da espina; doDesenho: vem do desenho salvo
       if (c.avancado) { // todos os campos do mesmo bloco recolhido saem juntos, no lugar do primeiro
@@ -311,7 +311,7 @@
     s.innerHTML = ls.length ? ls.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === state.desenhoSel ? ' selected' : '') + '>' + esc(x.nome) + '</option>'; }).join('') : '<option value="">(nenhum desenho salvo)</option>';
     persist(); infoDesenho();
   }
-  CNCDesenhos.onMudou = function () { fillDesenhoSel(); };
+  CNCDesenhos.onMudou = function (id) { if (id && CNCDesenhos.obter(id)) state.desenhoSel = id; fillDesenhoSel(); render(); };
 
   function vals() {
     var f = {}, v = state.vals[state.tipo] || {};
