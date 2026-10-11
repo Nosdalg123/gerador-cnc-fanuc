@@ -59,6 +59,11 @@ function renderMeasures(){
    host.appendChild(el);
  });
  if(!dims.length)host.textContent='Nenhuma DIMENSION nesta seleção. Confira linhas de cota ou amplie a vista.';
+ let annotations=DX.annotations(doc.entities,rect,26),notes=$('#dxfAnnotations');
+ notes.replaceChildren();
+ annotations.filter(q=>q.text&&/\b(?:M\s*\d+|ROSCA|FURO|PASSO|PROFUND|CANTO|RAIO|THREAD)\b/i.test(q.text))
+  .slice(0,25).forEach(q=>{let el=document.createElement('span');el.textContent='Nota CAD: '+q.text.slice(0,90);notes.appendChild(el)});
+ if(!notes.childNodes.length)notes.textContent='Nenhuma chamada textual de operação encontrada nesta vista.';
  const s=$('#dxfMetrics');
  const geo=rect?DX.cut(doc.geometry,rect):doc.geometry;
  let types={};geo.forEach(e=>types[e.type]=(types[e.type]||0)+1);
@@ -85,6 +90,9 @@ function renderProjection(){
  if(!e){warn.textContent='Selecione a seção longitudinal do DXF. A geometria original é exibida sem conversão inventada.';$('#dxfSaveCNC').disabled=true;return}
  const issues=e.alerts.concat(i.selected.length?i.alerts.filter(t=>!t.includes('Nenhuma entidade')):[]);
  const src=DX.cut(doc.geometry,rect),special=src.filter(q=>q.type==='SPLINE'||q.type==='ELLIPSE');
+ const notes=DX.annotations(doc.entities,rect,26).filter(q=>/\b(?:M\s*\d+|ROSCA|FURO|THREAD)\b/i.test(q.text||''));
+ const dimNotes=dimsForRect().filter(d=>/^[Mm]\s*\d+/.test(String(d.text||'')));
+ if(notes.length||dimNotes.length)issues.push('Roscas/furos CAD identificados em '+(notes.length+dimNotes.length)+' anotações; confirme operações e perfis na revisão manual.');
  if(special.length)issues.push(special.length+' entidades curvas não circulares: revise o perfil e o raio real.');
  if(src.some(q=>q.type==='ARC')&&!e.selected.some(s=>s.kind==='arc')&&!i.selected.some(s=>s.kind==='arc'))
    issues.push('A vista contém arcos que não foram associados ao perfil CNC.');
