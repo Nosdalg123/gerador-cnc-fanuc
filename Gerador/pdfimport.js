@@ -83,15 +83,47 @@ async function recognizePage(){
   var box=$('#pdfCotas');box.replaceChildren();
   Array.from(new Set(candidates.map(x=>x.n))).forEach(function(n){var span=document.createElement('span');span.className='chip';span.textContent=fmt(n)+' mm';box.appendChild(span)});
   var recognized=root.CNCPDFRecon.recognize(items);
-  if(recognized.ok){
+  var dims=recognized.ok?recognized:null,drawn=null,vectorWarning='';
+  if(!dims){
+   // Em desenhos com mais de dois diametros, o texto sozinho e insuficiente:
+   // o maior candidato serve para escalar a vista, nao para liberar CNC.
+   var axial=candidates.filter(c=>c.vertical&&!c.diam);
+   var diam=candidates.filter(c=>c.diam&&!c.vertical);
+   if(!diam.length){
+    var horizontal=candidates.filter(c=>!c.vertical&&!c.diam);
+    if(horizontal.length>1)diam=horizontal;
+   }
+   if(axial.length===1&&diam.length>=1){
+    dims={externo:Math.max.apply(null,diam.map(c=>c.n)),interno:null,comprimento:axial[0].n,approximate:true};
+   }
+  }
+  if(dims&&root.CNCPDFVetorial&&library.OPS){
+   try{
+    var ops=await pg.getOperatorList();
+    var lines=root.CNCPDFVetorial.extract(ops,library.OPS,viewport);
+    var rect=picked?{x1:picked.x1*viewport.width,y1:picked.y1*viewport.height,x2:picked.x2*viewport.width,y2:picked.y2*viewport.height}:null;
+    drawn=root.CNCPDFVetorial.trace(lines,dims.externo,dims.comprimento,rect);
+   }catch(vectorError){vectorWarning='Não foi possível analisar as linhas vetoriais: '+vectorError.message;}
+  }
+  if(drawn&&drawn.ok&&drawn.items.length>=1){
+   model=drawn.items;
+   length=drawn.length;
+   if(recognized.ok&&model.length===2){
+    // As cotas escritas no PDF prevalecem sobre estimativas graficas.
+    var ex=model.find(q=>q.tipo==='cil'),inn=model.find(q=>q.tipo==='icil');
+    if(ex&&inn){ex.a=recognized.externo;inn.a=recognized.interno;ex.b=length;inn.b=length;}
+   }
+   invalidate();
+   status('Contorno vetorial identificado e projetado. '+drawn.warning+' '+vectorWarning);
+  }else if(recognized.ok){
    model=[{tipo:'cil',side:'1',a:recognized.externo,b:recognized.comprimento,c:''},{tipo:'icil',side:'1',a:recognized.interno,b:recognized.comprimento,c:''}];
    length=recognized.comprimento;
    invalidate();
-   status('Geometria detectada na vista: Ø externo '+fmt(recognized.externo)+', Ø interno '+fmt(recognized.interno)+', comprimento '+fmt(recognized.comprimento)+' mm. Confira a projeção.');
+   status('Geometria detectada pelas cotas da vista: Ø externo '+fmt(recognized.externo)+', Ø interno '+fmt(recognized.interno)+', comprimento '+fmt(recognized.comprimento)+' mm. Confira a projeção.');
   }else{
    model=[];length='';
    invalidate();
-   status('Não foi possível determinar todo o contorno desta vista. Selecione somente a vista correta ou acrescente/corrija a geometria na projeção. '+recognized.reason,true);
+   status('O contorno não pôde ser reconstruído com segurança nesta vista. Ajuste a seleção ou acrescente a geometria diretamente na projeção. '+recognized.reason,true);
   }
   var views=content.items.map(function(it){return {s:String(it.str||'').toUpperCase(),transform:it.transform}})
     .filter(function(it){return /SE[CÇ][AÃ]O|CORTE |SECTION|VISTA /.test(it.s)});
