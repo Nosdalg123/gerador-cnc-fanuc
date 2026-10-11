@@ -26,6 +26,17 @@ function scan(){
  loadScript().then(function(lib){return lib.getDocument({data:new Uint8Array(array.slice(0))}).promise}).then(function(pdf){
  doc=pdf;total=pdf.numPages;showPage();return pdf.getPage(page);
  }).then(function(pg){return pg.getTextContent()}).then(function(content){
+ var rec=root.CNCPDFRecon&&root.CNCPDFRecon.recognize(content.items);
+ if(rec&&rec.ok){
+   $('#pdfRows').replaceChildren();
+   addRow('cil',rec.externo,rec.comprimento,'',1);
+   addRow('icil',rec.interno,rec.comprimento,'',1);
+   $('#pdfComprimento').value=rec.comprimento;
+   $('#pdfConfirmado').checked=false;
+   status('Pré-preenchido automaticamente: Ø externo '+fmt(rec.externo)+' · Ø interno '+fmt(rec.interno)+' · comprimento '+fmt(rec.comprimento)+' mm. CONFIRA a seção e as cotas antes de confirmar.');
+ }else{
+   status(rec&&rec.reason||'Não foi possível interpretar automaticamente; confira as cotas manualmente.',true);
+ }
  var ss=content.items.map(function(x){return String(x.str||'').trim()}).filter(Boolean);tokens=ss;
  var txt=ss.join(' ');$('#pdfTexto').value=txt;
  var matches=[], re=/(?:[Ø⌀]|(?:DIA|DIAM(?:ETRO)?)[.:\s]*)\s*(\d+(?:[.,]\d+)?)/gi,m;
@@ -33,14 +44,14 @@ function scan(){
  var unique=Array.from(new Set(matches));
  $('#pdfCotas').replaceChildren();
  unique.forEach(function(v){var b=element('button','btn sm','Ø '+fmt(v));b.type='button';b.onclick=function(){var tr=$('#pdfRows .pdf-row:last-child')||addRow();tr.querySelector('.pdf-a').value=v};$('#pdfCotas').appendChild(b)});
- status('Texto extraído: '+ss.length+' trechos; '+unique.length+' diâmetros candidatos. Confira cada cota no desenho antes de usar.');
+ if(!rec||!rec.ok)status('Texto extraído: '+ss.length+' trechos; '+unique.length+' diâmetros candidatos. Reconhecimento completo indisponível; confira as cotas manualmente.');
  }).catch(function(e){status(String(e.message||e),true)});
 }
 $('#pdfFile').addEventListener('change',function(){
  var f=this.files[0];if(!f)return;
  if(!/\.pdf$/i.test(f.name)&&f.type!=='application/pdf'){status('Selecione um arquivo .pdf válido.',true);return}
  if(f.size>40*1024*1024){status('PDF acima de 40 MB: reduza o arquivo antes de importar.',true);return}
- if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(f);page=1;total=1;dx=dy=rot=0;zoom=1;array=null;doc=null;tokens=[];
+ if(url)URL.revokeObjectURL(url);$('#pdfRows').replaceChildren();addRow('cil');$('#pdfComprimento').value='';$('#pdfConfirmado').checked=false;url=URL.createObjectURL(f);page=1;total=1;dx=dy=rot=0;zoom=1;array=null;doc=null;tokens=[];
  $('#pdfNome').value=f.name.replace(/\.pdf$/i,'');$('#pdfTexto').value='';$('#pdfCotas').replaceChildren();showPage();
  f.arrayBuffer().then(function(b){array=b;scan()}).catch(function(){status('Falha ao ler arquivo PDF.',true)});
 });
