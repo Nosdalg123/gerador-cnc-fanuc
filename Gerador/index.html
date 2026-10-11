@@ -63,7 +63,7 @@
 .dxf-problem button{white-space:nowrap}
 .dxf-legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:12px;color:#476078;margin:6px 0}
 .dxf-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
-.dxf-dot.recognized{background:#ea6700}.dxf-dot.pending{background:#c99b37}.dxf-dot.other{background:#668ba8}
+.dxf-dot.recognized{background:#21936a}.dxf-dot.internal{background:#3375bd}.dxf-dot.pending{background:#c99b37}.dxf-dot.other{background:#668ba8}
 #dxfPanel .pdf-projection{min-width:0}
 #dxfPanel #dxfProjected{max-height:520px}
 @media (max-width:900px){#dxfPanel.show-original .pdf-workspace{grid-template-columns:1fr}}
@@ -278,7 +278,7 @@
  <button class="btn primary" type="button" id="dxfExtendApply">Aplicar extensão</button>
 </div>
 <div id="dxfProjected" class="dxf-graphics" aria-label="Contorno CAD reconhecido automaticamente; clique para selecionar ou retirar linhas"></div>
-<div class="dxf-legend"><span><b class="dxf-dot recognized"></b> Selecionado</span><span><b class="dxf-dot pending"></b> Para corrigir</span><span><b class="dxf-dot other"></b> Referência CAD</span></div><div id="dxfEntityInfo" class="note" role="status">Clique numa linha colorida para incluí-la ou retirá-la do contorno. Se necessário, selecione uma correção abaixo.</div>
+<div class="dxf-legend"><span><b class="dxf-dot recognized"></b> Perfil externo</span><span><b class="dxf-dot internal"></b> Perfil interno</span><span><b class="dxf-dot pending"></b> Outras linhas</span></div><div id="dxfEntityInfo" class="note" role="status">Clique numa linha colorida para incluí-la ou retirá-la do contorno. Se necessário, selecione uma correção abaixo.</div>
 <div id="dxfContext" class="dxf-context" hidden>
  <strong id="dxfContextTitle">Trecho selecionado</strong>
  <div class="toolbar">
