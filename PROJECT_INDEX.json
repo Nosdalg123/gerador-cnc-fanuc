@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-10-11: correção topológica DXF com auditoria e cadeias geométricas",
+  "gerado_em": "2026-10-11: DXF browser smoke + correção de inicialização e escala SVG",
   "como_ler": "simbolos = [nome, tipo, linha_inicio, linha_fim, pai]; linhas comecam em 1. Leia so a faixa necessaria (Read com offset/limit).",
   "regerar": "python indexer.py",
   "ignorado": [
@@ -21,12 +21,12 @@
     "versoes"
   ],
   "totais": {
-    "arquivos": 50,
+    "arquivos": 51,
     "simbolos": 1074,
     "por_linguagem": {
       "md": 8,
       "py": 1,
-      "js": 39,
+      "js": 40,
       "html": 1,
       "css": 1
     }
@@ -7843,6 +7843,11 @@
           ""
         ]
       ]
+    },
+    "Gerador/testdxfui.mjs": {
+      "lang": "js",
+      "linhas": 73,
+      "simbolos": []
     }
   }
 }
