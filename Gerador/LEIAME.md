@@ -2,6 +2,16 @@
 
 Abrir: dois cliques em `index.html` (Chrome ou Edge). O Gerador funciona localmente; a importação automática de texto do PDF precisa carregar a biblioteca PDF.js na primeira utilização.
 
+## PDF com escala geométrica proporcional (v2.10.0)
+1. Abra **Desenho da peça → Importar desenho PDF**.
+2. Se houver várias vistas, clique em **Selecionar vista no PDF** e arraste um retângulo incluindo o contorno e as cotas de UMA vista. Legendas 'SEÇÃO', 'CORTE' e 'VISTA' podem gerar atalhos de seleção.
+3. O desenho reconhecido aparece no painel **Peça reconstruída para CNC** com a mesma escala nos dois eixos: cada milímetro em Z e cada milímetro no diâmetro usam a mesma ampliação. A escala de tela se ajusta ao espaço disponível e não equivale a tamanho físico real.
+4. **Clique nas cotas em azul ou na peça projetada** para alterar diretamente diâmetros, comprimentos, cones e lado, ou use os botões para complementar o contorno. Não há lista técnica de partes no módulo PDF.
+5. Compare todas as dimensões com o PDF. Modificações desmarcam automaticamente a confirmação; perfil externo incompleto ou Ø interno maior/igual ao externo são impedimentos para salvar.
+6. Marque **Confirmo que a geometria...**. Informe **Nome do desenho** ao lado do botão grande **Salvar desenho confirmado**. Depois o desenho fica na lista do Gerador em **Peça simples → Importar desenho salvo**.
+
+**Limites do reconhecimento automático:** PDFs com texto selecionável e seções vetoriais simétricas têm maior chance de leitura. Perfis complexos podem não ser reconstruídos, inclusive com seleção de vista. O software não realiza OCR e não substitui CAD, cotagem de engenharia, compensações de ferramenta ou verificação de segurança. Linhas vetoriais podem fornecer **estimativas**, não cotas finais; confira todas as medidas e simule antes de executar.
+
 ## Desenho a partir de PDF (v2.9.0)
 1. Abra **Desenho da peça → Importar desenho PDF** e escolha o arquivo.
 2. Veja o PDF original à esquerda e a projeção XZ independente à direita, com diâmetros e comprimentos cotados.
