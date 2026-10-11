@@ -3,7 +3,7 @@
 (function(root){
 'use strict';
 var $=q=>document.querySelector(q),url=null,doc=null,fileBytes=null,page=1,totalPages=1,zoom=1,rotation=0;
-var model=[],length='',picked=null,selectMode=false,down=null,viewport=null,pg=null,library=null,savedId=null,renderSeq=0,edit=null,possibleViews=[],previewZoom=1;
+var model=[],length='',picked=null,selectMode=false,down=null,viewport=null,pg=null,library=null,savedId=null,renderSeq=0,edit=null,possibleViews=[],previewZoom=1,viewKind='',faceChoice='',profileAxis='horizontal';
 var pdfjsUrl='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
 var workerUrl='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 function status(t,error){$('#pdfStatus').textContent=t;$('#pdfStatus').style.color=error?'#be4936':'';}
@@ -11,7 +11,24 @@ function fmt(v){return Number(v).toLocaleString('pt-BR',{maximumFractionDigits:4
 function valid(v){return Number.isFinite(Number(v))&&Number(v)>0}
 function setText(id,v){$(id).textContent=v}
 function invalidate(){savedId=null;$('#pdfConfirmado').checked=false;$('#pdfAbrirGerador').hidden=true;$('#pdfSaved').textContent='';renderPreview();}
-function fresh(){model=[];length='';picked=null;selectMode=false;possibleViews=[];invalidate();drawSelection();}
+function fresh(){
+ model=[];length='';picked=null;selectMode=false;possibleViews=[];viewKind='';faceChoice='';profileAxis='horizontal';
+ $('#pdfViewType').value='';$('#pdfFaceChoice').value='';
+ invalidate();drawSelection();
+}
+function resetOrientation(){
+ faceChoice='';$('#pdfFaceChoice').value='';invalidate();
+}
+function orientationStatus(){
+ var target=$('#pdfOrientationStatus'),dir=viewKind==='lateral'?'vista longitudinal':'vista sem classificação';
+ if(!faceChoice){
+  target.textContent='Escolha a face Z0 antes de salvar. O PDF sozinho não define como a peça será fixada na placa.';
+  return;
+ }
+ var side=faceChoice==='start'?'esquerda / superior':'direita / inferior';
+ var g=root.CNCPDFOrient.inspect(model,$('#pdfProfileSide').value);
+ target.textContent='Z0: '+side+' da '+dir+' · X em diâmetro, Z negativo para o fundo. '+g.note;
+}
 function loadPdfjs(){
  if(root.pdfjsLib){library=root.pdfjsLib;return Promise.resolve(library)}
  return new Promise(function(resolve,reject){
@@ -34,7 +51,8 @@ function renderPreview(){
   $('#pdfScaleInfo').textContent='Escala proporcional X = Ø';
  }
  $('#pdfComprimento').value=length;
- var canSave=!!(r.ok&&url&&$('#pdfConfirmado').checked&&$('#pdfNome').value.trim()&&!savedId);
+ orientationStatus();
+ var canSave=!!(r.ok&&url&&viewKind==='lateral'&&faceChoice&&$('#pdfConfirmado').checked&&$('#pdfNome').value.trim()&&!savedId);
  $('#pdfAplicar').disabled=!canSave;
  return r;
 }
@@ -80,25 +98,26 @@ async function recognizePage(){
  try{
   var content=await pg.getTextContent(),items=cropItems(content.items);
   $('#pdfTexto').value=items.map(t=>t.str).join(' ');
-  var candidates=root.CNCPDFRecon.candidates(items);
-  var box=$('#pdfCotas');box.replaceChildren();
-  Array.from(new Set(candidates.map(x=>x.n))).forEach(function(n){var span=document.createElement('span');span.className='chip';span.textContent=fmt(n)+' mm';box.appendChild(span)});
-  var recognized=root.CNCPDFRecon.recognize(items);
-  var dims=recognized.ok?recognized:null,drawn=null,vectorWarning='';
-  if(!dims){
-   // Em desenhos com mais de dois diametros, o texto sozinho e insuficiente:
-   // o maior candidato serve para escalar a vista, nao para liberar CNC.
-   var axial=candidates.filter(c=>c.vertical&&!c.diam);
-   var diam=candidates.filter(c=>c.diam&&!c.vertical);
-   if(!diam.length){
-    var horizontal=candidates.filter(c=>!c.vertical&&!c.diam);
-    if(horizontal.length>1)diam=horizontal;
-   }
-   if(axial.length>=1&&diam.length>=1){
-    dims={externo:Math.max.apply(null,diam.map(c=>c.n)),interno:null,comprimento:Math.max.apply(null,axial.map(c=>c.n)),approximate:true};
-   }
+  var typed=root.CNCPDFCotas.summary(items,profileAxis),box=$('#pdfCotas');
+  box.replaceChildren();
+  typed.all.forEach(function(c){
+   var chip=document.createElement('span'),small=document.createElement('small');
+   chip.className='pdf-dimension';small.textContent=c.tipo+': ';
+   chip.appendChild(small);chip.appendChild(document.createTextNode(c.rotulo));box.appendChild(chip);
+  });
+  if(viewKind==='frontal'){
+   model=[];length='';invalidate();
+   status('Vista frontal selecionada: adequada para conferir furos e diâmetros, mas não define o contorno longitudinal em Z. Selecione a vista lateral para reconstruir a peça.',true);
   }
-  if(dims&&root.CNCPDFVetorial&&library.OPS){
+  var recognized=viewKind==='lateral'&&root.CNCPDFRecon.recognize(items);
+  if(typed.complex)recognized={ok:false,reason:'Desenho possui múltiplos diâmetros, comprimentos, raios ou roscas: é necessária análise do contorno e conferência das cotas.'};
+  var dims=recognized&&recognized.ok?recognized:null,drawn=null,vectorWarning='';
+  // O total axial e o Ø máximo devem ser encontrados em UMA vista longitudinal.
+  // Nunca usar qualquer número não identificado como comprimento/diâmetro.
+  if(!dims&&viewKind==='lateral'&&typed.candidateLength&&typed.candidateDiameter){
+   dims={externo:typed.candidateDiameter,interno:null,comprimento:typed.candidateLength,approximate:true};
+  }
+  if(dims&&viewKind==='lateral'&&root.CNCPDFVetorial&&library.OPS){
    try{
     var ops=await pg.getOperatorList();
     var lines=root.CNCPDFVetorial.extract(ops,library.OPS,viewport);
@@ -109,6 +128,8 @@ async function recognizePage(){
   if(drawn&&drawn.ok&&drawn.items.length>=1){
    model=drawn.items;
    length=drawn.length;
+   profileAxis=drawn.axis;
+   if(faceChoice==='end')model=root.CNCPDFOrient.reverse(model,$('#pdfProfileSide').value);
    if(recognized.ok&&model.length===2){
     // As cotas escritas no PDF prevalecem sobre estimativas graficas.
     var ex=model.find(q=>q.tipo==='cil'),inn=model.find(q=>q.tipo==='icil');
@@ -119,18 +140,23 @@ async function recognizePage(){
   }else if(recognized.ok){
    model=[{tipo:'cil',side:'1',a:recognized.externo,b:recognized.comprimento,c:''},{tipo:'icil',side:'1',a:recognized.interno,b:recognized.comprimento,c:''}];
    length=recognized.comprimento;
+   if(faceChoice==='end')model=root.CNCPDFOrient.reverse(model,'1');
    invalidate();
    status('Geometria detectada pelas cotas da vista: Ø externo '+fmt(recognized.externo)+', Ø interno '+fmt(recognized.interno)+', comprimento '+fmt(recognized.comprimento)+' mm. Confira a projeção.');
   }else{
-   model=[];length='';
-   invalidate();
-   status('O contorno não pôde ser reconstruído com segurança nesta vista. Ajuste a seleção ou acrescente a geometria diretamente na projeção. '+recognized.reason,true);
+   model=[];length='';invalidate();
+   if(viewKind!=='frontal')status('Contorno incompleto ou incerto. Cotas identificadas: '+typed.all.length+'. Ajuste a vista e confirme manualmente a geometria no painel CNC. '+(recognized&&recognized.reason||''),true);
   }
   var views=content.items.map(function(it){return {s:String(it.str||'').toUpperCase(),transform:it.transform}})
     .filter(function(it){return /SE[CÇ][AÃ]O|CORTE |SECTION|VISTA /.test(it.s)});
-  possibleViews=views.map(function(t,i){var p=library.Util.transform(viewport.transform,t.transform),nx=p[4]/viewport.width,ny=p[5]/viewport.height;
-    return {name:t.s.slice(0,40),view:{x1:Math.max(0,nx-.25),y1:Math.max(0,ny-.45),x2:Math.min(1,nx+.25),y2:Math.min(1,ny+.03)}}
+  var texts=views.map(function(t){var pp=library.Util.transform(viewport.transform,t.transform),nx=pp[4]/viewport.width,ny=pp[5]/viewport.height;
+    return {name:t.s.slice(0,40),kind:'',view:{x1:Math.max(0,nx-.25),y1:Math.max(0,ny-.45),x2:Math.min(1,nx+.25),y2:Math.min(1,ny+.03)}};
   });
+  var shapes=[];
+  if(library.OPS&&root.CNCPDFVistas){
+   try{shapes=root.CNCPDFVistas.extractGroups(await pg.getOperatorList(),library.OPS,viewport);}catch(e){shapes=[];}
+  }
+  possibleViews=shapes.concat(texts);
   paintSuggestions();
  }catch(e){status('Não foi possível ler as cotas desta página: '+(e.message||e),true)}
 }
@@ -139,7 +165,7 @@ function paintSuggestions(){
  rootEl.replaceChildren();
  possibleViews.forEach(function(v,i){
   var b=document.createElement('button');b.type='button';b.className='btn sm';b.textContent='Selecionar '+v.name;
-  b.onclick=function(){picked=v.view;selectMode=false;invalidate();drawSelection();recognizePage();};rootEl.appendChild(b);
+  b.onclick=function(){picked=v.view;selectMode=false;viewKind=v.kind||'';$('#pdfViewType').value=viewKind;resetOrientation();drawSelection();recognizePage();};rootEl.appendChild(b);
  });
 }
 function drawSelection(temp){
@@ -161,11 +187,23 @@ stage.addEventListener('pointermove',function(e){if(!down)return;var p=pointer(e
 stage.addEventListener('pointerup',function(e){
  if(!down)return;var p=pointer(e),v={x1:Math.min(down.x,p.x),y1:Math.min(down.y,p.y),x2:Math.max(down.x,p.x),y2:Math.max(down.y,p.y)};down=null;
  if((v.x2-v.x1)<.035||(v.y2-v.y1)<.035){status('Selecione um retângulo maior, incluindo o contorno e as cotas.',true);return}
- picked=v;selectMode=false;drawSelection();recognizePage();
+ picked=v;selectMode=false;viewKind='';$('#pdfViewType').value='';resetOrientation();drawSelection();recognizePage();
 });
 stage.addEventListener('pointercancel',function(){down=null;drawSelection()});
 $('#pdfSelectView').onclick=function(){selectMode=true;status('Arraste no PDF um retângulo ao redor da vista e das cotas correspondentes.');};
-$('#pdfClearView').onclick=function(){picked=null;selectMode=false;drawSelection();recognizePage()};
+$('#pdfClearView').onclick=function(){picked=null;selectMode=false;viewKind='';$('#pdfViewType').value='';resetOrientation();drawSelection();recognizePage()};
+$('#pdfViewType').onchange=function(){
+ viewKind=this.value;resetOrientation();recognizePage();
+};
+$('#pdfFaceChoice').onchange=function(){
+ var next=this.value,old=faceChoice;
+ if(next&&next!==old&&model.length){
+  if((old==='start'&&next==='end')||(old==='end'&&next==='start')||(!old&&next==='end'))
+   model=root.CNCPDFOrient.reverse(model,$('#pdfProfileSide').value);
+ }
+ faceChoice=next;invalidate();
+ status(next?'Face Z0 selecionada. Revise a geometria antes de confirmar.':'Escolha a face do desenho que estará voltada para a ferramenta.');
+};
 $('#pdfFile').onchange=async function(){
  var f=this.files[0];if(!f)return;
  if(!/\.pdf$/i.test(f.name)&&f.type!=='application/pdf'){status('Selecione um PDF.',true);return}
@@ -179,7 +217,7 @@ $('#pdfFile').onchange=async function(){
  }catch(e){status(e.message||String(e),true);showFallback()}
 };
 $('#pdfAnterior').onclick=function(){if(doc&&page>1){page--;picked=null;fresh();showPage(true)}};
-$('#pdfProxima').onclick=function(){if(doc&&page<totalPages){page++;picked=null;fresh();showPage()}};
+$('#pdfProxima').onclick=function(){if(doc&&page<totalPages){page++;picked=null;fresh();showPage(true)}};
 $('#pdfMais').onclick=function(){zoom=Math.min(4,zoom*1.25);showPage(false)};
 $('#pdfMenos').onclick=function(){zoom=Math.max(.5,zoom/1.25);showPage(false)};
 $('#pdfGirar').onclick=function(){rotation=(rotation+90)%360;picked=null;fresh();showPage(true)};
@@ -221,20 +259,12 @@ $('#pdfPreviewZoomOut').onclick=function(){previewZoom=Math.max(.8,previewZoom/1
 $('#pdfPreviewZoomReset').onclick=function(){previewZoom=1;renderPreview()};
 $('#pdfReverseProfile').onclick=function(){
  var side=$('#pdfProfileSide').value;
- ['e','i'].forEach(function(key){
-  var kind=q=>(q.tipo[0]==='i'?'i':'e')===key&&q.side===side;
-  var src=model.filter(kind);
-  var flipped=src.slice().reverse().map(function(q){
-   var n={...q};
-   if(n.tipo.indexOf('cone')>=0){var a=n.a;n.a=n.c;n.c=a;}
-   return n;
-  });
-  var i=0;model=model.map(function(q){return kind(q)?flipped[i++]:q});
- });
+ model=root.CNCPDFOrient.reverse(model,side);
+ faceChoice=faceChoice==='start'?'end':faceChoice==='end'?'start':'';
+ $('#pdfFaceChoice').value=faceChoice;
  invalidate();
- status('Orientação do perfil invertida neste lado. Confira a face Z0 antes de salvar.');
+ status('Perfil CNC invertido com a sequência e os cones atualizados. Confira a face Z0 e as cotas antes de salvar.');
 };
-
 $('#pdfProfileSvg').addEventListener('click',function(e){
  var node=e.target.closest('[data-edit-total],[data-edit-index]');if(!node)return;
  if(node.hasAttribute('data-edit-total'))openEditor(-1,'total');
@@ -245,7 +275,7 @@ $('#pdfConfirmado').onchange=renderPreview;
 $('#pdfNome').oninput=function(){savedId=null;$('#pdfAbrirGerador').hidden=true;$('#pdfSaved').textContent='';renderPreview()};
 $('#pdfAplicar').onclick=function(){
  var r=root.CNCPDFPerfil.analyze(model,length),name=$('#pdfNome').value.trim();
- if(!r.ok||!$('#pdfConfirmado').checked||!name||!url){status('Confirme geometria válida, nome e cotas antes de salvar.',true);return}
+ if(!r.ok||viewKind!=='lateral'||!faceChoice||!$('#pdfConfirmado').checked||!name||!url){status('Confirme geometria válida, nome e cotas antes de salvar.',true);return}
  var max=Math.max(...r.items.filter(q=>q.tipo[0]!=='i').map(q=>Math.max(q.a,q.tipo==='cone'?q.b:q.a)));
  var api=root.CNCDesenhos,id=api&&api.salvarPDF&&api.salvarPDF({nome:name,lPeca:Number(length),dRef:Math.ceil(max+4),items:r.items});
  if(!id){status('Não foi possível salvar o desenho. Confira se há alterações não salvas no editor manual.',true);return}
@@ -256,5 +286,6 @@ $('#pdfAbrirGerador').onclick=function(){var nav=$('#nav-gerador');if(nav&&!nav.
 $('#pdfModo').onclick=function(){$('#pdfPanel').hidden=false;$('#pdfManual').hidden=true;renderPreview()};
 $('#pdfVoltar').onclick=function(){$('#pdfPanel').hidden=true;$('#pdfManual').hidden=false};
 renderPreview();
-root.CNCPDFImport={getModel:function(){return model.map(q=>({...q}))},getSelectedView:function(){return picked}};
+root.CNCPDFImport={getModel:function(){return model.map(q=>({...q}))},getSelectedView:function(){return picked},
+ getOrientation:function(){return {view:viewKind,face:faceChoice,axis:profileAxis}}};
 })(window);
