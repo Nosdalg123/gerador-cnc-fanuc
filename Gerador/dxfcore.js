@@ -40,9 +40,11 @@ function read(text){
   if(typ==='DIMENSION'){
    let text=get(g,1,'<>'),kind=num(g,70)&7;const a=[num(g,13),num(g,23)],b=[num(g,14),num(g,24)],dx=b[0]-a[0],dy=b[1]-a[1],theta=num(g,50)*Math.PI/180;
    let measured=kind===0?Math.abs(dx*Math.cos(theta)+dy*Math.sin(theta)):kind===1?Math.hypot(dx,dy):NaN;
+   if(kind===4||kind===5){const p=[num(g,15),num(g,25)];let r=Math.hypot(p[0]-num(g,10),p[1]-num(g,20));measured=kind===5?2*r:r;}
    // DIMENSION radius/diameter without extension points: preserve native parameters for review.
    const d={id:common.id,type:'DIMENSION',kind:kind,diameter:/%%c|[Ø⌀]/i.test(text),text:text,
     measure:Number.isFinite(measured)?Math.round(measured*1e5)/1e5:null,
+    measureKind:kind===4?'raio':kind===5?'diametro':kind===2?'angulo_a_conferir':kind===0||kind===1?'linear':'outro',
     position:[num(g,10),num(g,20)],a:a,b:b,angle:num(g,50),layer:common.layer};
    dimensions.push(d);continue;
   }
