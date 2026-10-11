@@ -25,7 +25,7 @@ function analyze(rows,total){
  })});
  var ext=items.filter(t=>t.tipo[0]!=='i'),inside=items.filter(t=>t.tipo[0]==='i');
  if(!ext.length)errors.push('A vista ainda não contém um contorno externo.');
- if(valid(length)&&ext.length&&sum[1].ext<length-0.0001&&sum[2].ext===0)warnings.push('Contorno externo incompleto; confira a vista antes de salvar.');
+ if(valid(length)&&ext.length&&sum[1].ext+sum[2].ext<length-0.0001)errors.push('Contorno externo incompleto: a peça precisa cobrir todo o comprimento antes de salvar.');
  function at(list,side,z){var p=0;for(var i=0;i<list.length;i++){var q=list[i];if(q.side!==side)continue;var span=q.tipo.indexOf('cone')>=0?q.c:q.b;if(z<=p+span+1e-7)return q.a+((q.tipo.indexOf('cone')>=0?q.b:q.a)-q.a)*Math.min(1,Math.max(0,(z-p)/span));p+=span}return null}
  ['1','2'].forEach(function(side){var cuts=[0],p=0;[ext,inside].forEach(function(list){p=0;list.forEach(function(q){if(q.side!==side)return;p+=q.tipo.indexOf('cone')>=0?q.c:q.b;cuts.push(p)})});
   cuts.forEach(function(z){var e=at(ext,side,z),i=at(inside,side,z);if(e!=null&&i!=null&&i>=e-0.0001)errors.push('O Ø interno é maior ou igual ao externo no lado '+side+'.')});
