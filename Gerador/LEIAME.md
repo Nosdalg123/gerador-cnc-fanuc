@@ -2,6 +2,18 @@
 
 Abrir: dois cliques em `index.html` (Chrome ou Edge). O Gerador funciona localmente; a importação automática de texto do PDF precisa carregar a biblioteca PDF.js na primeira utilização.
 
+## Escolher cadeias CAD reais e corrigir rascunhos (v2.14.0)
+**Problema corrigido:** o Disco tem várias cadeias desconectadas e o Copo tem várias bifurcações. Selecionar a maior componente inteira mistura perfis externos, internos e auxiliares.
+
+1. Importe o DXF e confira a vista lateral sugerida. O sistema mantém escala igual em X e Z e preserva dimensões/raios da fonte CAD.
+2. Informe/confira o **eixo X0**; a face Z0 pode continuar pendente para rascunho, mas é obrigatória para salvar perfil pronto.
+3. Clique em **Localizar cadeias reais**. Cada opção representa somente um caminho entre pontas, bifurcações ou circuito fechado. Marque **Externo**, **Interno** ou **Remover** antes de adicionar a cadeia desejada.
+4. Clique em cada segmento para inspecionar **Ø, comprimento de cilindro/cone, face radial ou R nativo**. Ao identificar ponta solta, o aviso mostra posição CAD e Ø para correção.
+5. O auditor bloqueia exportação CNC se faltarem segmentos/raios/roscas/SPLINE, se houver bifurcação, sobreposição, lacuna, eixo/Z0 indefinido ou comprimento diferente da cota axial do CAD.
+6. **Salvar rascunho CAD** mantém a fonte sem liberar usinagem. **Corrigir trechos no editor manual** abre os elementos traduzíveis como rascunho INCOMPLETO. Após concluir todos os detalhes, **Confirmar revisão completa do CAD** agora salva também a confirmação na lista usada pelo Gerador.
+
+Veja `TESTE-DXF-CADEIAS.md` para resultados nos dois arquivos reais e o comando de regressão local com os anexos originais.
+
 ## Importar CAD DXF — geometria real (v2.13.0)
 1. Em **Desenho da peça**, clique em **Importar CAD DXF (geometria real)**. Aceita DXF ASCII em milímetros (DWG requer exportação; DXF binário não suportado).
 2. Selecione seu DXF. O sistema desenha as entidades CAD e sugere uma vista longitudinal com base nos círculos concêntricos da vista frontal. Ajuste o recorte se necessário.
