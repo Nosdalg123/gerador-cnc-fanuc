@@ -53,3 +53,7 @@ O leitor segue os mesmos critérios dos geradores; o que não foi confirmado na 
 - O **filete da rosca** (só percurso e tempo das passadas).
 - A haste/porta-ferramenta (só a pastilha); folga de haste em furos pequenos e canais internos fica por conta do operador.
 - Interferência da placa no perfil externo além do que o card "Máquina e placa" descreve.
+## Desenhos convertidos de PDF (2.10.0)
+- Conferir manualmente **vista selecionada, origem Z0, Ø externo/interno, comprimento, degraus e orientação dos lados**. A projeção mantém proporção correta em X e Ø, mas isso não garante a interpretação da peça.
+- Cotas inferidas de linhas vetoriais são estimativas: substituir pelos valores explícitos do desenho antes de gerar código CNC. PDFs digitalizados ou com raios/chanfros não suportados requerem CAD ou digitação verificada.
+- Antes de levar à máquina: validar fixação, ferramentas, compensações e simulação, executar a seco conforme procedimentos da ferramentaria.
