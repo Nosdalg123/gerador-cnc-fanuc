@@ -421,6 +421,21 @@
     obter: function (id) { var d = salvoDe(id); return d ? clone(d) : null; },
     abrir: function (id) { abrirId(id); },
     novo: function () { abrirId(null); },
+    importarPDF: function (dados) {
+      if (!confirmaDescartar()) return false;
+      var novo = vazio();
+      novo.nome = String(dados.nome || 'Desenho PDF').trim();
+      novo.lPeca = dados.lPeca;
+      novo.dRef = dados.dRef;
+      novo.lados = dados.items.some(function (it) { return it.side === '2'; }) ? '2' : '1';
+      dados.items.forEach(function (it) {
+        var el = { id: uid(), tipo: it.tipo, a: it.a, b: it.b };
+        if (it.tipo === 'cone' || it.tipo === 'icone') el.c = it.c;
+        novo[(it.tipo.charAt(0) === 'i' ? 'internos' : 'trechos') + it.side].push(el);
+      });
+      work = norm(novo); ui.lado = 1; persistWork(); tela();
+      return true;
+    },
     mostrar: function () { tela(); },
     sujoId: function () { return work.id && sujo() ? work.id : null; },   // id do desenho salvo que tem alteracoes ainda nao salvas no editor
     // ao sair da tela do desenho: oferece salvar (o Gerador so enxerga o que foi salvo)
