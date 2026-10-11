@@ -7,10 +7,10 @@
 })(typeof self!=='undefined'?self:this,function(DX,P,Chains){
 'use strict';
 const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
-function autoSelect(doc,rect,axis){
+function autoSelect(doc,rect,axis,hidden){
  const none={externo:[],interno:[],ambiguous:true,reason:'Selecione a vista e confirme o eixo central.'};
  if(!doc||!rect||!Number.isFinite(axis))return none;
- const width=rect.x2-rect.x1,all=P.segments(doc.geometry,rect);
+ const width=rect.x2-rect.x1,all=P.segments(doc.geometry,rect,hidden);
  const hints=P.sectionSuggestion(doc),r=hints&&hints.front?hints.front.max:null;
  const pieces=all.filter(s=>{
   if(!P.above(s,axis,.16))return false;
