@@ -95,3 +95,10 @@ O leitor segue os mesmos critérios dos geradores; o que não foi confirmado na 
 - [ ] Comparar face Z0 selecionada com a fixação real e verificar origem de máquina/castanhas.
 - [ ] Verificar todos os raios, roscas, SPLINE, canais e cavidades não convertidos; não gerar G-code de rascunho incompleto.
 - [ ] Repetir simulação e prova a seco antes de produção.
+
+## Importação inteligente CAD — v2.16.0
+- [ ] Confirmar que a miniatura selecionada representa a SEÇÃO LONGITUDINAL, não apenas a vista frontal.
+- [ ] Comparar todas as linhas verdes/azuis com os contornos externos/internos efetivos do desenho.
+- [ ] Conferir qualquer conexão estendida ou removida, com tolerância CAD e cota nominal.
+- [ ] Validar roscas, raios, SPLINE, canais, furos e cavidades antes de usar a geometria no Gerador.
+- [ ] Definir face Z0 somente após conferir a fixação, efetuar simulação e prova a seco.
