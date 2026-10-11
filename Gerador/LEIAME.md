@@ -1,6 +1,16 @@
 # Gerador CNC Torno
 
-Abrir: dois cliques em `index.html` (Chrome ou Edge). Não precisa instalar nada nem estar online.
+Abrir: dois cliques em `index.html` (Chrome ou Edge). O Gerador funciona localmente; a importação automática de texto do PDF precisa carregar a biblioteca PDF.js na primeira utilização.
+
+## Desenho a partir de PDF (v2.9.0)
+1. Abra **Desenho da peça → Importar desenho PDF** e escolha o arquivo.
+2. Veja o PDF original à esquerda e a projeção XZ independente à direita, com diâmetros e comprimentos cotados.
+3. O importador tenta interpretar automaticamente peças anulares simples com Ø externo, Ø interno e comprimento; outras geometrias podem exigir preenchimento manual dos trechos.
+4. Corrija as cotas até o desenho projetado coincidir com o original. A confirmação é desmarcada a cada mudança de geometria.
+5. Marque **Confirmo que a peça reconstruída...**, digite um nome e clique **Salvar desenho confirmado**. O sistema salva imediatamente na mesma lista de desenhos usada pelo editor manual.
+6. No Gerador, selecione **Peça simples**, escolha em **Importar desenho salvo** e informe bruto/ferramentas. Não é necessário redesenhar.
+
+A projeção é ilustrativa, **não é uma medição a partir de pixels**. PDFs digitalizados precisam de interpretação humana (não há OCR). Sempre confira geometria, fixação e código antes de usinar.
 
 ## Fluxo
 1. **Tipo de peça** → medidas (bloco bruto + peça final) → **ferramentas** do banco → **incrementos de corte**.
