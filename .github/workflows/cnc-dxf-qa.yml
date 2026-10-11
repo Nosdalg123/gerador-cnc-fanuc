@@ -1,0 +1,39 @@
+name: CNC CAD and Fanuc Regression
+on:
+  push:
+    branches:
+      - feature/dxf-perfis-v2.14.0
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: Gerador
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify JavaScript syntax
+        run: |
+          for f in dxfcore.js dxfprofile.js dxfchains.js dxfaudit.js dxfimport.js pdfimport.js desenho.js app.js; do
+            node --check "$f"
+          done
+      - name: CAD entity, chains, and safety tests
+        run: |
+          node testdxf.js
+          node testdxfchains.js
+          node testdxfaudit.js
+      - name: PDF and orientation regression tests
+        run: |
+          node testpdf.js
+          node testpdfview.js
+          node testpdfscale.js
+          node testpdfdisco.js
+          node testpdfcopo.js
+          node testpdforientcnc.js
+      - name: Original CNC generator and diagnostics suite
+        run: node test.js
