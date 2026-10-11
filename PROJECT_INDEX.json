@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-10-11: caso de teste PDF Copo 7 e seleção de vista",
+  "gerado_em": "2026-10-11: DXF CAD geométrico real e regressões",
   "como_ler": "simbolos = [nome, tipo, linha_inicio, linha_fim, pai]; linhas comecam em 1. Leia so a faixa necessaria (Read com offset/limit).",
   "regerar": "python indexer.py",
   "ignorado": [
@@ -21,12 +21,12 @@
     "versoes"
   ],
   "totais": {
-    "arquivos": 39,
-    "simbolos": 1006,
+    "arquivos": 44,
+    "simbolos": 1057,
     "por_linguagem": {
-      "md": 6,
+      "md": 7,
       "py": 1,
-      "js": 30,
+      "js": 34,
       "html": 1,
       "css": 1
     }
@@ -521,237 +521,244 @@
     },
     "Gerador/LEIAME.md": {
       "lang": "md",
-      "linhas": 257,
+      "linhas": 272,
       "simbolos": [
         [
           "Gerador CNC Torno",
           "h1",
           1,
-          257,
+          272,
+          ""
+        ],
+        [
+          "Importar CAD DXF — geometria real (v2.13.0)",
+          "h2",
+          5,
+          272,
           ""
         ],
         [
           "Separação de vistas e detalhes — teste Copo 7″ (v2.12.0)",
           "h2",
-          5,
-          257,
+          20,
+          272,
           ""
         ],
         [
           "Orientação PDF → Torno CNC e teste Disco 7″ (v2.11.0)",
           "h2",
-          12,
-          257,
+          27,
+          272,
           ""
         ],
         [
           "PDF com escala geométrica proporcional (v2.10.0)",
           "h2",
-          21,
-          257,
+          36,
+          272,
           ""
         ],
         [
           "Desenho a partir de PDF (v2.9.0)",
           "h2",
-          31,
-          257,
+          46,
+          272,
           ""
         ],
         [
           "Fluxo",
           "h2",
-          41,
-          257,
+          56,
+          272,
           ""
         ],
         [
           "Geometrias",
           "h2",
-          47,
-          257,
+          62,
+          272,
           ""
         ],
         [
           "Peça simples (desenho salvo)",
           "h3",
-          62,
-          257,
+          77,
+          272,
           ""
         ],
         [
           "O que usinar: externo, interno ou ambos",
           "h4",
-          72,
-          257,
+          87,
+          272,
           ""
         ],
         [
           "Trechos internos (furo + mandrilamento)",
           "h4",
-          77,
-          257,
+          92,
+          272,
           ""
         ],
         [
           "Bruto com furo existente (recolhido)",
           "h4",
-          88,
-          257,
+          103,
+          272,
           ""
         ],
         [
           "Campos recolhidos (\"Raios e folgas\")",
           "h2",
-          94,
-          257,
+          109,
+          272,
           ""
         ],
         [
           "Sentido do desbaste (longitudinal × transversal)",
           "h2",
-          97,
-          257,
+          112,
+          272,
           ""
         ],
         [
           "Espina",
           "h3",
-          108,
-          257,
+          123,
+          272,
           ""
         ],
         [
           "Fixação na placa (todas as geometrias)",
           "h2",
-          117,
-          257,
+          132,
+          272,
           ""
         ],
         [
           "Banco de ferramentas",
           "h2",
-          121,
-          257,
+          136,
+          272,
           ""
         ],
         [
           "Incrementos de corte (card 4)",
           "h2",
-          125,
-          257,
+          140,
+          272,
           ""
         ],
         [
           "Simulador (corte 2D XZ, meia seção)",
           "h2",
-          133,
-          257,
+          148,
+          272,
           ""
         ],
         [
           "Simulação de programa pronto (v2.2.0)",
           "h2",
-          143,
-          257,
+          158,
+          272,
           ""
         ],
         [
           "Desbaste G73, compensação G41/G42 e ângulo do suporte (v2.6.0)",
           "h2",
-          159,
-          257,
+          174,
+          272,
           ""
         ],
         [
           "Diagnóstico de erros do programa (v2.7.0)",
           "h2",
-          164,
-          257,
+          179,
+          272,
           ""
         ],
         [
           "Comando Siemens 802D sl em modo ISO (v2.7.1)",
           "h2",
-          170,
-          257,
+          185,
+          272,
           ""
         ],
         [
           "Desenvolvimento",
           "h2",
-          173,
-          257,
+          188,
+          272,
           ""
         ],
         [
           "Tela e temas",
           "h2",
-          178,
-          257,
+          193,
+          272,
           ""
         ],
         [
           "Raio zero",
           "h2",
-          186,
-          257,
+          201,
+          272,
           ""
         ],
         [
           "Cabeçalho fixo, Configurações e explicações (v1.1.0)",
           "h2",
-          189,
-          257,
+          204,
+          272,
           ""
         ],
         [
           "Desenho da peça (v1.3.0)",
           "h2",
-          198,
-          257,
+          213,
+          272,
           ""
         ],
         [
           "Chanfro e raio em um canto escolhido (v1.2.0)",
           "h2",
-          207,
-          257,
+          222,
+          272,
           ""
         ],
         [
           "Elementos em sequência (v1.4.0)",
           "h2",
-          216,
-          257,
+          231,
+          272,
           ""
         ],
         [
           "Porta-matriz (v1.6.0, refeito em 2 lados na v2.1.0)",
           "h2",
-          223,
-          257,
+          238,
+          272,
           ""
         ],
         [
           "Alimentador padrão (v1.7.0)",
           "h2",
-          231,
-          257,
+          246,
+          272,
           ""
         ],
         [
           "Canal interno (v1.8.0)",
           "h2",
-          240,
-          257,
+          255,
+          272,
           ""
         ],
         [
           "Rosca externa e interna (v1.9.0)",
           "h2",
-          248,
-          257,
+          263,
+          272,
           ""
         ]
       ]
@@ -6833,7 +6840,7 @@
     },
     "Gerador/pdfvector.js": {
       "lang": "js",
-      "linhas": 123,
+      "linhas": 141,
       "simbolos": [
         [
           "transform",
@@ -6876,12 +6883,19 @@
           112,
           112,
           ""
+        ],
+        [
+          "svg",
+          "function",
+          123,
+          123,
+          ""
         ]
       ]
     },
     "Gerador/pdfimport.js": {
       "lang": "js",
-      "linhas": 289,
+      "linhas": 290,
       "simbolos": [
         [
           "status",
@@ -6977,36 +6991,36 @@
         [
           "paintSuggestions",
           "function",
-          155,
-          155,
+          156,
+          156,
           ""
         ],
         [
           "drawSelection",
           "function",
-          169,
-          169,
+          170,
+          170,
           ""
         ],
         [
           "pointer",
           "function",
-          177,
-          177,
+          178,
+          178,
           ""
         ],
         [
           "openEditor",
           "function",
-          211,
-          211,
+          212,
+          212,
           ""
         ],
         [
           "closeEditor",
           "function",
-          224,
-          224,
+          225,
+          225,
           ""
         ]
       ]
@@ -7300,6 +7314,379 @@
           "h2",
           33,
           38,
+          ""
+        ]
+      ]
+    },
+    "Gerador/dxfcore.js": {
+      "lang": "js",
+      "linhas": 155,
+      "simbolos": [
+        [
+          "read",
+          "function",
+          9,
+          9,
+          ""
+        ],
+        [
+          "arcEnds",
+          "function",
+          65,
+          65,
+          ""
+        ],
+        [
+          "bulgeArc",
+          "function",
+          69,
+          69,
+          ""
+        ],
+        [
+          "explode",
+          "function",
+          77,
+          77,
+          ""
+        ],
+        [
+          "nurbsPoint",
+          "function",
+          89,
+          89,
+          ""
+        ],
+        [
+          "splinePoints",
+          "function",
+          103,
+          103,
+          ""
+        ],
+        [
+          "sample",
+          "function",
+          113,
+          113,
+          ""
+        ],
+        [
+          "bounds",
+          "function",
+          125,
+          125,
+          ""
+        ],
+        [
+          "inRect",
+          "function",
+          134,
+          134,
+          ""
+        ],
+        [
+          "cut",
+          "function",
+          135,
+          135,
+          ""
+        ],
+        [
+          "nativeCotas",
+          "function",
+          136,
+          136,
+          ""
+        ],
+        [
+          "annotations",
+          "function",
+          141,
+          141,
+          ""
+        ],
+        [
+          "candidateAxis",
+          "function",
+          147,
+          147,
+          ""
+        ]
+      ]
+    },
+    "Gerador/dxfprofile.js": {
+      "lang": "js",
+      "linhas": 128,
+      "simbolos": [
+        [
+          "fmt",
+          "function",
+          9,
+          9,
+          ""
+        ],
+        [
+          "esc",
+          "function",
+          10,
+          10,
+          ""
+        ],
+        [
+          "intersect",
+          "function",
+          11,
+          11,
+          ""
+        ],
+        [
+          "sectionSuggestion",
+          "function",
+          12,
+          12,
+          ""
+        ],
+        [
+          "segments",
+          "function",
+          28,
+          28,
+          ""
+        ],
+        [
+          "above",
+          "function",
+          36,
+          36,
+          ""
+        ],
+        [
+          "classify",
+          "function",
+          39,
+          39,
+          ""
+        ],
+        [
+          "endpoints",
+          "function",
+          52,
+          52,
+          ""
+        ],
+        [
+          "connectivity",
+          "function",
+          53,
+          53,
+          ""
+        ],
+        [
+          "analyze",
+          "function",
+          67,
+          67,
+          ""
+        ],
+        [
+          "polyPath",
+          "function",
+          89,
+          89,
+          ""
+        ],
+        [
+          "svg",
+          "function",
+          90,
+          90,
+          ""
+        ]
+      ]
+    },
+    "Gerador/dxfimport.js": {
+      "lang": "js",
+      "linhas": 240,
+      "simbolos": [
+        [
+          "resetConfirm",
+          "function",
+          12,
+          12,
+          ""
+        ],
+        [
+          "draftList",
+          "function",
+          13,
+          13,
+          ""
+        ],
+        [
+          "refreshDrafts",
+          "function",
+          14,
+          14,
+          ""
+        ],
+        [
+          "viewPoint",
+          "function",
+          19,
+          19,
+          ""
+        ],
+        [
+          "drawingPoint",
+          "function",
+          24,
+          24,
+          ""
+        ],
+        [
+          "screenPt",
+          "function",
+          28,
+          28,
+          ""
+        ],
+        [
+          "renderSource",
+          "function",
+          32,
+          32,
+          ""
+        ],
+        [
+          "dimsForRect",
+          "function",
+          46,
+          46,
+          ""
+        ],
+        [
+          "renderMeasures",
+          "function",
+          47,
+          47,
+          ""
+        ],
+        [
+          "analyse",
+          "function",
+          76,
+          76,
+          ""
+        ],
+        [
+          "renderProjection",
+          "function",
+          81,
+          81,
+          ""
+        ],
+        [
+          "view",
+          "function",
+          103,
+          103,
+          ""
+        ],
+        [
+          "suggestView",
+          "function",
+          106,
+          106,
+          ""
+        ],
+        [
+          "toItems",
+          "function",
+          192,
+          192,
+          ""
+        ]
+      ]
+    },
+    "Gerador/testdxf.js": {
+      "lang": "js",
+      "linhas": 70,
+      "simbolos": [
+        [
+          "entity",
+          "function",
+          5,
+          5,
+          ""
+        ],
+        [
+          "read",
+          "function",
+          10,
+          10,
+          ""
+        ]
+      ]
+    },
+    "Gerador/TESTE-DXF-REAIS.md": {
+      "lang": "md",
+      "linhas": 78,
+      "simbolos": [
+        [
+          "Auditoria real DXF: Disco 7″ e Copo 7″ — v2.13.0",
+          "h1",
+          1,
+          78,
+          ""
+        ],
+        [
+          "Estrutura real dos dois desenhos",
+          "h2",
+          5,
+          78,
+          ""
+        ],
+        [
+          "Localização automática sugerida da vista de torneamento",
+          "h2",
+          23,
+          78,
+          ""
+        ],
+        [
+          "Medição real com entidades DIMENSION",
+          "h2",
+          37,
+          78,
+          ""
+        ],
+        [
+          "Arquitetura implementada",
+          "h2",
+          44,
+          78,
+          ""
+        ],
+        [
+          "Fluxo seguro de correção do usuário",
+          "h2",
+          52,
+          78,
+          ""
+        ],
+        [
+          "Limitações explícitas",
+          "h2",
+          63,
+          78,
+          ""
+        ],
+        [
+          "Testes",
+          "h2",
+          73,
+          78,
           ""
         ]
       ]
