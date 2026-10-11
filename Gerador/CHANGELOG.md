@@ -8,6 +8,16 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.8.0 — 11/10/2026 — Importação assistida de desenho PDF (branch isolada)
+- Nova opção "Importar desenho PDF" dentro de Desenho da peça, sem remover editor manual.
+- Visualização do PDF original, escolha de página, zoom, rotação e arraste.
+- Extração de texto e diâmetros candidatos de PDFs com texto via PDF.js (CDN; requer conexão); PDFs digitalizados usam conferência e transcrição manual.
+- Montagem de trechos externos/internos, cilindros e cones, lados 1 e 2, com revisão explícita.
+- Transfere somente rascunho para o editor atual, sem gerar CNC automaticamente; usuário revisa e salva.
+- Limitação: não há OCR nem reconhecimento automático de contorno vetorial, furos, raios, chanfros, tolerâncias ou cotas associativas. Sem PDF.js conectado a visualização permanece disponível via navegador.
+- Versão criada em branch separada; main 2.7.1 preservada.
+
+
 ## 2.7.1 — 09/10/2026 — Leitor entende o modo ISO do Siemens 802D sl (G291, G290 e G92 S)
 - Programas da casa vistos no comando **Siemens SINUMERIK 802D sl** (pasta `\MPF\`, como o `FUNDO-PF`) são Fanuc em modo ISO: começam com `G291` (liga o modo ISO; `G290` volta ao modo Siemens) e usam G71/G70, G96, G95 e T0101 como os programas da casa.
 - **`G92 S…` agora vale como limite de rotação em G96** (o equivalente do `G50 S` do Fanuc, no sistema B/C e no Siemens em modo ISO). Antes o leitor ignorava a linha e lia o `S` como velocidade de corte (`G96 S1000` + `G92 S1200` virava Vc 1200) e ainda dava um aviso falso de "G96 sem limite de rotação". `G92` com X/Z (preset de coordenadas ou ciclo de rosca do sistema A) continua ignorado, com aviso.
