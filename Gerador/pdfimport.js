@@ -20,7 +20,7 @@ function faceOptions(){
 }
 function fresh(){
  model=[];length='';picked=null;selectMode=false;possibleViews=[];unsupportedFeatures=[];
- $('#pdfCncAxis').value='';faceOptions();invalidate();drawSelection();
+ $('#pdfCncAxis').value='';$('#pdfCncAxis').dataset.previous='';faceOptions();invalidate();drawSelection();
 }
 function loadPdfjs(){
  if(root.pdfjsLib){library=root.pdfjsLib;return Promise.resolve(library)}
@@ -120,7 +120,7 @@ async function recognizePage(){
    }catch(vectorError){vectorWarning='Não foi possível analisar as linhas vetoriais: '+vectorError.message;}
   }
   if(drawn&&drawn.ok&&drawn.items.length>=1){
-   if(drawn.axis&&$('#pdfCncAxis').value!==drawn.axis){$('#pdfCncAxis').value=drawn.axis;faceOptions();}
+   if(drawn.axis&&$('#pdfCncAxis').value!==drawn.axis){$('#pdfCncAxis').value=drawn.axis;$('#pdfCncAxis').dataset.previous=drawn.axis;faceOptions();}
    model=root.CNCPDFOrientacao.fromDrawing(drawn.items,$('#pdfCncAxis').value,$('#pdfCncFace').value,'1');
    length=drawn.length;
    if(recognized.ok&&model.length===2){
