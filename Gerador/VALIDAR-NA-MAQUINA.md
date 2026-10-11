@@ -57,3 +57,9 @@ O leitor segue os mesmos critérios dos geradores; o que não foi confirmado na 
 - Conferir manualmente **vista selecionada, origem Z0, Ø externo/interno, comprimento, degraus e orientação dos lados**. A projeção mantém proporção correta em X e Ø, mas isso não garante a interpretação da peça.
 - Cotas inferidas de linhas vetoriais são estimativas: substituir pelos valores explícitos do desenho antes de gerar código CNC. PDFs digitalizados ou com raios/chanfros não suportados requerem CAD ou digitação verificada.
 - Antes de levar à máquina: validar fixação, ferramentas, compensações e simulação, executar a seco conforme procedimentos da ferramentaria.
+
+## Orientação de importações PDF — v2.11.0
+- [ ] Identificar a **face livre Z0** da fixação real antes de usar o desenho; escolher o eixo e a face no importador não determina automaticamente onde estão as castanhas.
+- [ ] Comparar a seção selecionada do PDF, todas as cotas, e o perfil salvo em X (diâmetro), Z negativo; verificar cones invertidos e múltiplos lados.
+- [ ] Desenhos como Disco 7″ possuem R20, R3,50, M39 P2, M8 x50 e 61°: o importador PDF **não reconstrói esses elementos automaticamente**; não transferir a geometria simplificada como peça aprovada para usinagem.
+- [ ] Confirmar G71/G70, direção de corte, medidas de bruto, zona de fixação e trajetória a seco na máquina.
