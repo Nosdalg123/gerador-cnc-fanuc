@@ -222,7 +222,7 @@ $('#pdfProfileSvg').addEventListener('click',function(e){
 });
 $('#pdfProfileSvg').addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){var node=e.target.closest('[data-edit-total],[data-edit-index]');if(node){e.preventDefault();node.dispatchEvent(new MouseEvent('click',{bubbles:true}))}}});
 $('#pdfConfirmado').onchange=renderPreview;
-$('#pdfNome').oninput=function(){savedId=null;renderPreview()};
+$('#pdfNome').oninput=function(){savedId=null;$('#pdfAbrirGerador').hidden=true;$('#pdfSaved').textContent='';renderPreview()};
 $('#pdfAplicar').onclick=function(){
  var r=root.CNCPDFPerfil.analyze(model,length),name=$('#pdfNome').value.trim();
  if(!r.ok||!$('#pdfConfirmado').checked||!name||!url){status('Confirme geometria válida, nome e cotas antes de salvar.',true);return}
