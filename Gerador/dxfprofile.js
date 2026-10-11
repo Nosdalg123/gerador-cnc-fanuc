@@ -51,18 +51,30 @@ function classify(seg,axis,face,tol=.12){
 }
 function endpoints(s){if(s.kind==='line')return[s.a,s.b];if(s.kind==='arc')return s.a&&s.b?[s.a,s.b]:DX.arcEnds?DX.arcEnds(s):[DX.sample(s,1)[0],DX.sample(s,1)[1]];return []}
 function connectivity(segs,tol=.16){
- if(!segs.length)return {components:0,gaps:[],branches:[],closed:false,chain:[]};
- const byPoint=new Map(),point=p=>[Math.round(p[0]/tol),Math.round(p[1]/tol)].join(':');
- const adj=new Map();
- segs.forEach(s=>{let ps=endpoints(s);if(ps.length!==2)return;for(let p of ps){let key=point(p);if(!byPoint.has(key))byPoint.set(key,{p,ids:[]});byPoint.get(key).ids.push(s.uid)}});
- let br=[...byPoint.values()].filter(q=>q.ids.length>2),tips=[...byPoint.values()].filter(q=>q.ids.length===1);
- const names=segs.map(q=>q.uid);
- for(const n of names)adj.set(n,new Set());
- for(const q of byPoint.values())for(const a of q.ids)for(const b of q.ids)if(a!==b){adj.get(a)?.add(b)}
- let seen=new Set(),components=[];
- for(const id of names){if(seen.has(id))continue;let stack=[id],group=[];seen.add(id);while(stack.length){let x=stack.pop();group.push(x);for(let y of adj.get(x)||[])if(!seen.has(y)){seen.add(y);stack.push(y)}}components.push(group)}
- components.sort((a,b)=>b.length-a.length);
- return {components:components.length,gaps:tips.map(x=>x.p),branches:br.map(x=>x.p),closed:tips.length===0&&br.length===0&&components.length===1,groups:components,chain:components[0]};
+ if(!segs.length)return {components:0,gaps:[],branches:[],closed:false,chain:[],groups:[]};
+ const nodes=[],grid=new Map(),adj=new Map();
+ function node(p){
+  const bx=Math.floor(p[0]/tol),by=Math.floor(p[1]/tol);
+  for(let x=bx-1;x<=bx+1;x++)for(let y=by-1;y<=by+1;y++){
+   const bucket=grid.get(x+':'+y)||[];
+   for(const n of bucket)if(Math.hypot(nodes[n].p[0]-p[0],nodes[n].p[1]-p[1])<=tol)return n;
+  }
+  const n=nodes.length,k=bx+':'+by;nodes.push({p,ids:[]});if(!grid.has(k))grid.set(k,[]);grid.get(k).push(n);return n;
+ }
+ segs.forEach(s=>{const ps=endpoints(s);if(ps.length!==2)return;
+  const u=node(ps[0]),v=node(ps[1]);nodes[u].ids.push(s.uid);nodes[v].ids.push(s.uid);
+ });
+ const branches=nodes.filter(n=>n.ids.length>2).map(n=>n.p),gaps=nodes.filter(n=>n.ids.length===1).map(n=>n.p);
+ for(const s of segs)adj.set(s.uid,new Set());
+ for(const n of nodes)for(const a of n.ids)for(const b of n.ids)if(a!==b)adj.get(a)?.add(b);
+ const seen=new Set(),groups=[];
+ for(const id of adj.keys()){
+  if(seen.has(id))continue;seen.add(id);const stack=[id],group=[];
+  while(stack.length){const x=stack.pop();group.push(x);for(const y of adj.get(x)||[])if(!seen.has(y)){seen.add(y);stack.push(y)}}
+  groups.push(group);
+ }
+ groups.sort((a,b)=>b.length-a.length);
+ return {components:groups.length,gaps,branches,closed:gaps.length===0&&branches.length===0&&groups.length===1,groups,chain:groups[0]||[]};
 }
 function analyze(doc,rect,axis,face,chosen){
  const all=segments(doc.geometry,rect);
