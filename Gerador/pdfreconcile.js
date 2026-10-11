@@ -80,5 +80,33 @@
   }
   return {model:m,length:total,verifiedKey:key,dimensionId:dimension.id};
  }
- return {slots,evaluate,bind,nearly,uniqueDims};
+ /* Solucionador axial por vínculos conhecidos: Z(to)-Z(from)=comprimento.
+    É proibido deduzir de proximidade de texto ou da escala do PDF.
+    Permite completar cotas por cadeia e sinaliza medições contraditórias. */
+ function solveAxial(constraints,origin){
+  var known={},proof={},conflicts=[],invalid=[],edges=[];
+  known[String(origin||'z0')]=0;proof[String(origin||'z0')]=['origem Z0'];
+  (constraints||[]).forEach(function(c,i){
+   var len=Number(c.value),from=String(c.from||''),to=String(c.to||'');
+   if(!from||!to||from===to||!Number.isFinite(len)||len<=0){invalid.push({index:i,reason:'restrição axial inválida'});return}
+   edges.push({from,to,value:len,source:c.source||'desenho',id:c.id||'axial:'+i});
+  });
+  var changed=true,count=0;
+  while(changed&&count++<Math.max(5,edges.length*3)){
+   changed=false;
+   edges.forEach(function(e){
+    var a=known[e.from],b=known[e.to],aKnown=a!==undefined,bKnown=b!==undefined;
+    if(aKnown&&!bKnown){known[e.to]=a+e.value;proof[e.to]=(proof[e.from]||[]).concat(e.id);changed=true}
+    else if(bKnown&&!aKnown){known[e.from]=b-e.value;proof[e.from]=(proof[e.to]||[]).concat(e.id);changed=true}
+   });
+  }
+  edges.forEach(function(e){
+   if(known[e.from]===undefined||known[e.to]===undefined)return;
+   var observed=known[e.to]-known[e.from];
+   if(!nearly(observed,e.value))conflicts.push({id:e.id,expected:e.value,calculated:observed,source:e.source,from:e.from,to:e.to});
+  });
+  return {positions:known,proof:proof,conflicts,invalid,complete:!conflicts.length&&!invalid.length,
+    equations:edges,unanchored:edges.filter(e=>known[e.from]===undefined||known[e.to]===undefined).map(e=>e.id)};
+ }
+ return {slots,evaluate,bind,nearly,uniqueDims,solveAxial};
 });
