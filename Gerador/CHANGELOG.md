@@ -8,6 +8,17 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.14.0 — 11/10/2026 — Corrigir reconstrução DXF ramificada (branch isolada)
+- Auditoria direta dos DXFs reais Disco 7″ e Copo 7″: a maior componente incluía caminhos ramificados que não são um único perfil CNC. Corrigida causa raiz.
+- `dxfchains.js`: separação em cadeias por pontas/bifurcações, snap por distância geométrica real e destaque de caminhos internos/externos individuais.
+- O botão **Localizar cadeias reais** não seleciona mais cegamente a maior componente. Usuário vê extensão em Z, número de entidades, presença de arcos e bifurcações antes de escolher cada cadeia.
+- `dxfprofile.js`: detecção consistente de pontas e ramificações; indicação de coordenada CAD e Ø da anomalia.
+- `dxfaudit.js`: validação independente do contorno externo e interno, unidade, Z0, comprimento nominal vs DIMENSION do DXF, sobreposições, lacunas, raios, roscas e SPLINE antes de liberar transferência CNC.
+- `desenho.js`: **corrigida persistência da confirmação de revisão completa do CAD** na lista usada pelo Gerador, impedindo que rascunhos confirmados permaneçam bloqueados por dados antigos.
+- Status de carregamento de arquivos grandes e alternância exclusiva entre os painéis DXF/PDF.
+- `testdxfchains.js`, `testdxfaudit.js`, `testdxfreal.js` e relatório `TESTE-DXF-CADEIAS.md`.
+- Limitação intencional: ainda não transforma integralmente geometrias complexas com arcos, roscas e cavidades em CNC sem revisão; não liberar perfis parciais.
+
 ## 2.13.0 — 11/10/2026 — Importação DXF real, topologia e prévia PDF (branch isolada)
 - Criado **Importar CAD DXF** em Desenho da peça, independente da importação PDF e do editor manual.
 - DXF ASCII R2000 testado com arquivos verdadeiros Disco 7″ e Copo 7″: Model Space, LINE, ARC, CIRCLE, LWPOLYLINE (incluindo bulge), SPLINE NURBS, DIMENSION nativa, TEXT/MTEXT; separação de Paper Space.
