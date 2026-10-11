@@ -124,7 +124,7 @@ function svg(doc,rect,options){
   source.forEach((s,i)=>{
    let pts=DX.sample(s,28),id=e.id+':'+i,selected=options.selected&&options.selected.has(id);
    if(options.hidden&&options.hidden.has(id))return;
-   let emphasis=selected?'#ea6700':(options.candidate&&options.candidate.has(id)?'#087e96':(color[e.type]||'#53728c'));
+   let emphasis=options.internal&&options.internal.has(id)?'#3375bd':options.external&&options.external.has(id)?'#21936a':(selected?'#21936a':options.candidate&&options.candidate.has(id)?'#c28a21':(color[e.type]||'#53728c'));
    out+='<path data-cad-segment="'+esc(id)+'" d="'+polyPath(pts,pos)+'" fill="none" stroke="'+emphasis+'" stroke-width="'+(selected?4:options.candidate&&options.candidate.has(id)?2.4:1.25)+'" stroke-linejoin="round" stroke-linecap="round" style="cursor:pointer"><title>'+(s.kind==='arc'?'Raio real R'+fmt(s.r):'Linha CAD')+'</title></path>';
   });
  });
