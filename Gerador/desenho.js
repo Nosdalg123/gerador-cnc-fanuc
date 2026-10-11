@@ -122,7 +122,7 @@
   function strip(d) { var c = clone(d); delete c.alterado; delete c.criado; return c; }
   function salvoDe(id) { return lista.filter(function (x) { return x.id === id; })[0]; }
   function sujo() { var s = work.id && salvoDe(work.id); return !s || JSON.stringify(strip(s)) !== JSON.stringify(strip(work)); }
-  function avisaMudou() { if (api.onMudou) api.onMudou(); }
+  function avisaMudou(id) { if (api.onMudou) api.onMudou(id || null); }
 
   /* ---------- geracao do desenho (usa o gerador real) ---------- */
   var SEED = root.CNC_SEED_TOOLS, seedTool = function (k) { return SEED.filter(function (s) { return s.seedKey === k; })[0]; };
@@ -260,7 +260,7 @@
     var agora = new Date().toISOString();
     if (work.id && salvoDe(work.id)) { var i = lista.indexOf(salvoDe(work.id)); work.alterado = agora; lista[i] = clone(work); }
     else { work.id = uid(); work.criado = agora; work.alterado = agora; lista.push(clone(work)); }
-    save(K_DES, lista); persistWork(); tela(); avisaMudou();
+    save(K_DES, lista); persistWork(); tela(); avisaMudou(work.id);
     return true;
   }
   $('#dsSalvar').onclick = salvar;
@@ -435,6 +435,11 @@
       });
       work = norm(novo); ui.lado = 1; persistWork(); tela();
       return true;
+    },
+    salvarPDF: function (dados) {
+      if (!api.importarPDF(dados)) return null;
+      if (!salvar()) return null;
+      return work.id;
     },
     mostrar: function () { tela(); },
     sujoId: function () { return work.id && sujo() ? work.id : null; },   // id do desenho salvo que tem alteracoes ainda nao salvas no editor
