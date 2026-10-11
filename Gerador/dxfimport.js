@@ -235,7 +235,7 @@ $('#dxfSaveCNC').onclick=function(){
   candidateSegments:cn,unsupportedCurves:DX.cut(doc.geometry,rect).filter(q=>q.type==='SPLINE'||q.type==='ELLIPSE').length,
   threadNotes:DX.annotations(doc.entities,rect,26).filter(q=>/\\b(?:M\\s*\\d+|ROSCA|FURO|THREAD)\\b/i.test(q.text||'')).length});
  if(!aud.ok){status('Perfil CAD ainda incompleto: '+aud.problems.join(' · '),true);return}
- if(!e||!checked()||!e.canExport||!Number.isFinite(length)||length<=0||doc.units!==4||!['esquerda','direita'].includes(face)){
+ if(!e||!checked()||!e.canExport||(i&&i.selected.length&&!i.canExport)||!Number.isFinite(length)||length<=0||doc.units!==4||!['esquerda','direita'].includes(face)){
   status('Não é possível salvar: confirme a escala, vista, Z0, cotas e continuidade de todas as entidades.',true);return;
  }
  let items=toItems('externo',e,face).concat(i&&i.selected.length?toItems('interno',i,face):[]);
