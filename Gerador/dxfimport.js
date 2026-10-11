@@ -85,7 +85,7 @@ function renderProjection(){
  if(none)a=NaN;
  axis=a;
  let cand=P.analyze(doc,rect,a,val('#dxfFace'),new Set()).candidate;
- host.innerHTML=P.svg(doc,rect,{axis:a,selected:all,candidate:new Set(cand.map(s=>s.uid)),dimensions:dimsForRect()});
+ host.innerHTML=P.svg(doc,rect,{axis:a,face:val('#dxfFace'),selected:all,candidate:new Set(cand.map(s=>s.uid)),dimensions:dimsForRect()});
  const e=analyse('externo'),i=analyse('interno'),warn=$('#dxfWarnings');
  if(!e){warn.textContent='Selecione a seção longitudinal do DXF. A geometria original é exibida sem conversão inventada.';$('#dxfSaveCNC').disabled=true;return}
  const issues=e.alerts.concat(i.selected.length?i.alerts.filter(t=>!t.includes('Nenhuma entidade')):[]);
