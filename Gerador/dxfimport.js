@@ -150,7 +150,11 @@ $('#dxfFile').onchange=async function(){
  if(!/\.dxf$/i.test(f.name)){status('Selecione DXF ASCII, não DWG/PDF.',true);return}
  if(f.size>25e6){status('DXF acima de 25 MB. Simplifique ou exporte só a vista de torneamento.',true);return}
  try{
+  status('Lendo arquivo CAD '+f.name+'... aguarde a reconstrução das entidades vetoriais.');
+  await new Promise(resolve=>root.requestAnimationFrame?root.requestAnimationFrame(()=>resolve()):resolve());
   let bytes=await f.arrayBuffer(),text=new TextDecoder('windows-1252').decode(bytes);
+  status('Analisando entidades CAD, cotas e vistas do arquivo...');
+  await new Promise(resolve=>root.requestAnimationFrame?root.requestAnimationFrame(()=>resolve()):resolve());
   doc=DX.read(text);fileName=f.name;rect=null;suggest=null;axis=NaN;zoom=1;active=false;
   $('#dxfNome').value=f.name.replace(/\.dxf$/i,'');$('#dxfLength').value='';$('#dxfAxis').value='';$('#dxfFace').value='';
   selected.externo.clear();selected.interno.clear();chainInfo=null;$('#dxfSourceZoom').value=100;resetConfirm();
