@@ -39,13 +39,14 @@
    var matched=ds.filter(d=>d.featureKey===s.key&&d.tipo===s.type);
    var values=matched.map(d=>d.valor),unique=[];
    values.forEach(n=>{if(!unique.some(v=>nearly(n,v)))unique.push(n)});
-   var conflict=unique.length>1;
    var chosen=ds.find(d=>d.id===bindings[s.key]&&d.tipo===s.type);
+   var conflict=unique.length>1&&!chosen;
    var auto=matched.length&&unique.length===1?matched[0]:null;
    // Cross-view value match only nominates a candidate; it does not establish feature identity.
    var plausible=ds.filter(d=>d.tipo===s.type&&s.value!=null&&nearly(s.value,d.valor));
    var inView=plausible.filter(d=>d.view===targetView);
-   var direct=inView.length===1?inView[0]:null;
+   var competingSlots=sl.filter(t=>t.type===s.type&&t.value!=null&&s.value!=null&&nearly(t.value,s.value));
+   var direct=inView.length===1&&competingSlots.length===1?inView[0]:null;
    var evidence=chosen||auto||direct||null;
    var verified=!!(confirmed[s.key]||evidence&&!conflict&&s.value!==null&&nearly(evidence.valor,s.value));
    if(chosen&&!nearly(chosen.valor,s.value)){verified=false;issues.push({type:'divergencia',key:s.key,message:s.title+': geometria e cota selecionada não coincidem.'})}
