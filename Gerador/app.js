@@ -306,6 +306,7 @@
     var n = ['trechos1', 'trechos2', 'internos1', 'internos2'].reduce(function (s, k) { return s + (d.lados === '2' || k.slice(-1) === '1' ? d[k].length : 0); }, 0);
     el.textContent = (d.lados === '2' ? '2 lados' : '1 lado') + ' · comprimento final ' + CNC.fmt(Number(d.lPeca)) + ' mm · ' + n + (n === 1 ? ' elemento' : ' elementos') +
       (n === 0 ? ' · ⚠ desenho vazio: clique em Editar, adicione os elementos e salve' : '') +
+      (d.pdfOrientacao ? ' · PDF: eixo ' + esc(d.pdfOrientacao.eixoPDF) + ', face Z0 ' + esc(d.pdfOrientacao.faceZ0PDF) + (d.pdfOrientacao.editadoDepoisDaImportacao ? ' · ⚠ orientação a rever após edição' : '') : '') +
       (CNCDesenhos.sujoId() === d.id ? ' · ⚠ há alterações deste desenho ainda não salvas no editor (o Gerador usa a versão salva)' : '');
   }
   function fillDesenhoSel() {
