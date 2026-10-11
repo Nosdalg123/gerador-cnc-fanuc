@@ -3,7 +3,7 @@
 (function(root){
 'use strict';
 var $=q=>document.querySelector(q),url=null,doc=null,fileBytes=null,page=1,totalPages=1,zoom=1,rotation=0;
-var model=[],length='',picked=null,selectMode=false,down=null,viewport=null,pg=null,library=null,savedId=null,renderSeq=0,edit=null,possibleViews=[],previewZoom=1,viewKind='',faceChoice='',profileAxis='horizontal';
+var model=[],length='',picked=null,selectMode=false,down=null,viewport=null,pg=null,library=null,savedId=null,renderSeq=0,edit=null,possibleViews=[],previewZoom=1,viewKind='',faceChoice='',profileAxis='horizontal',unresolved=[];
 var pdfjsUrl='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
 var workerUrl='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 function status(t,error){$('#pdfStatus').textContent=t;$('#pdfStatus').style.color=error?'#be4936':'';}
@@ -12,7 +12,7 @@ function valid(v){return Number.isFinite(Number(v))&&Number(v)>0}
 function setText(id,v){$(id).textContent=v}
 function invalidate(){savedId=null;$('#pdfConfirmado').checked=false;$('#pdfAbrirGerador').hidden=true;$('#pdfSaved').textContent='';renderPreview();}
 function fresh(){
- model=[];length='';picked=null;selectMode=false;possibleViews=[];viewKind='';faceChoice='';profileAxis='horizontal';
+ model=[];length='';picked=null;selectMode=false;possibleViews=[];viewKind='';faceChoice='';profileAxis='horizontal';unresolved=[];
  $('#pdfViewType').value='';$('#pdfFaceChoice').value='';
  invalidate();drawSelection();
 }
@@ -52,7 +52,9 @@ function renderPreview(){
  }
  $('#pdfComprimento').value=length;
  orientationStatus();
- var canSave=!!(r.ok&&url&&viewKind==='lateral'&&faceChoice&&$('#pdfConfirmado').checked&&$('#pdfNome').value.trim()&&!savedId);
+ $('#pdfUnresolved').textContent=unresolved.length?'Detalhes ainda não incorporados à geometria CNC: '+unresolved.join(' · ')+'. Complete esses recursos no editor de desenhos antes de salvar.':'';
+ $('#pdfCompleteEditor').hidden=!r.ok;
+ var canSave=!!(r.ok&&unresolved.length===0&&url&&viewKind==='lateral'&&faceChoice&&$('#pdfConfirmado').checked&&$('#pdfNome').value.trim()&&!savedId);
  $('#pdfAplicar').disabled=!canSave;
  return r;
 }
@@ -99,6 +101,7 @@ async function recognizePage(){
   var content=await pg.getTextContent(),items=cropItems(content.items);
   $('#pdfTexto').value=items.map(t=>t.str).join(' ');
   var typed=root.CNCPDFCotas.summary(items,profileAxis),box=$('#pdfCotas');
+  unresolved=typed.all.filter(c=>['rosca','rosca_furo','raio','angulo'].indexOf(c.tipo)>=0).map(c=>c.rotulo+' ('+c.tipo+')');
   box.replaceChildren();
   typed.all.forEach(function(c){
    var chip=document.createElement('span'),small=document.createElement('small');
@@ -275,12 +278,23 @@ $('#pdfConfirmado').onchange=renderPreview;
 $('#pdfNome').oninput=function(){savedId=null;$('#pdfAbrirGerador').hidden=true;$('#pdfSaved').textContent='';renderPreview()};
 $('#pdfAplicar').onclick=function(){
  var r=root.CNCPDFPerfil.analyze(model,length),name=$('#pdfNome').value.trim();
- if(!r.ok||viewKind!=='lateral'||!faceChoice||!$('#pdfConfirmado').checked||!name||!url){status('Confirme geometria válida, nome e cotas antes de salvar.',true);return}
+ if(!r.ok||unresolved.length||viewKind!=='lateral'||!faceChoice||!$('#pdfConfirmado').checked||!name||!url){status('Confirme geometria válida, nome e cotas antes de salvar.',true);return}
  var max=Math.max(...r.items.filter(q=>q.tipo[0]!=='i').map(q=>Math.max(q.a,q.tipo==='cone'?q.b:q.a)));
  var api=root.CNCDesenhos,id=api&&api.salvarPDF&&api.salvarPDF({nome:name,lPeca:Number(length),dRef:Math.ceil(max+4),items:r.items});
  if(!id){status('Não foi possível salvar o desenho. Confira se há alterações não salvas no editor manual.',true);return}
  savedId=id;$('#pdfAbrirGerador').hidden=false;setText('#pdfSaved','✓ '+name+' salvo na lista de desenhos do Gerador.');
  status('Desenho confirmado e salvo com o nome '+name+'.');renderPreview();
+};
+$('#pdfCompleteEditor').onclick=function(){
+ var result=root.CNCPDFPerfil.analyze(model,length),nome=$('#pdfNome').value.trim();
+ if(!result.ok||viewKind!=='lateral'||!faceChoice){
+  status('Para enviar ao editor completo, defina a face Z0 e complete primeiro o contorno principal com dimensões válidas.',true);return;
+ }
+ var ex=result.items.filter(q=>q.tipo[0]!=='i'),dia=Math.max(...ex.map(q=>Math.max(q.a,q.tipo==='cone'?q.b:q.a)));
+ if(!root.CNCDesenhos||!root.CNCDesenhos.importarPDF){status('Editor completo indisponível.',true);return}
+ if(!root.CNCDesenhos.importarPDF({nome:nome||'Desenho PDF em revisão',lPeca:Number(length),dRef:Math.ceil(dia+4),items:result.items})){status('A transferência foi cancelada para preservar o desenho atual.',true);return}
+ $('#pdfPanel').hidden=true;$('#pdfManual').hidden=false;
+ status('Rascunho transferido. Insira raios, roscas e detalhes no editor completo e salve somente após conferir toda a geometria.');
 };
 $('#pdfAbrirGerador').onclick=function(){var nav=$('#nav-gerador');if(nav&&!nav.hidden)nav.click()};
 $('#pdfModo').onclick=function(){$('#pdfPanel').hidden=false;$('#pdfManual').hidden=true;renderPreview()};
