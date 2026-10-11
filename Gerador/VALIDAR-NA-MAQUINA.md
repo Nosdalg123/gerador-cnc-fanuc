@@ -62,3 +62,9 @@ O leitor segue os mesmos critérios dos geradores; o que não foi confirmado na 
 - Conferir o perfil final conforme a revisão do desenho, principalmente R3,50, R20, 61°, M39 P2 e M8×50. As linhas vetoriais são suficientes apenas para sugerir o contorno principal, não para certificar os detalhes.
 - Determinar explicitamente a face livre Z0, o trecho preso nas castanhas e o sentido da segunda operação, caso exista. Uma face com diâmetro decrescente pode não ser usinável por G71 tipo I.
 - Nunca gerar ou executar um programa CNC a partir de um rascunho parcial extraído do PDF sem completar essas características, simular o percurso e validar o setup na máquina.
+
+## Conferência de cotas cruzadas (v2.12.0)
+- Confirmar cada dimensão em X (diâmetro) e Z (comprimento), sua vista de origem e o referencial, principalmente cotas obtidas da frente ou de detalhes ampliados.
+- Cotas obtidas por soma/diferença só são válidas com linhas de referência explicitamente associadas e sem contradições. Proibir estimativas por escala de PDF sem cota.
+- Confirmar a face Z0, castanhas, folga e acessibilidade das ferramentas; a sugestão de orientação G71 não certifica a fixação.
+- Recursos não suportados (arcos livres, roscas sem passo, detalhes fora do eixo de revolução) precisam impedir a emissão de programa CNC, mesmo se houver contorno externo visível.
