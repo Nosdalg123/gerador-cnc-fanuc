@@ -2,6 +2,15 @@
 
 Abrir: dois cliques em `index.html` (Chrome ou Edge). O Gerador funciona localmente; a importação automática de texto do PDF precisa carregar a biblioteca PDF.js na primeira utilização.
 
+## Orientação PDF → Torno CNC e teste Disco 7″ (v2.11.0)
+- **Selecionar a vista** com um retângulo incluindo suas cotas; o PDF pode conter várias vistas e escalas diferentes.
+- Em **Orientação em relação ao torno CNC**, escolher eixo horizontal/vertical e qual extremidade real da vista ficará voltada para a ferramenta (**Z0**). A face oposta ficará voltada à placa.
+- O perfil salvo usa diâmetros no X, começa em Z0 e aumenta profundidade em **Z negativo**. A projeção sempre mostra a face Z0 à direita por convenção de tela, ainda que no PDF a face escolhida esteja à esquerda, à direita, no topo ou na base.
+- **Inverter face Z0** reverte os trechos externo/interno e troca diâmetros inicial/final dos cones. Confirme a inversão visualmente.
+- O nome salvo mantém os metadados da face escolhida, acessíveis no Gerador.
+- Raios, ângulos e roscas identificados no PDF são destacados como cotas. Como o editor PDF ainda não reproduz essas operações integralmente, salvamento de geometria supostamente completa fica bloqueado; use o editor manual e confirme todos os detalhes.
+- Veja `TESTE-DISCO7.md` para medidas verificadas, teste de orientação no G71 e pendências.
+
 ## PDF com escala geométrica proporcional (v2.10.0)
 1. Abra **Desenho da peça → Importar desenho PDF**.
 2. Se houver várias vistas, clique em **Selecionar vista no PDF** e arraste um retângulo incluindo o contorno e as cotas de UMA vista. Legendas 'SEÇÃO', 'CORTE' e 'VISTA' podem gerar atalhos de seleção.
