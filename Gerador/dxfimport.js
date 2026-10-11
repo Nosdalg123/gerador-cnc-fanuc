@@ -202,54 +202,142 @@ $('#dxfFile').onchange=async function(){
   status('DXF CAD carregado: '+doc.geometry.length+' entidades e '+doc.dimensions.length+' cotas nativas. Selecione/ajuste a vista, analise as curvas e confirme o perfil.');
  }catch(e){doc=null;status('Falha ao importar DXF: '+String(e.message||e),true)}
 };
+function dragOverlay(svg,from,to){
+ if(!svg||!from||!to)return;
+ let r=svg.querySelector('#dxfDragOverlay');
+ if(!r){r=document.createElementNS('http://www.w3.org/2000/svg','rect');r.id='dxfDragOverlay';r.setAttribute('class','dxf-drag-rect');svg.appendChild(r)}
+ const box=E.rectBounds([from.x,from.y],[to.x,to.y]);
+ r.setAttribute('x',box.x1);r.setAttribute('y',box.y1);
+ r.setAttribute('width',box.x2-box.x1);r.setAttribute('height',box.y2-box.y1);
+}
+function cancelDrag(host){
+ const r=host.querySelector('#dxfDragOverlay');if(r)r.remove();
+ host.classList.remove('selecting','box-deleting');
+}
 $('#dxfSuggest').onclick=suggestView;
-$('#dxfSelect').onclick=function(){active=true;status('Arraste um retângulo sobre a vista lateral para delimitar o perfil e suas cotas.');};
+$('#dxfSelect').onclick=function(){
+ if(!doc)return;
+ active=true;source.classList.add('selecting');
+ $('#dxfSelectionHint').textContent='Arraste sobre o desenho. O RETÂNGULO AZUL acompanhará o mouse; solte para selecionar a vista.';
+ status('Arraste para delimitar a vista: o contorno azul fica visível durante a seleção.');
+};
 $('#dxfAll').onclick=function(){if(doc){view(null);status('Folha inteira. Delimite a vista de torneamento para análise.')}};
 $('#dxfSourceZoom').oninput=function(){zoom=Number(this.value)/100;renderSource()};
-let source=$('#dxfSource');
+const source=$('#dxfSource'),projected=$('#dxfProjected');
 source.addEventListener('pointerdown',function(e){
- if(!doc||!active)return;let svg=source.querySelector('svg');if(!svg)return;
- start=drawingPoint(viewPoint(e,svg),DX.bounds(doc.geometry));source.setPointerCapture(e.pointerId);e.preventDefault();
+ if(!sourceDoc||!active||e.button!==0)return;
+ const svg=source.querySelector('svg');if(!svg)return;
+ start=viewPoint(e,svg);
+ dragOverlay(svg,start,start);source.setPointerCapture(e.pointerId);e.preventDefault();
+});
+source.addEventListener('pointermove',function(e){
+ if(!start)return;
+ const svg=source.querySelector('svg');if(svg)dragOverlay(svg,start,viewPoint(e,svg));
 });
 source.addEventListener('pointerup',function(e){
  if(!start)return;
- let svg=source.querySelector('svg'),p=drawingPoint(viewPoint(e,svg),DX.bounds(doc.geometry));
- let next={x1:Math.min(start[0],p[0]),y1:Math.min(start[1],p[1]),x2:Math.max(start[0],p[0]),y2:Math.max(start[1],p[1])};
- start=null;active=false;
- if(next.x2-next.x1<4||next.y2-next.y1<4){status('Retângulo pequeno; inclua a vista toda.',true);return}
- view(next);status('Vista selecionada: '+fmt(next.x2-next.x1)+' × '+fmt(next.y2-next.y1)+' mm no CAD.');
+ const svg=source.querySelector('svg');if(!svg)return;
+ const pt=viewPoint(e,svg),a=start;start=null;
+ cancelDrag(source);
+ const b=DX.bounds(sourceDoc.geometry),first=drawingPoint(a,b),last=drawingPoint(pt,b);
+ const next=E.rectBounds(first,last);
+ if(next.x2-next.x1<4||next.y2-next.y1<4){
+  status('Retângulo muito pequeno. Arraste uma área maior para delimitar a vista.',true);return
+ }
+ active=false;source.classList.remove('selecting');
+ $('#dxfSelectionHint').textContent='Vista delimitada com retângulo visível. Para ajustar, use Delimitar outra vista.';
+ view(next);
+ status('Vista delimitada: '+fmt(next.x2-next.x1)+' × '+fmt(next.y2-next.y1)+' mm no CAD. Proposta de perfil gerada.');
 });
-source.addEventListener('pointercancel',()=>{start=null});
-$('#dxfProjected').addEventListener('click',function(e){
- const target=e.target.closest('[data-cad-segment]');if(!target)return;
- const id=target.getAttribute('data-cad-segment');
- const entity=rect&&doc?P.segments(doc.geometry,rect).find(t=>t.uid===id):null;
+source.addEventListener('pointercancel',()=>{start=null;cancelDrag(source)});
+projected.addEventListener('pointerdown',function(e){
+ if(mode()!=='quadro'||!doc||!rect||e.button!==0)return;
+ const svg=projected.querySelector('svg');if(!svg)return;
+ projDrag=viewPoint(e,svg);skipProjectedClick=false;
+ projected.setPointerCapture(e.pointerId);projected.classList.add('box-deleting');
+ dragOverlay(svg,projDrag,projDrag);e.preventDefault();
+});
+projected.addEventListener('pointermove',function(e){
+ if(!projDrag)return;const svg=projected.querySelector('svg');
+ if(svg)dragOverlay(svg,projDrag,viewPoint(e,svg));
+});
+projected.addEventListener('pointerup',function(e){
+ if(!projDrag)return;
+ const svg=projected.querySelector('svg');if(!svg)return;
+ const box=E.rectBounds([projDrag.x,projDrag.y],[viewPoint(e,svg).x,viewPoint(e,svg).y]);
+ projDrag=null;skipProjectedClick=true;cancelDrag(projected);
+ if(box.x2-box.x1<3||box.y2-box.y1<3){status('Desenhe um retângulo maior para excluir linhas.',true);return}
+ const candidates=P.segments(doc.geometry,rect,hidden);
+ const ids=E.selectRectSegments(candidates,box,rect,val('#dxfFace'));
+ if(!ids.length){status('Nenhuma linha atravessa o retângulo de exclusão.');return}
+ remember();
+ ids.forEach(id=>{hidden.add(id);selected.externo.delete(id);selected.interno.delete(id)});
+ pendingExtension=null;markEdited();
+ status(ids.length+' linha(s) removidas da cópia de trabalho pela seleção de retângulo. O CAD original continua preservado.');
+});
+projected.addEventListener('pointercancel',()=>{projDrag=null;cancelDrag(projected)});
+projected.addEventListener('click',function(e){
+ if(skipProjectedClick){skipProjectedClick=false;return}
+ const target=e.target.closest('[data-cad-segment]');if(!target||!doc)return;
+ const id=target.getAttribute('data-cad-segment'),currentMode=mode();
+ const entity=rect?P.segments(doc.geometry,rect,hidden).find(t=>t.uid===id):null;
  if(entity){
   const info=P.classify(entity,axis,val('#dxfFace')||'esquerda');
   const caption=info.kind==='cil'?'Cilindro · Ø'+fmt(info.a)+' · comprimento '+fmt(info.b)+' mm':
    info.kind==='cone'?'Cone · Ø'+fmt(info.a)+' → Ø'+fmt(info.b)+' · comprimento '+fmt(info.c)+' mm':
    info.kind==='raio'?'Arco CAD R'+fmt(info.r)+' mm · exige associação ao canto no CNC':
-   info.kind==='face'?'Face radial/degrau · diâmetros Ø'+fmt(info.di)+' → Ø'+fmt(info.df):
+   info.kind==='face'?'Face radial/degrau · Ø'+fmt(info.di)+' → Ø'+fmt(info.df):
    'Entidade não traduzível diretamente';
-  $('#dxfEntityInfo').textContent='Entidade '+id+': '+caption+'. '+(info.reason||'') ;
+  $('#dxfEntityInfo').textContent='Entidade '+id+': '+caption+'. '+(info.reason||'');
  }
-
- let mode=document.querySelector('input[name=dxfAssign]:checked')?.value||'externo';
- if(mode==='remover'){selected.externo.delete(id);selected.interno.delete(id)}
- else{let other=mode==='externo'?'interno':'externo';selected[other].delete(id);if(selected[mode].has(id))selected[mode].delete(id);else selected[mode].add(id)}
+ if(currentMode==='quadro')return;
+ if(currentMode==='estender'){
+  pendingExtension=id;$('#dxfExtendSelected').textContent='Linha selecionada: '+id+
+   (entity&&entity.type==='LINE'?' — pronta para extensão.':' — escolha entidade LINE (não curva).');
+  status('Linha '+id+' selecionada para extensão. Escolha início/fim e digite o comprimento em milímetros.');return;
+ }
+ if(currentMode==='apagar'){removeLine(id);status('Entidade '+id+' apagada apenas do desenho de trabalho. Use Desfazer se necessário.');return}
+ remember();
+ if(currentMode==='remover'){selected.externo.delete(id);selected.interno.delete(id)}
+ else{const other=currentMode==='externo'?'interno':'externo';
+  selected[other].delete(id);
+  if(selected[currentMode].has(id))selected[currentMode].delete(id);else selected[currentMode].add(id);
+ }
  resetConfirm();renderProjection();
 });
-$('#dxfAxis').oninput=function(){resetConfirm();renderProjection()};
-$('#dxfFace').onchange=function(){resetConfirm();renderProjection()};
+$('#dxfAxis').oninput=function(){resetConfirm();autoRecognize()};
+$('#dxfFace').onchange=function(){updateZ0(val('#dxfFace'))};
+$('#dxfZ0Left').onclick=()=>updateZ0('esquerda');
+$('#dxfZ0Right').onclick=()=>updateZ0('direita');
+$('#dxfZ0Pending').onclick=()=>updateZ0('');
 $('#dxfLength').oninput=resetConfirm;
 $('#dxfNome').oninput=resetConfirm;
 $('#dxfChecked').onchange=renderProjection;
-$('#dxfAuto').onclick=function(){
- drawChains();
- if(!chainInfo){status('Defina vista e eixo X0 antes de localizar cadeias.',true);return}
- status('Identificadas '+chainInfo.chains.length+' cadeias com '+chainInfo.bifurcations.length+' bifurcações. Escolha as cadeias nas opções abaixo da projeção.');
+$('#dxfAuto').onclick=function(){autoRecognize()};
+$('#dxfClear').onclick=function(){remember();selected.externo.clear();selected.interno.clear();resetConfirm();renderProjection()};
+document.querySelectorAll('input[name=dxfAssign]').forEach(r=>r.onchange=function(){
+ $('#dxfExtendControls').hidden=mode()!=='estender';
+ projected.classList.toggle('box-deleting',mode()==='quadro');
+});
+$('#dxfExtendApply').onclick=function(){
+ if(!pendingExtension){status('Clique primeiro em uma linha do contorno para estender.',true);return}
+ remember();
+ const result=E.extendLine(doc.geometry,pendingExtension,val('#dxfExtendEnd'),val('#dxfExtendAmount'));
+ if(!result.ok){undo.pop();$('#dxfUndo').disabled=!undo.length;status(result.reason,true);return}
+ markEdited();status('Linha '+pendingExtension+' estendida em '+fmt(val('#dxfExtendAmount'))+' mm. Confira a continuidade e as cotas antes de salvar.');
 };
-$('#dxfClear').onclick=function(){selected.externo.clear();selected.interno.clear();resetConfirm();renderProjection()};
+$('#dxfUndo').onclick=function(){
+ const prior=undo.pop();if(!prior)return;
+ doc=prior.doc;hidden=new Set(prior.hidden);selected.externo=new Set(prior.externo);selected.interno=new Set(prior.interno);
+ editCount=prior.editCount;$('#dxfUndo').disabled=undo.length===0;resetConfirm();renderProjection();status('Última edição desfeita.');
+};
+$('#dxfRestore').onclick=function(){
+ if(!sourceDoc)return;
+ if(!confirm('Restaurar a geometria CAD original e apagar as extensões/exclusões feitas na cópia de trabalho?'))return;
+ remember();doc=clone(sourceDoc);hidden.clear();editCount=0;pendingExtension=null;
+ selected.externo.clear();selected.interno.clear();autoRecognize();
+ status('Geometria original restaurada. Proposta automática refeita.');
+};
 $('#dxfSaveDraft').onclick=function(){
  if(!doc){status('Selecione um DXF antes de salvar.',true);return}
  let nome=val('#dxfNome').trim();if(!nome){status('Informe o nome do rascunho.',true);return}
