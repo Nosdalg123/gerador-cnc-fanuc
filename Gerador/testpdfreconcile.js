@@ -38,4 +38,18 @@ assert(!screw.ready,'M8x50 sem passo nao pode liberar automaticamente a rosca');
 const orient=O.suggest([{tipo:'cil',a:50,b:20,side:'1'},{tipo:'cil',a:30,b:20,side:'1'}],'1');
 assert.strictEqual(orient.face,'end','Face sugerida é a oposta se G71 nao permite diametro decrescente');
 assert(orient.needsConfirmation);
-console.log('PDF multi-vistas: 11 cenários passaram (vínculo, cotas ausentes, conflito, recursos e Z0).');
+const axial=R.solveAxial([
+ {id:'total',from:'z0',to:'fundo',value:109.5,source:'lateral'},
+ {id:'ombro',from:'z0',to:'degrau',value:69.85,source:'lateral'}
+],'z0');
+assert(axial.complete);
+assert(Math.abs((axial.positions.fundo-axial.positions.degrau)-39.65)<1e-8,'Comprimento parcial calculado de cotas explícitas');
+const diff=R.solveAxial([
+ {id:'total',from:'z0',to:'fundo',value:109.5},
+ {id:'via-degrau',from:'z0',to:'degrau',value:69.85},
+ {id:'contradicao',from:'degrau',to:'fundo',value:40}
+],'z0');
+assert(diff.conflicts.length>0,'Conflitos entre cotas em cadeia precisam ser apresentados');
+const unanchored=R.solveAxial([{from:'u1',to:'u2',value:20}],'z0');
+assert(unanchored.unanchored.length===1,'Não inventar posição sem referência Z0');
+console.log('PDF multi-vistas: vínculo, medidas ausentes, conflitos, origem, detalhes e restrições axiais aprovados.');
