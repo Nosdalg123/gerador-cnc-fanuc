@@ -59,7 +59,7 @@ try{
  assert((await page.locator('#dxfChains button').count())>=1,'Cadeias independentes devem aparecer');
  await page.locator('#dxfZ0Left').click();
  assert.equal(await page.locator('#dxfFace').inputValue(),'esquerda');
- assert((await page.locator('#dxfProjected svg').innerText()).includes('Z0'),'Marcador Z0 no desenho');
+ assert((await page.locator('#dxfProjected svg').textContent()).includes('Z0'),'Marcador Z0 no desenho');
  await page.locator('#dxfZ0Pending').click();
  assert.equal(await page.locator('#dxfFace').inputValue(),'');
  // Retângulo da seleção de vista precisa existir DURANTE o movimento do mouse.
