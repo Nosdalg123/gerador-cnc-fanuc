@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-10-11: DXF CAD geométrico real e regressões",
+  "gerado_em": "2026-10-11: correção topológica DXF com auditoria e cadeias geométricas",
   "como_ler": "simbolos = [nome, tipo, linha_inicio, linha_fim, pai]; linhas comecam em 1. Leia so a faixa necessaria (Read com offset/limit).",
   "regerar": "python indexer.py",
   "ignorado": [
@@ -21,12 +21,12 @@
     "versoes"
   ],
   "totais": {
-    "arquivos": 44,
-    "simbolos": 1057,
+    "arquivos": 50,
+    "simbolos": 1074,
     "por_linguagem": {
-      "md": 7,
+      "md": 8,
       "py": 1,
-      "js": 34,
+      "js": 39,
       "html": 1,
       "css": 1
     }
@@ -40,49 +40,49 @@
           "Gerador CNC parametrizado (Fanuc) — Torno ML-600L — Alumasa",
           "h1",
           1,
-          35,
+          52,
           ""
         ],
         [
           "O que é",
           "h2",
           5,
-          7,
+          52,
           ""
         ],
         [
           "Estado atual",
           "h2",
           8,
-          18,
+          52,
           ""
         ],
         [
           "Estrutura (pasta `Gerador/`)",
           "h2",
           19,
-          22,
+          52,
           ""
         ],
         [
           "Como rodar",
           "h2",
           23,
-          27,
+          52,
           ""
         ],
         [
           "Regras de trabalho (decididas pelo usuário)",
           "h2",
           28,
-          34,
+          52,
           ""
         ],
         [
           "Formato das respostas e padrão CNC (instruções do usuário, valem em toda sessão)",
           "h2",
           35,
-          35,
+          52,
           ""
         ],
         [
@@ -96,7 +96,7 @@
           "Pendências",
           "h2",
           42,
-          46,
+          52,
           ""
         ],
         [
@@ -312,7 +312,7 @@
     },
     "Gerador/CHANGELOG.md": {
       "lang": "md",
-      "linhas": 214,
+      "linhas": 237,
       "simbolos": [
         [
           "Histórico de versões — Gerador CNC Torno",
@@ -521,7 +521,7 @@
     },
     "Gerador/LEIAME.md": {
       "lang": "md",
-      "linhas": 272,
+      "linhas": 284,
       "simbolos": [
         [
           "Gerador CNC Torno",
@@ -765,76 +765,90 @@
     },
     "Gerador/VALIDAR-NA-MAQUINA.md": {
       "lang": "md",
-      "linhas": 73,
+      "linhas": 90,
       "simbolos": [
         [
           "Itens para validar na máquina (ML-600L)",
           "h1",
           1,
-          73,
+          90,
           ""
         ],
         [
           "Antes de qualquer programa novo",
           "h2",
           5,
-          73,
+          90,
           ""
         ],
         [
           "Por geometria",
           "h2",
           11,
-          73,
+          90,
           ""
         ],
         [
           "Módulo Simulação (programa colado) — suposições do leitor",
           "h2",
           25,
-          73,
+          90,
           ""
         ],
         [
           "Diagnóstico de programa (2.7.0) — regras que seguem o padrão Fanuc, a conferir na máquina",
           "h2",
           39,
-          73,
+          90,
           ""
         ],
         [
           "Comando Siemens 802D sl em modo ISO (2.7.1)",
           "h2",
           47,
-          73,
+          90,
           ""
         ],
         [
           "O que o simulador não mostra",
           "h2",
           52,
-          73,
+          90,
           ""
         ],
         [
           "Desenhos convertidos de PDF (2.10.0)",
           "h2",
           56,
-          73,
+          90,
           ""
         ],
         [
           "Orientação de importações PDF — v2.11.0",
           "h2",
           61,
-          73,
+          90,
           ""
         ],
         [
           "Copo 7″ / Baioneta — PDF (v2.12.0)",
           "h2",
           67,
-          73,
+          90,
+          ""
+        ],
+        [
+          "CAD DXF real — v2.13.0",
+          "h2",
+          74,
+          90,
+          ""
+        ],
+        [
+          "DXF com cadeias ramificadas — v2.14.0",
+          "h2",
+          82,
+          90,
           ""
         ]
       ]
@@ -3162,7 +3176,7 @@
     },
     "Gerador/desenho.js": {
       "lang": "js",
-      "linhas": 458,
+      "linhas": 470,
       "simbolos": [
         [
           "$",
@@ -4126,7 +4140,7 @@
     },
     "Gerador/index.html": {
       "lang": "html",
-      "linhas": 468,
+      "linhas": 539,
       "simbolos": [
         [
           "style.css",
@@ -7417,7 +7431,7 @@
     },
     "Gerador/dxfprofile.js": {
       "lang": "js",
-      "linhas": 128,
+      "linhas": 140,
       "simbolos": [
         [
           "fmt",
@@ -7507,7 +7521,7 @@
     },
     "Gerador/dxfimport.js": {
       "lang": "js",
-      "linhas": 240,
+      "linhas": 288,
       "simbolos": [
         [
           "resetConfirm",
@@ -7687,6 +7701,145 @@
           "h2",
           73,
           78,
+          ""
+        ]
+      ]
+    },
+    "Gerador/dxfchains.js": {
+      "lang": "js",
+      "linhas": 76,
+      "simbolos": [
+        [
+          "build",
+          "function",
+          9,
+          9,
+          ""
+        ],
+        [
+          "id",
+          "function",
+          13,
+          13,
+          ""
+        ],
+        [
+          "follow",
+          "function",
+          33,
+          33,
+          ""
+        ],
+        [
+          "segmentCoverage",
+          "function",
+          70,
+          70,
+          ""
+        ]
+      ]
+    },
+    "Gerador/dxfaudit.js": {
+      "lang": "js",
+      "linhas": 65,
+      "simbolos": [
+        [
+          "num",
+          "function",
+          8,
+          8,
+          ""
+        ],
+        [
+          "unique",
+          "function",
+          9,
+          9,
+          ""
+        ],
+        [
+          "check",
+          "function",
+          10,
+          10,
+          ""
+        ]
+      ]
+    },
+    "Gerador/testdxfchains.js": {
+      "lang": "js",
+      "linhas": 23,
+      "simbolos": []
+    },
+    "Gerador/testdxfaudit.js": {
+      "lang": "js",
+      "linhas": 25,
+      "simbolos": [
+        [
+          "check",
+          "function",
+          7,
+          7,
+          ""
+        ]
+      ]
+    },
+    "Gerador/testdxfreal.js": {
+      "lang": "js",
+      "linhas": 31,
+      "simbolos": []
+    },
+    "Gerador/TESTE-DXF-CADEIAS.md": {
+      "lang": "md",
+      "linhas": 53,
+      "simbolos": [
+        [
+          "Auditoria de importação CAD DXF — versão 2.14.0",
+          "h1",
+          1,
+          53,
+          ""
+        ],
+        [
+          "Origem e escopo",
+          "h2",
+          3,
+          53,
+          ""
+        ],
+        [
+          "Causa raiz encontrada na 2.13.0",
+          "h2",
+          19,
+          53,
+          ""
+        ],
+        [
+          "Correções implementadas",
+          "h2",
+          24,
+          53,
+          ""
+        ],
+        [
+          "Procedimento para Disco e Copo",
+          "h2",
+          33,
+          53,
+          ""
+        ],
+        [
+          "Testes realizados e reproduzíveis",
+          "h2",
+          42,
+          53,
+          ""
+        ],
+        [
+          "Limites",
+          "h2",
+          49,
+          53,
           ""
         ]
       ]
