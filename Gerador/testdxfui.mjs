@@ -54,13 +54,57 @@ try{
  const hasNaN=await page.locator('#dxfProjected svg path').evaluateAll(els=>els.some(e=>String(e.getAttribute('d')).includes('NaN')));
  assert(!hasNaN,'Geometria vetorial projetada não pode conter coordenadas NaN');
  assert(Number(await page.locator('#dxfAxis').inputValue())===100,'Eixo X0 sugerido pelos círculos');
+ assert(await page.evaluate(()=>window.CNCDXFImport.getSelected().externo.size>0),'Proposta automática de perfil logo após importar');
  await page.locator('#dxfAuto').click();
  assert((await page.locator('#dxfChains button').count())>=1,'Cadeias independentes devem aparecer');
- await page.locator('#dxfChains button').first().click();
+ await page.locator('#dxfZ0Left').click();
+ assert.equal(await page.locator('#dxfFace').inputValue(),'esquerda');
+ assert((await page.locator('#dxfProjected svg').innerText()).includes('Z0'),'Marcador Z0 no desenho');
+ await page.locator('#dxfZ0Pending').click();
+ assert.equal(await page.locator('#dxfFace').inputValue(),'');
+ // Retângulo da seleção de vista precisa existir DURANTE o movimento do mouse.
+ await page.locator('#dxfSelect').click();
+ let box=await page.locator('#dxfSource svg').boundingBox();
+ const pos=(x,y)=>({x:box.x+x/900*box.width,y:box.y+y/480*box.height});
+ let p=pos(25,307),q=pos(375,419);
+ await page.mouse.move(p.x,p.y);await page.mouse.down();
+ await page.mouse.move(q.x,q.y,{steps:9});
+ assert(Number(await page.locator('#dxfDragOverlay').getAttribute('width'))>50,'Retângulo visível durante o arraste');
+ await page.mouse.up();
+ assert((await page.locator('#dxfSource svg rect[stroke]').count())>=1,'Retângulo permanece visível ao selecionar a vista');
  assert((await page.locator('#dxfProjected [data-cad-segment]').count())>=3,'Entidades CAD interativas');
+ const clickSegment=async id=>page.locator('#dxfProjected [data-cad-segment="'+id+'"]').evaluate(el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+ // Excluir uma linha sem alterar a fonte original e desfazer.
+ await page.locator('input[name=dxfAssign][value=apagar]').check();
+ await clickSegment('ln3:0');
+ assert(await page.evaluate(()=>window.CNCDXFImport.getHidden().has('ln3:0')),'Exclusão por clique');
+ assert.equal(await page.locator('#dxfProjected [data-cad-segment="ln3:0"]').count(),0);
+ await page.locator('#dxfUndo').click();
+ assert.equal(await page.locator('#dxfProjected [data-cad-segment="ln3:0"]').count(),1,'Desfazer exclusão');
+ // Estender uma LINE e desfazer sem afetar original.
+ await page.locator('input[name=dxfAssign][value=estender]').check();
+ await clickSegment('ln3:0');
+ await page.locator('#dxfExtendAmount').fill('7');
+ await page.locator('#dxfExtendApply').click();
+ assert.equal(await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.find(x=>x.id==='ln3').b[0]),207);
+ assert.equal(await page.evaluate(()=>window.CNCDXFImport.getOriginal().geometry.find(x=>x.id==='ln3').b[0]),200);
+ await page.locator('#dxfUndo').click();
+ assert.equal(await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.find(x=>x.id==='ln3').b[0]),200);
+ // Apagar por retângulo visível na projeção.
+ await page.locator('input[name=dxfAssign][value=quadro]').check();
+ const pathBox=await page.locator('#dxfProjected [data-cad-segment="ln2:0"]').boundingBox();
+ assert(pathBox,'Linha para exclusão por retângulo deve aparecer');
+ let x=pathBox.x+pathBox.width/2,y=pathBox.y+Math.max(pathBox.height/2,1);
+ await page.mouse.move(x-11,y-15);await page.mouse.down();await page.mouse.move(x+11,y+15,{steps:8});
+ assert(Number(await page.locator('#dxfProjected #dxfDragOverlay').getAttribute('width'))>5,'Quadro de exclusão visível durante o arraste');
+ await page.mouse.up();
+ assert(await page.evaluate(()=>window.CNCDXFImport.getHidden().size>=1),'Exclusão por quadro efetiva');
  await page.locator('#dxfNome').fill('Smoke de geometria CAD');
  await page.locator('#dxfSaveDraft').click();
  assert((await page.locator('#dxfSaved').innerText()).includes('Rascunho'),'Rascunho precisa persistir');
+ const hiddenBefore=await page.evaluate(()=>window.CNCDXFImport.getHidden().size);
+ await page.locator('#dxfOpenDraft').click();
+ assert.equal(await page.evaluate(()=>window.CNCDXFImport.getHidden().size),hiddenBefore,'Exclusões persistem no rascunho CAD');
  assert(await page.locator('#dxfSaveCNC').isDisabled(),'Sem Z0 não libera CNC');
  assert.equal(errors.length,0,'Sem erro de JavaScript no navegador: '+errors.join('; '));
  console.log('Chromium DXF UI: prévia original, projeção, eixo, cadeias, rascunho e trava CNC aprovados.');
