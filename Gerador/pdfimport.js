@@ -3,7 +3,7 @@
 (function(root){
 'use strict';
 var $=q=>document.querySelector(q),url=null,doc=null,fileBytes=null,page=1,totalPages=1,zoom=1,rotation=0;
-var model=[],length='',picked=null,selectMode=false,down=null,viewport=null,pg=null,library=null,savedId=null,renderSeq=0,edit=null,possibleViews=[];
+var model=[],length='',picked=null,selectMode=false,down=null,viewport=null,pg=null,library=null,savedId=null,renderSeq=0,edit=null,possibleViews=[],previewZoom=1;
 var pdfjsUrl='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
 var workerUrl='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 function status(t,error){$('#pdfStatus').textContent=t;$('#pdfStatus').style.color=error?'#be4936':'';}
@@ -25,6 +25,7 @@ function renderPreview(){
  var host=$('#pdfProfileSvg'),r=root.CNCPDFPerfil.svg(model,length,{side:$('#pdfProfileSide').value});
  if(r.ok){
   host.innerHTML=r.svg;
+  var graph=host.querySelector('svg');if(graph){graph.style.width=(previewZoom*100)+'%';graph.style.maxWidth='none';}
   $('#pdfProfileMsg').textContent=(r.warnings.length?r.warnings.join(' · ')+' · ':'')+'Clique em uma cota azul ou sobre a peça para editar.';
   $('#pdfScaleInfo').textContent='X e Ø em proporção 1:1 · escala automática de visualização';
  }else{
@@ -215,6 +216,25 @@ $('#pdfEditRemover').onclick=function(){if(edit&&edit.index>=0){model.splice(edi
 $('#pdfAddExt').onclick=function(){openEditor(null,null,'ext')};
 $('#pdfAddInt').onclick=function(){openEditor(null,null,'int')};
 $('#pdfProfileSide').onchange=renderPreview;
+$('#pdfPreviewZoomIn').onclick=function(){previewZoom=Math.min(4,previewZoom*1.25);renderPreview()};
+$('#pdfPreviewZoomOut').onclick=function(){previewZoom=Math.max(.8,previewZoom/1.25);renderPreview()};
+$('#pdfPreviewZoomReset').onclick=function(){previewZoom=1;renderPreview()};
+$('#pdfReverseProfile').onclick=function(){
+ var side=$('#pdfProfileSide').value;
+ ['e','i'].forEach(function(key){
+  var kind=q=>(q.tipo[0]==='i'?'i':'e')===key&&q.side===side;
+  var src=model.filter(kind);
+  var flipped=src.slice().reverse().map(function(q){
+   var n={...q};
+   if(n.tipo.indexOf('cone')>=0){var a=n.a;n.a=n.c;n.c=a;}
+   return n;
+  });
+  var i=0;model=model.map(function(q){return kind(q)?flipped[i++]:q});
+ });
+ invalidate();
+ status('Orientação do perfil invertida neste lado. Confira a face Z0 antes de salvar.');
+};
+
 $('#pdfProfileSvg').addEventListener('click',function(e){
  var node=e.target.closest('[data-edit-total],[data-edit-index]');if(!node)return;
  if(node.hasAttribute('data-edit-total'))openEditor(-1,'total');
