@@ -206,6 +206,23 @@ $('#dxfSaveCNC').onclick=function(){
    cadOrigem:{arquivo:fileName,unidade:doc.unitName,faceZ0:face,eixoCAD:axis,verificado:true,entidadesSelecionadas:e.selected.length+(i?.selected.length||0)}});
  if(id){resetConfirm();$('#dxfSaved').textContent='Perfil enviado ao Gerador: '+val('#dxfNome');status('Perfil CNC salvo. Revise fixação, ferramentas e simulação antes de usinar.')}
 };
+$('#dxfEditManual').onclick=function(){
+ if(!doc||!rect){status('Abra um DXF e delimite uma vista antes de editar.',true);return}
+ let len=Number(val('#dxfLength')),face=val('#dxfFace');
+ if(!(len>0)||!['esquerda','direita'].includes(face)){status('Informe o comprimento e escolha o Z0 provisório para transferir trechos. O rascunho CAD pode ser salvo sem Z0.',true);return}
+ axis=Number(val('#dxfAxis'));if(!Number.isFinite(axis)||val('#dxfAxis')===''){status('Informe a coordenada do eixo X0.',true);return}
+ let e=analyse('externo'),i=analyse('interno');
+ let items=(e?toItems('externo',e,face):[]).concat(i&&i.selected.length?toItems('interno',i,face):[]);
+ if(!items.length){status('Marque pelo menos uma linha de cilindro/cone. Não é possível traduzir arcos sem o canto correspondente.',true);return}
+ if(!confirm('Transferir SOMENTE '+items.length+' trechos retos para o editor manual, SEM raios/roscas/entidades faltantes? Este rascunho NÃO é um perfil completo e exige revisão antes de salvar/gerar CNC.'))return;
+ let max=Math.max(...items.filter(q=>q.tipo[0]!=='i').map(q=>Math.max(q.a,q.tipo==='cone'?q.b:q.a)));
+ if(!Number.isFinite(max)){status('Selecione algum contorno externo.',true);return}
+ let ok=root.CNCDesenhos&&root.CNCDesenhos.importarPDF({nome:val('#dxfNome')||'Rascunho DXF',lPeca:len,dRef:Math.ceil(max+4),items,
+  cadOrigem:{arquivo:fileName,unidade:doc.unitName,faceZ0:face,eixoCAD:axis,verificado:false,incompleto:true}});
+ if(!ok){status('O editor não aceitou a transferência de rascunho.',true);return}
+ $('#dxfPanel').hidden=true;$('#pdfManual').hidden=false;
+ alert('Rascunho aberto no editor manual. Revise raios, roscas, cavidades e descontinuidades antes de salvar no Gerador.');
+};
 $('#dxfModo').onclick=function(){$('#dxfPanel').hidden=false;$('#pdfPanel').hidden=true;$('#pdfManual').hidden=true;refreshDrafts()};
 $('#dxfVoltar').onclick=function(){$('#dxfPanel').hidden=true;$('#pdfManual').hidden=false};
 refreshDrafts();
