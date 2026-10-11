@@ -101,7 +101,15 @@ async function recognizePage(){
   var content=await pg.getTextContent(),items=cropItems(content.items);
   $('#pdfTexto').value=items.map(t=>t.str).join(' ');
   var typed=root.CNCPDFCotas.summary(items,profileAxis),box=$('#pdfCotas');
-  unresolved=typed.all.filter(c=>['rosca','rosca_furo','raio','angulo'].indexOf(c.tipo)>=0).map(c=>c.rotulo+' ('+c.tipo+')');
+  var detailTypes=['rosca','rosca_furo','raio','angulo'];
+  unresolved=typed.all.filter(c=>detailTypes.indexOf(c.tipo)>=0).map(c=>c.rotulo+' ('+c.tipo+')');
+  // Auditoria de chamadas em outras vistas: não misturar com a geometria
+  // longitudinal, mas também não perder um furo/rosca indicado de frente.
+  var wholePage=root.CNCPDFCotas.summary(content.items,profileAxis);
+  wholePage.all.filter(c=>detailTypes.indexOf(c.tipo)>=0).forEach(function(c){
+   var local=c.rotulo+' ('+c.tipo+')';
+   if(unresolved.indexOf(local)<0)unresolved.push(local+' — chamada em outra vista: conferir');
+  });
   box.replaceChildren();
   typed.all.forEach(function(c){
    var chip=document.createElement('span'),small=document.createElement('small');
