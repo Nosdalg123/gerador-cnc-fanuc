@@ -39,7 +39,11 @@ try{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const consoleErrors=[];page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
  await page.goto('http://127.0.0.1:'+port+'/index.html',{waitUntil:'load',timeout:30000});
- await page.evaluate(()=>{document.querySelector('#view-desenho').hidden=false;document.querySelector('#dxfModo').click()});
+ await page.evaluate(()=>{
+  // O smoke exercita o importador isoladamente; autenticação possui testes próprios.
+  const login=document.querySelector('#login');if(login){login.hidden=true;login.style.display='none'}
+  document.querySelector('#view-desenho').hidden=false;document.querySelector('#dxfModo').click();
+ });
  await page.locator('#dxfFile').setInputFiles({name:'synthetic-turning.dxf',mimeType:'application/dxf',buffer:Buffer.from(cad,'utf8')});
  await page.waitForTimeout(1000);
  console.log('Importação DXF no navegador — status:',await page.locator('#dxfStatus').innerText(),
@@ -47,6 +51,8 @@ try{
  await page.waitForFunction(()=>document.querySelector('#dxfStatus').textContent.includes('DXF CAD carregado:'),null,{timeout:10000});
  assert.equal(await page.locator('#dxfSource svg').count(),1,'Prévia do CAD precisa aparecer');
  assert.equal(await page.locator('#dxfProjected svg').count(),1,'Projeção CNC precisa aparecer');
+ const hasNaN=await page.locator('#dxfProjected svg path').evaluateAll(els=>els.some(e=>String(e.getAttribute('d')).includes('NaN')));
+ assert(!hasNaN,'Geometria vetorial projetada não pode conter coordenadas NaN');
  assert(Number(await page.locator('#dxfAxis').inputValue())===100,'Eixo X0 sugerido pelos círculos');
  await page.locator('#dxfAuto').click();
  assert((await page.locator('#dxfChains button').count())>=1,'Cadeias independentes devem aparecer');
