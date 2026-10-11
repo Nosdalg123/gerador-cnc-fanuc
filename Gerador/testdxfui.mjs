@@ -100,17 +100,18 @@ try{
  await page.mouse.up();
  assert(await page.evaluate(()=>window.CNCDXFImport.getHidden().size>=1),'Exclusão por quadro efetiva');
  await page.locator('input[name=dxfAssign][value=estender]').check();
- await clickSegment('ln3:0');
+ assert(!(await page.evaluate(()=>window.CNCDXFImport.getHidden().has('ln1:0'))),'Linha independente permanece disponível');
+ await clickSegment('ln1:0');
  await page.locator('#dxfExtendAmount').fill('4');
  await page.locator('#dxfExtendApply').click();
- assert.equal(await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.find(e=>e.id==='ln3').b[0]),204);
+ assert.equal(await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.find(e=>e.id==='ln1').b[0]),104);
  await page.locator('#dxfNome').fill('Smoke de geometria CAD');
  await page.locator('#dxfSaveDraft').click();
  assert((await page.locator('#dxfSaved').innerText()).includes('Rascunho'),'Rascunho precisa persistir');
  const hiddenBefore=await page.evaluate(()=>window.CNCDXFImport.getHidden().size);
  await page.locator('#dxfOpenDraft').click();
  assert.equal(await page.evaluate(()=>window.CNCDXFImport.getHidden().size),hiddenBefore,'Exclusões persistem no rascunho CAD');
- assert.equal(await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.find(e=>e.id==='ln3').b[0]),204,
+ assert.equal(await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.find(e=>e.id==='ln1').b[0]),104,
   'Extensão em milímetros deve ser reconstruída ao reabrir rascunho');
  assert(await page.locator('#dxfSaveCNC').isDisabled(),'Sem Z0 não libera CNC');
  assert.equal(errors.length,0,'Sem erro de JavaScript no navegador: '+errors.join('; '));
