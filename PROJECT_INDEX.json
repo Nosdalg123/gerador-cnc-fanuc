@@ -1,974 +1,6428 @@
 {
-  "gerado_em": "2026-10-09 14:31",
+  "gerado_em": "2026-10-11 (atualização do índice da branch 2.10.0)",
   "como_ler": "simbolos = [nome, tipo, linha_inicio, linha_fim, pai]; linhas comecam em 1. Leia so a faixa necessaria (Read com offset/limit).",
   "regerar": "python indexer.py",
-  "ignorado": [".cache", ".claude", ".git", ".idea", ".mypy_cache", ".pytest_cache", ".venv", ".vscode", "Manuais da maquina", "__pycache__", "build", "dist", "env", "node_modules", "venv", "versoes"],
-  "totais": {"arquivos": 24, "simbolos": 918, "por_linguagem": {"md": 4, "py": 1, "js": 17, "html": 1, "css": 1}},
+  "ignorado": [
+    ".cache",
+    ".claude",
+    ".git",
+    ".idea",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".venv",
+    ".vscode",
+    "Manuais da maquina",
+    "__pycache__",
+    "build",
+    "dist",
+    "env",
+    "node_modules",
+    "venv",
+    "versoes"
+  ],
+  "totais": {
+    "arquivos": 31,
+    "simbolos": 887,
+    "por_linguagem": {
+      "md": 4,
+      "py": 1,
+      "js": 24,
+      "html": 1,
+      "css": 1
+    }
+  },
   "arquivos": {
-    "CLAUDE.md": {"lang": "md", "linhas": 52, "simbolos": [
-      ["Gerador CNC parametrizado (Fanuc) — Torno ML-600L — Alumasa", "h1", 1, 35, ""],
-      ["O que é", "h2", 5, 7, ""],
-      ["Estado atual", "h2", 8, 18, ""],
-      ["Estrutura (pasta `Gerador/`)", "h2", 19, 22, ""],
-      ["Como rodar", "h2", 23, 27, ""],
-      ["Regras de trabalho (decididas pelo usuário)", "h2", 28, 34, ""],
-      ["Formato das respostas e padrão CNC (instruções do usuário, valem em toda sessão)", "h2", 35, 35, ""],
-      ["Output Guidelines", "h1", 36, 52, ""],
-      ["Pendências", "h2", 42, 46, ""],
-      ["Índice do código (economia de tokens)", "h2", 47, 52, ""]
-    ]},
-    "indexer.py": {"lang": "py", "linhas": 406, "simbolos": [
-      ["RAIZ", "const", 22, 22, ""],
-      ["SAIDA", "const", 23, 23, ""],
-      ["IGNORAR_DIRS", "const", 24, 27, ""],
-      ["IGNORAR_ARQ", "const", 28, 28, ""],
-      ["EXT", "const", 29, 29, ""],
-      ["MAX_PROF_JS", "const", 30, 30, ""],
-      ["MAX_MD_LINHAS", "const", 31, 31, ""],
-      ["le", "function", 34, 42, ""],
-      ["mascara_js", "function", 46, 117, ""],
-      ["apaga", "function", 51, 54, "mascara_js"],
-      ["fecha", "function", 120, 133, ""],
-      ["ID", "const", 136, 136, ""],
-      ["PADROES_JS", "const", 137, 144, ""],
-      ["CURTO", "const", 146, 146, ""],
-      ["PALAVRAS", "const", 147, 147, ""],
-      ["indexa_js", "function", 150, 249, ""],
-      ["lin", "function", 158, 159, "indexa_js"],
-      ["add", "function", 162, 167, "indexa_js"],
-      ["indexa_py", "function", 253, 275, ""],
-      ["visita", "function", 260, 271, "indexa_py"],
-      ["indexa_html", "function", 279, 293, ""],
-      ["indexa_css", "function", 296, 302, ""],
-      ["indexa_md", "function", 305, 324, ""],
-      ["INDEXADORES", "const", 327, 327, ""],
-      ["varre", "function", 330, 348, ""],
-      ["formata", "function", 351, 376, ""],
-      ["sem_data", "function", 379, 380, ""],
-      ["main", "function", 383, 401, ""]
-    ]},
-    "Gerador/CHANGELOG.md": {"lang": "md", "linhas": 162, "simbolos": [
-      ["Histórico de versões — Gerador CNC Torno", "h1", 1, 162, ""],
-      ["2.7.1 — 09/10/2026 — Leitor entende o modo ISO do Siemens 802D sl (G291, G290 e G92 S)", "h2", 11, 18, ""],
-      ["2.7.0 — 09/10/2026 — Diagnóstico de erros do programa, com causa e solução para cada tipo", "h2", 19, 28, ""],
-      ["2.6.0 — 09/10/2026 — Gerador gera G73 e G41/G42 + ângulo do suporte no banco de ferramenta", "h2", 29, 36, ""],
-      ["2.5.0 — 09/10/2026 — programa decodificado também no Gerador + programas do COPO BRUTO P2/", "h2", 37, 43, ""],
-      ["2.4.0 — 08/10/2026 — Simulação: programa decodificado, G73 e G41/G42", "h2", 44, 52, ""],
-      ["2.3.0 — 08/10/2026 — acesso por usuário (tela de entrada)", "h2", 53, 62, ""],
-      ["2.2.1 — 07/10/2026 — Simulação: janela em painel próprio e desenho com inserto e suporte", "h2", 63, 66, ""],
-      ["2.2.0 — 07/10/2026 — módulo Simulação (programa pronto colado)", "h2", 67, 75, ""],
-      ["2.1.2 — 06/10/2026 — desenho do porta-matriz maior e sem cruzamentos", "h2", 76, 79, ""],
-      ["2.1.1 — 06/10/2026 — cota M no porta-matriz", "h2", 80, 82, ""],
-      ["2.1.0 — 06/10/2026 — porta-matriz com desenho e 2 lados", "h2", 83, 86, ""],
-      ["2.0.0 — 06/10/2026 — revisão final", "h2", 87, 91, ""],
-      ["1.9.0 — 06/10/2026 — rosca externa e interna (G76)", "h2", 92, 98, ""],
-      ["1.8.0 — 06/10/2026 — canal interno", "h2", 99, 104, ""],
-      ["1.7.0 — 06/10/2026 — geometria Alimentador padrão", "h2", 105, 109, ""],
-      ["1.6.0 — 06/10/2026 — geometria Porta-matriz", "h2", 110, 115, ""],
-      ["1.5.0 — 06/10/2026 — geometria BA / BAT", "h2", 116, 118, ""],
-      ["1.4.0 — 06/10/2026 — elementos em sequência (canal sequencial)", "h2", 119, 124, ""],
-      ["1.3.1 — 06/10/2026 — correção: desenho não chegava ao Gerador", "h2", 125, 130, ""],
-      ["1.3.0 — 06/10/2026 — operação “Desenho da peça”", "h2", 131, 136, ""],
-      ["1.2.0 — 06/10/2026 — menu lateral, painéis independentes, tema Alumasa padrão, cantos esco", "h2", 137, 144, ""],
-      ["1.1.0 — 05/10/2026 — cabeçalho fixo, Configurações, telas mais enxutas", "h2", 145, 156, ""],
-      ["1.0.0 — ponto de partida (antes da rodada de 05/10/2026)", "h2", 157, 162, ""]
-    ]},
-    "Gerador/LEIAME.md": {"lang": "md", "linhas": 221, "simbolos": [
-      ["Gerador CNC Torno", "h1", 1, 221, ""],
-      ["Fluxo", "h2", 5, 10, ""],
-      ["Geometrias", "h2", 11, 57, ""],
-      ["Peça simples (desenho salvo)", "h3", 26, 57, ""],
-      ["O que usinar: externo, interno ou ambos", "h4", 36, 40, ""],
-      ["Trechos internos (furo + mandrilamento)", "h4", 41, 51, ""],
-      ["Bruto com furo existente (recolhido)", "h4", 52, 57, ""],
-      ["Campos recolhidos (\"Raios e folgas\")", "h2", 58, 60, ""],
-      ["Sentido do desbaste (longitudinal × transversal)", "h2", 61, 80, ""],
-      ["Espina", "h3", 72, 80, ""],
-      ["Fixação na placa (todas as geometrias)", "h2", 81, 84, ""],
-      ["Banco de ferramentas", "h2", 85, 88, ""],
-      ["Incrementos de corte (card 4)", "h2", 89, 96, ""],
-      ["Simulador (corte 2D XZ, meia seção)", "h2", 97, 106, ""],
-      ["Simulação de programa pronto (v2.2.0)", "h2", 107, 122, ""],
-      ["Desbaste G73, compensação G41/G42 e ângulo do suporte (v2.6.0)", "h2", 123, 127, ""],
-      ["Diagnóstico de erros do programa (v2.7.0)", "h2", 128, 133, ""],
-      ["Comando Siemens 802D sl em modo ISO (v2.7.1)", "h2", 134, 136, ""],
-      ["Desenvolvimento", "h2", 137, 141, ""],
-      ["Tela e temas", "h2", 142, 149, ""],
-      ["Raio zero", "h2", 150, 152, ""],
-      ["Cabeçalho fixo, Configurações e explicações (v1.1.0)", "h2", 153, 161, ""],
-      ["Desenho da peça (v1.3.0)", "h2", 162, 170, ""],
-      ["Chanfro e raio em um canto escolhido (v1.2.0)", "h2", 171, 179, ""],
-      ["Elementos em sequência (v1.4.0)", "h2", 180, 186, ""],
-      ["Porta-matriz (v1.6.0, refeito em 2 lados na v2.1.0)", "h2", 187, 194, ""],
-      ["Alimentador padrão (v1.7.0)", "h2", 195, 203, ""],
-      ["Canal interno (v1.8.0)", "h2", 204, 211, ""],
-      ["Rosca externa e interna (v1.9.0)", "h2", 212, 221, ""]
-    ]},
-    "Gerador/VALIDAR-NA-MAQUINA.md": {"lang": "md", "linhas": 55, "simbolos": [
-      ["Itens para validar na máquina (ML-600L)", "h1", 1, 55, ""],
-      ["Antes de qualquer programa novo", "h2", 5, 10, ""],
-      ["Por geometria", "h2", 11, 24, ""],
-      ["Módulo Simulação (programa colado) — suposições do leitor", "h2", 25, 38, ""],
-      ["Diagnóstico de programa (2.7.0) — regras que seguem o padrão Fanuc, a conferir na máquina", "h2", 39, 46, ""],
-      ["Comando Siemens 802D sl em modo ISO (2.7.1)", "h2", 47, 51, ""],
-      ["O que o simulador não mostra", "h2", 52, 55, ""]
-    ]},
-    "Gerador/acesso.js": {"lang": "js", "linhas": 61, "simbolos": [
-      ["USUARIOS", "object", 9, 13, ""],
-      ["BOTAO", "object", 14, 14, ""],
-      ["existe", "function", 17, 17, ""],
-      ["telasDe", "function", 18, 18, ""],
-      ["sha256", "function", 19, 23, ""],
-      ["confere", "function", 24, 27, ""],
-      ["aplicar", "function", 29, 36, ""],
-      ["form.onsubmit", "method", 39, 50, ""],
-      ["onclick", "method", 51, 54, ""]
-    ]},
-    "Gerador/app.js": {"lang": "js", "linhas": 694, "simbolos": [
-      ["$", "method", 3, 3, ""],
-      ["$$", "method", 4, 4, ""],
-      ["load", "function", 7, 7, ""],
-      ["save", "function", 8, 8, ""],
-      ["esc", "function", 9, 9, ""],
-      ["uid", "function", 10, 10, ""],
-      ["dataEfetiva", "function", 42, 42, ""],
-      ["persist", "function", 45, 45, ""],
-      ["showView", "function", 48, 67, ""],
-      ["onclick", "method", 68, 68, ""],
-      ["onclick", "method", 69, 69, ""],
-      ["onclick", "method", 70, 70, ""],
-      ["onclick", "method", 71, 71, ""],
-      ["onclick", "method", 72, 72, ""],
-      ["TEMAS", "object", 73, 73, ""],
-      ["temaAtual", "function", 74, 78, ""],
-      ["temaRotulo", "function", 79, 79, ""],
-      ["onclick", "method", 80, 85, ""],
-      ["b.onclick", "method", 90, 95, ""],
-      ["medeCabecalho", "function", 108, 108, ""],
-      ["DESENHOS", "object", 114, 149, ""],
-      ["desenhoHtml", "function", 149, 161, ""],
-      ["ger", "function", 164, 164, ""],
-      ["buildTipo", "function", 166, 173, ""],
-      ["CANTOS", "object", 176, 176, ""],
-      ["trechosHtml", "function", 178, 196, ""],
-      ["k", "object", 184, 184, "trechosHtml"],
-      ["trechoNovo", "function", 197, 200, ""],
-      ["bindTrechos", "function", 201, 218, ""],
-      ["el.oninput", "method", 205, 205, "bindTrechos"],
-      ["b.onclick", "method", 208, 215, "bindTrechos"],
-      ["campoHtml", "function", 221, 232, ""],
-      ["advAberto", "object", 235, 235, ""],
-      ["advKey", "function", 236, 236, ""],
-      ["CURTO", "object", 238, 238, ""],
-      ["advResumo", "function", 239, 251, ""],
-      ["advUi", "function", 251, 258, ""],
-      ["buildCampos", "function", 260, 295, ""],
-      ["b.onclick", "method", 280, 280, "buildCampos"],
-      ["onchange", "method", 285, 285, "buildCampos"],
-      ["onclick", "method", 286, 286, "buildCampos"],
-      ["onclick", "method", 287, 287, "buildCampos"],
-      ["i.oninput", "method", 293, 293, "buildCampos"],
-      ["desenhoAtual", "function", 298, 298, ""],
-      ["infoDesenho", "function", 299, 306, ""],
-      ["n", "object", 302, 302, "infoDesenho"],
-      ["fillDesenhoSel", "function", 307, 313, ""],
-      ["CNCDesenhos.onMudou", "method", 314, 314, ""],
-      ["vals", "function", 316, 332, ""],
-      ["f", "object", 317, 317, "vals"],
-      ["aplicaQuando", "function", 334, 344, ""],
-      ["previewSvg", "function", 347, 347, ""],
-      ["toolSel", "function", 349, 353, ""],
-      ["renderToolSelects", "function", 354, 371, ""],
-      ["s.onchange", "method", 368, 368, "renderToolSelects"],
-      ["toolById", "function", 372, 372, ""],
-      ["INC", "object", 375, 380, ""],
-      ["overrides", "function", 381, 381, ""],
-      ["ovValido", "function", 382, 382, ""],
-      ["incResumo", "function", 385, 392, ""],
-      ["incUi", "function", 393, 399, ""],
-      ["onclick", "method", 400, 400, ""],
-      ["buildInc", "function", 401, 420, ""],
-      ["i.oninput", "method", 412, 417, "buildInc"],
-      ["incNota", "function", 421, 425, ""],
-      ["onclick", "method", 426, 426, ""],
-      ["currentTools", "function", 429, 440, ""],
-      ["toolInfoHtml", "function", 443, 456, ""],
-      ["det", "object", 453, 453, "toolInfoHtml"],
-      ["buildMaq", "function", 458, 463, ""],
-      ["i.oninput", "method", 461, 461, "buildMaq"],
-      ["onclick", "method", 464, 464, ""],
-      ["aplicaDicas", "function", 467, 467, ""],
-      ["buildCfg", "function", 468, 473, ""],
-      ["oninput", "method", 474, 474, ""],
-      ["oninput", "method", 475, 475, ""],
-      ["onchange", "method", 476, 476, ""],
-      ["onchange", "method", 477, 477, ""],
-      ["onchange", "method", 480, 480, ""],
-      ["oninput", "method", 481, 481, ""],
-      ["onchange", "method", 482, 482, ""],
-      ["renderLadoSel", "function", 484, 493, ""],
-      ["b.onclick", "method", 492, 492, "renderLadoSel"],
-      ["render", "function", 496, 545, ""],
-      ["b.onclick", "method", 542, 542, "render"],
-      ["onclick", "method", 547, 552, ""],
-      ["done", "method", 549, 549, "onclick"],
-      ["download", "function", 553, 558, ""],
-      ["baixar", "function", 559, 559, ""],
-      ["onclick", "method", 560, 560, ""],
-      ["onclick", "method", 561, 564, ""],
-      ["TIPOS", "object", 567, 567, ""],
-      ["renderTools", "function", 568, 593, ""],
-      ["b.onclick", "method", 583, 591, "renderTools"],
-      ["TIPOS_DEF", "object", 597, 605, ""],
-      ["buildTipoGrid", "function", 606, 622, ""],
-      ["b.onclick", "method", 611, 620, "buildTipoGrid"],
-      ["syncTipo", "function", 624, 629, ""],
-      ["NUMS", "object", 631, 631, ""],
-      ["openDlg", "function", 632, 642, ""],
-      ["onclick", "method", 643, 643, ""],
-      ["onclick", "method", 644, 644, ""],
-      ["frm.onsubmit", "method", 645, 659, ""],
-      ["o", "object", 649, 649, "frm.onsubmit"],
-      ["onclick", "method", 661, 663, ""],
-      ["onclick", "method", 664, 664, ""],
-      ["onchange", "method", 665, 686, ""],
-      ["rd.onload", "method", 669, 684, "onchange"],
-      ["tools", "method", 690, 690, ""],
-      ["maq", "method", 690, 690, "tools"]
-    ]},
-    "Gerador/core.js": {"lang": "js", "linhas": 2911, "simbolos": [
-      ["fmt", "function", 12, 19, ""],
-      ["ascii", "function", 21, 25, ""],
-      ["tcode", "function", 26, 26, ""],
-      ["nomeArquivo", "function", 27, 29, ""],
-      ["mesAno", "function", 30, 34, ""],
-      ["m", "object", 32, 32, "mesAno"],
-      ["plural", "function", 35, 35, ""],
-      ["num", "function", 36, 36, ""],
-      ["DEFAULT_MAQ", "object", 39, 39, ""],
-      ["blocoVariaveis", "function", 43, 55, ""],
-      ["lines", "object", 44, 44, "blocoVariaveis"],
-      ["dicionario", "function", 56, 67, ""],
-      ["PathB", "function", 70, 70, ""],
-      ["PathB.prototype.rapid", "method", 71, 74, ""],
-      ["PathB.prototype.feed", "method", 75, 78, ""],
-      ["PathB.prototype.thread", "method", 80, 83, ""],
-      ["PathB.prototype.arc", "method", 85, 91, ""],
-      ["arcPts", "function", 93, 101, ""],
-      ["PathB.prototype.arcRP", "method", 102, 105, ""],
-      ["cyc75", "function", 110, 119, ""],
-      ["zi", "object", 111, 111, "cyc75"],
-      ["cyc74", "function", 122, 131, ""],
-      ["xi", "object", 123, 123, "cyc74"],
-      ["simTool", "function", 133, 139, ""],
-      ["arcPoints", "function", 141, 148, ""],
-      ["pts", "object", 142, 142, "arcPoints"],
-      ["faceTurn", "function", 154, 214, ""],
-      ["finishBlock", "function", 218, 246, ""],
-      ["cabTroca", "function", 248, 254, ""],
-      ["cenaGen", "function", 257, 270, ""],
-      ["cena", "object", 259, 266, "cenaGen"],
-      ["perfilQuina", "function", 272, 278, ""],
-      ["resolverLinhas", "function", 280, 282, ""],
-      ["validarTool", "function", 284, 299, ""],
-      ["metaPadrao", "function", 301, 307, ""],
-      ["maqPadrao", "function", 308, 312, ""],
-      ["SENT_OPC", "object", 316, 316, ""],
-      ["COMP_OPC", "object", 319, 319, ""],
-      ["SENT_TORN_OPC", "object", 320, 320, ""],
-      ["camposFixacao", "function", 322, 328, ""],
-      ["out", "object", 324, 325, "camposFixacao"],
-      ["fixacao", "function", 329, 338, ""],
-      ["txtPressao", "function", 339, 342, ""],
-      ["lerCampos", "function", 343, 343, ""],
-      ["n", "object", 343, 343, "lerCampos"],
-      ["cabecalhoPrograma", "function", 344, 346, ""],
-      ["textoAcab", "function", 347, 351, ""],
-      ["MATRIZ_SOLIDA", "object", 356, 495, ""],
-      ["nomeAuto", "method", 373, 373, "MATRIZ_SOLIDA"],
-      ["derivados", "method", 374, 376, "MATRIZ_SOLIDA"],
-      ["gerar", "method", 378, 494, "MATRIZ_SOLIDA"],
-      ["P", "method", 454, 454, "gerar"],
-      ["MATRIZ_TUBULAR", "object", 498, 708, ""],
-      ["nomeAuto", "method", 519, 519, "MATRIZ_TUBULAR"],
-      ["derivados", "method", 520, 522, "MATRIZ_TUBULAR"],
-      ["gerar", "method", 524, 707, "MATRIZ_TUBULAR"],
-      ["P", "method", 632, 632, "gerar"],
-      ["ESPINA_CABECA", "object", 713, 917, ""],
-      ["nomeAuto", "method", 734, 734, "ESPINA_CABECA"],
-      ["derivados", "method", 735, 737, "ESPINA_CABECA"],
-      ["gerar", "method", 739, 916, "ESPINA_CABECA"],
-      ["P", "method", 819, 819, "gerar"],
-      ["contorno", "function", 879, 887, "gerar"],
-      ["ESPINA_ENCAIXE", "object", 920, 1100, ""],
-      ["nomeAuto", "method", 939, 939, "ESPINA_ENCAIXE"],
-      ["derivados", "method", 940, 942, "ESPINA_ENCAIXE"],
-      ["gerar", "method", 944, 1099, "ESPINA_ENCAIXE"],
-      ["P", "method", 1029, 1029, "gerar"],
-      ["ESPINA", "object", 1107, 1208, ""],
-      ["nomeAuto", "method", 1136, 1136, "ESPINA"],
-      ["desenhoDerivados", "method", 1138, 1138, "ESPINA"],
-      ["limites", "method", 1140, 1145, "ESPINA"],
-      ["placeholders", "method", 1146, 1146, "ESPINA"],
-      ["derivados", "method", 1147, 1150, "ESPINA"],
-      ["gerar", "method", 1152, 1207, "ESPINA"],
-      ["PS_FORMAS", "object", 1215, 1222, ""],
-      ["psN", "function", 1223, 1223, ""],
-      ["psRoscaD1", "function", 1228, 1228, ""],
-      ["psRoscaPar", "function", 1229, 1232, ""],
-      ["psRoscaVars", "function", 1234, 1245, ""],
-      ["psNormRosca", "function", 1246, 1255, ""],
-      ["addS", "function", 1256, 1256, ""],
-      ["subS", "function", 1257, 1257, ""],
-      ["xmS", "function", 1258, 1258, ""],
-      ["xpS", "function", 1259, 1259, ""],
-      ["zS", "function", 1260, 1260, ""],
-      ["psRaioEm", "function", 1263, 1271, ""],
-      ["psAcerto", "function", 1273, 1280, ""],
-      ["psSeq", "function", 1284, 1299, ""],
-      ["out", "object", 1286, 1286, "psSeq"],
-      ["psContorno", "function", 1302, 1458, ""],
-      ["out", "object", 1303, 1303, "psContorno"],
-      ["err", "function", 1305, 1305, "psContorno"],
-      ["pieces", "object", 1310, 1310, "psContorno"],
-      ["aplica", "function", 1369, 1381, "psContorno"],
-      ["push", "function", 1412, 1412, "psContorno"],
-      ["tz2", "object", 1435, 1435, "psContorno"],
-      ["pts", "object", 1444, 1444, "psContorno"],
-      ["to", "object", 1447, 1447, "psContorno"],
-      ["CANTOS_INT", "object", 1464, 1464, ""],
-      ["PS_FORMAS_INT", "object", 1465, 1473, ""],
-      ["psNovoId", "function", 1479, 1479, ""],
-      ["psPecasLista", "function", 1480, 1491, ""],
-      ["pcs", "object", 1481, 1481, "psPecasLista"],
-      ["psCantos", "function", 1493, 1503, ""],
-      ["psCantosInt", "function", 1505, 1515, ""],
-      ["psMigra", "function", 1517, 1537, ""],
-      ["pend", "object", 1528, 1528, "psMigra"],
-      ["USIN_OPC", "object", 1538, 1538, ""],
-      ["psUsos", "function", 1540, 1556, ""],
-      ["lados", "object", 1541, 1541, "psUsos"],
-      ["u", "object", 1543, 1543, "psUsos"],
-      ["psTemMand", "function", 1557, 1557, ""],
-      ["PS_FORMAS_BINT", "object", 1563, 1563, ""],
-      ["clipLinhaZ", "function", 1566, 1577, ""],
-      ["out", "object", 1567, 1567, "clipLinhaZ"],
-      ["psBrutoGeom", "function", 1579, 1596, ""],
-      ["segs", "object", 1580, 1580, "psBrutoGeom"],
-      ["IN", "object", 1589, 1589, "psBrutoGeom"],
-      ["psPilotoBruto", "function", 1598, 1608, ""],
-      ["psAcertoInt", "function", 1611, 1618, ""],
-      ["psSeqInt", "function", 1622, 1637, ""],
-      ["out", "object", 1624, 1624, "psSeqInt"],
-      ["psContornoInt", "function", 1641, 1840, ""],
-      ["out", "object", 1642, 1642, "psContornoInt"],
-      ["err", "function", 1644, 1644, "psContornoInt"],
-      ["push", "function", 1786, 1786, "psContornoInt"],
-      ["tz", "object", 1799, 1799, "psContornoInt"],
-      ["tzq", "object", 1805, 1805, "psContornoInt"],
-      ["tz2", "object", 1815, 1815, "psContornoInt"],
-      ["pts", "object", 1823, 1823, "psContornoInt"],
-      ["to", "object", 1826, 1826, "psContornoInt"],
-      ["psCavidade", "function", 1843, 1851, ""],
-      ["poly", "object", 1848, 1848, "psCavidade"],
-      ["cyc71i", "function", 1855, 1874, ""],
-      ["cyc72", "function", 1878, 1895, ""],
-      ["cyc73", "function", 1899, 1914, ""],
-      ["cycG83", "function", 1917, 1926, ""],
-      ["cyc71", "function", 1930, 1946, ""],
-      ["cycCanal", "function", 1949, 1965, ""],
-      ["zi", "object", 1950, 1950, "cycCanal"],
-      ["cycCanalI", "function", 1968, 1984, ""],
-      ["zi", "object", 1969, 1969, "cycCanalI"],
-      ["cycRosca", "function", 1988, 1999, ""],
-      ["deps", "object", 1989, 1989, "cycRosca"],
-      ["psFace", "function", 2002, 2020, ""],
-      ["psLado", "function", 2024, 2596, ""],
-      ["erros", "object", 2025, 2025, "psLado"],
-      ["chkRosca", "function", 2090, 2099, "psLado"],
-      ["defs", "object", 2137, 2142, "psLado"],
-      ["bdefs", "object", 2144, 2144, "psLado"],
-      ["nomeAuto", "method", 2251, 2251, "psLado"],
-      ["L", "object", 2253, 2253, "psLado"],
-      ["P", "method", 2254, 2254, "psLado"],
-      ["v", "object", 2265, 2265, "psLado"],
-      ["runC", "method", 2290, 2297, "psLado"],
-      ["ltool", "method", 2346, 2346, "psLado"],
-      ["zExpr", "method", 2349, 2349, "psLado"],
-      ["zFim", "method", 2350, 2350, "psLado"],
-      ["runI", "method", 2408, 2416, "psLado"],
-      ["cavINs", "object", 2516, 2516, "psLado"],
-      ["tl", "object", 2539, 2539, "psLado"],
-      ["holes", "object", 2551, 2551, "psLado"],
-      ["mp", "method", 2555, 2555, "psLado"],
-      ["est", "object", 2563, 2563, "psLado"],
-      ["txtRosca", "method", 2587, 2589, "psLado"],
-      ["PECA_SIMPLES", "object", 2598, 2707, ""],
-      ["usado", "method", 2607, 2607, "PECA_SIMPLES"],
-      ["usado", "method", 2608, 2608, "PECA_SIMPLES"],
-      ["usado", "method", 2609, 2609, "PECA_SIMPLES"],
-      ["usado", "method", 2610, 2610, "PECA_SIMPLES"],
-      ["usado", "method", 2611, 2611, "PECA_SIMPLES"],
-      ["usado", "method", 2612, 2612, "PECA_SIMPLES"],
-      ["quando", "method", 2619, 2619, "PECA_SIMPLES"],
-      ["quando", "method", 2622, 2622, "PECA_SIMPLES"],
-      ["quando", "method", 2624, 2624, "PECA_SIMPLES"],
-      ["quando", "method", 2625, 2625, "PECA_SIMPLES"],
-      ["quando", "method", 2628, 2628, "PECA_SIMPLES"],
-      ["quando", "method", 2630, 2630, "PECA_SIMPLES"],
-      ["quando", "method", 2631, 2631, "PECA_SIMPLES"],
-      ["quando", "method", 2632, 2632, "PECA_SIMPLES"],
-      ["quando", "method", 2633, 2633, "PECA_SIMPLES"],
-      ["quando", "method", 2634, 2634, "PECA_SIMPLES"],
-      ["quando", "method", 2635, 2635, "PECA_SIMPLES"],
-      ["quando", "method", 2637, 2637, "PECA_SIMPLES"],
-      ["nomeAuto", "method", 2638, 2638, "PECA_SIMPLES"],
-      ["derivados", "method", 2639, 2644, "PECA_SIMPLES"],
-      ["soma", "method", 2640, 2640, "derivados"],
-      ["gerar", "method", 2646, 2706, "PECA_SIMPLES"],
-      ["mk", "method", 2673, 2673, "gerar"],
-      ["bi1", "method", 2674, 2674, "gerar"],
-      ["psBase", "function", 2714, 2717, ""],
-      ["b", "object", 2715, 2715, "psBase"],
-      ["usinDe", "function", 2718, 2718, ""],
-      ["TIPO_L_OPC", "object", 2719, 2719, ""],
-      ["PORTA_MATRIZ", "object", 2720, 2808, ""],
-      ["nomeAuto", "method", 2752, 2752, "PORTA_MATRIZ"],
-      ["derivados", "method", 2753, 2753, "PORTA_MATRIZ"],
-      ["gerar", "method", 2754, 2807, "PORTA_MATRIZ"],
-      ["ALIMENTADOR", "object", 2813, 2875, ""],
-      ["nomeAuto", "method", 2843, 2843, "ALIMENTADOR"],
-      ["derivados", "method", 2844, 2844, "ALIMENTADOR"],
-      ["gerar", "method", 2845, 2874, "ALIMENTADOR"],
-      ["dFuroOk", "function", 2876, 2876, ""],
-      ["BA_PADRAO", "object", 2880, 2880, ""],
-      ["nomeAuto", "method", 2891, 2891, ""],
-      ["gerar", "method", 2892, 2896, ""],
-      ["GERADORES", "object", 2899, 2899, ""],
-      ["INTERNOS", "object", 2901, 2901, ""],
-      ["PLANEJADOS", "object", 2904, 2905, ""]
-    ]},
-    "Gerador/desenho.js": {"lang": "js", "linhas": 438, "simbolos": [
-      ["$", "method", 5, 5, ""],
-      ["$$", "method", 6, 6, ""],
-      ["esc", "function", 7, 7, ""],
-      ["clone", "method", 8, 8, ""],
-      ["uid", "function", 9, 9, ""],
-      ["load", "function", 10, 10, ""],
-      ["save", "function", 11, 11, ""],
-      ["campo", "method", 14, 14, ""],
-      ["FM", "object", 15, 15, ""],
-      ["LISTAS", "object", 16, 16, ""],
-      ["tk", "function", 20, 20, ""],
-      ["dH", "function", 21, 21, ""],
-      ["dV", "function", 22, 22, ""],
-      ["ld", "method", 23, 23, ""],
-      ["cav", "method", 25, 25, ""],
-      ["DW", "object", 26, 37, ""],
-      ["cil", "method", 27, 27, "DW"],
-      ["cone", "method", 28, 28, "DW"],
-      ["canal", "method", 29, 29, "DW"],
-      ["canalz", "method", 30, 30, "DW"],
-      ["rosca", "method", 31, 31, "DW"],
-      ["furo", "method", 32, 32, "DW"],
-      ["icil", "method", 33, 33, "DW"],
-      ["icone", "method", 34, 34, "DW"],
-      ["irosca", "method", 35, 35, "DW"],
-      ["icanal", "method", 36, 36, "DW"],
-      ["IC", "object", 39, 53, ""],
-      ["EL", "object", 55, 70, ""],
-      ["LET", "object", 71, 71, ""],
-      ["rotulos", "method", 72, 72, ""],
-      ["chaves", "method", 73, 73, ""],
-      ["tipoEl", "method", 74, 74, ""],
-      ["resumo", "function", 75, 88, ""],
-      ["rotCanto", "function", 89, 92, ""],
-      ["norm", "function", 95, 99, ""],
-      ["vazio", "function", 100, 100, ""],
-      ["seed", "function", 101, 113, ""],
-      ["d", "object", 102, 102, "seed"],
-      ["ui", "object", 120, 120, ""],
-      ["persistWork", "function", 121, 121, ""],
-      ["strip", "function", 122, 122, ""],
-      ["salvoDe", "function", 123, 123, ""],
-      ["sujo", "function", 124, 124, ""],
-      ["avisaMudou", "function", 125, 125, ""],
-      ["seedTool", "method", 128, 128, ""],
-      ["dRefEfetivo", "function", 129, 141, ""],
-      ["buildF", "function", 142, 154, ""],
-      ["f", "object", 143, 143, "buildF"],
-      ["rodar", "function", 155, 167, ""],
-      ["cantosDe", "function", 168, 173, ""],
-      ["lista_", "method", 174, 174, ""],
-      ["seg", "function", 177, 180, ""],
-      ["b.onclick", "method", 179, 179, "seg"],
-      ["pal", "function", 181, 187, ""],
-      ["b.onclick", "method", 186, 186, "pal"],
-      ["cabecalho", "function", 188, 202, ""],
-      ["listas", "function", 203, 227, ""],
-      ["row.onclick", "method", 218, 225, "listas"],
-      ["grafico", "function", 228, 235, ""],
-      ["tela", "function", 236, 243, ""],
-      ["mudou", "function", 244, 244, ""],
-      ["abrirId", "function", 247, 250, ""],
-      ["confirmaDescartar", "function", 251, 251, ""],
-      ["onchange", "method", 252, 252, ""],
-      ["onclick", "method", 253, 253, ""],
-      ["oninput", "method", 254, 254, ""],
-      ["oninput", "method", 255, 255, ""],
-      ["oninput", "method", 256, 256, ""],
-      ["salvar", "function", 257, 265, ""],
-      ["onclick", "method", 267, 270, ""],
-      ["onclick", "method", 271, 275, ""],
-      ["onclick", "method", 276, 279, ""],
-      ["onclick", "method", 280, 280, ""],
-      ["onchange", "method", 281, 301, ""],
-      ["rd.onload", "method", 284, 299, "onchange"],
-      ["inicial", "function", 305, 316, ""],
-      ["n", "method", 306, 306, "inicial"],
-      ["comItem", "function", 317, 321, ""],
-      ["semItem", "function", 322, 326, ""],
-      ["cursorZ", "function", 328, 336, ""],
-      ["n", "method", 331, 331, "cursorZ"],
-      ["desenhoDlg", "function", 337, 346, ""],
-      ["i.oninput", "method", 345, 345, "desenhoDlg"],
-      ["miniPv", "function", 347, 351, ""],
-      ["pickDlg", "function", 353, 379, ""],
-      ["marca", "function", 370, 370, "pickDlg"],
-      ["m.onclick", "method", 374, 374, "pickDlg"],
-      ["m.onkeydown", "method", 375, 375, "pickDlg"],
-      ["r.onchange", "method", 377, 377, "pickDlg"],
-      ["oninput", "method", 378, 378, "pickDlg"],
-      ["novosErros", "function", 381, 384, ""],
-      ["pickErro", "function", 385, 388, ""],
-      ["abre", "function", 389, 403, ""],
-      ["onclick", "method", 404, 404, ""],
-      ["onsubmit", "method", 405, 416, ""],
-      ["api", "object", 419, 434, ""],
-      ["lista", "method", 420, 420, "api"],
-      ["obter", "method", 421, 421, "api"],
-      ["abrir", "method", 422, 422, "api"],
-      ["novo", "method", 423, 423, "api"],
-      ["mostrar", "method", 424, 424, "api"],
-      ["sujoId", "method", 425, 425, "api"],
-      ["aoSair", "method", 427, 432, "api"]
-    ]},
-    "Gerador/diagnostico.js": {"lang": "js", "linhas": 487, "simbolos": [
-      ["CAT", "object", 15, 185, ""],
-      ["REGRAS", "object", 188, 229, ""],
-      ["classifica", "function", 230, 233, ""],
-      ["codAlerta", "function", 236, 246, ""],
-      ["deAlerta", "function", 247, 247, ""],
-      ["varre", "function", 250, 261, ""],
-      ["palavras", "function", 263, 281, ""],
-      ["out", "object", 264, 264, "palavras"],
-      ["GRUPOS", "object", 282, 282, ""],
-      ["lint", "function", 284, 354, ""],
-      ["temN", "object", 286, 286, "lint"],
-      ["oProg", "object", 288, 288, "lint"],
-      ["add", "function", 294, 294, "lint"],
-      ["cont", "object", 329, 329, "lint"],
-      ["acharFim", "function", 358, 362, ""],
-      ["fixPara", "function", 363, 391, ""],
-      ["aplicarLinha", "function", 392, 399, ""],
-      ["ORDEM_OP", "object", 400, 400, ""],
-      ["aplicar", "function", 401, 411, ""],
-      ["ORDEM_SEV", "object", 414, 414, ""],
-      ["diagnosticar", "function", 416, 437, ""],
-      ["lista", "object", 418, 418, "diagnosticar"],
-      ["add", "function", 419, 427, "diagnosticar"],
-      ["resumo", "function", 438, 442, ""],
-      ["r", "object", 439, 439, "resumo"],
-      ["fixesExatos", "function", 443, 443, ""],
-      ["analisarTexto", "function", 446, 449, ""],
-      ["esc", "function", 452, 452, ""],
-      ["ROTULO", "object", 453, 453, ""],
-      ["listaHtml", "function", 454, 454, ""],
-      ["corpo", "function", 456, 466, ""],
-      ["html", "function", 467, 477, ""],
-      ["htmlAlerta", "function", 479, 482, ""]
-    ]},
-    "Gerador/index.html": {"lang": "html", "linhas": 424, "simbolos": [
-      ["style.css", "css", 8, 8, ""],
-      ["#loginForm", "form", 12, 12, ""],
-      ["GERADOR", "secao", 45, 45, ""],
-      ["#view-gerador", "section", 46, 46, ""],
-      ["DESENHO DA PEÇA", "secao", 171, 171, ""],
-      ["#view-desenho", "section", 172, 172, ""],
-      ["SIMULAÇÃO (programa colado)", "secao", 217, 217, ""],
-      ["#view-sim", "section", 218, 218, ""],
-      ["CONFIGURAÇÕES", "secao", 306, 306, ""],
-      ["#view-cfg", "section", 307, 307, ""],
-      ["FERRAMENTAS", "secao", 337, 337, ""],
-      ["#view-ferr", "section", 338, 338, ""],
-      ["#dlgFerr", "dialog", 355, 355, ""],
-      ["#frmFerr", "form", 356, 356, ""],
-      ["#dlgEl", "dialog", 394, 394, ""],
-      ["#frmEl", "form", 395, 395, ""],
-      ["version.js", "script", 410, 410, ""],
-      ["core.js", "script", 411, 411, ""],
-      ["sim.js", "script", 412, 412, ""],
-      ["progsim.js", "script", 413, 413, ""],
-      ["diagnostico.js", "script", 414, 414, ""],
-      ["seed.js", "script", 415, 415, ""],
-      ["simview.js", "script", 416, 416, ""],
-      ["progview.js", "script", 417, 417, ""],
-      ["pecaview.js", "script", 418, 418, ""],
-      ["desenho.js", "script", 419, 419, ""],
-      ["app.js", "script", 420, 420, ""],
-      ["acesso.js", "script", 421, 421, ""]
-    ]},
-    "Gerador/pecaview.js": {"lang": "js", "linhas": 49, "simbolos": [
-      ["esc", "function", 5, 5, ""],
-      ["previewSvg", "function", 7, 46, ""],
-      ["X", "method", 17, 17, "previewSvg"],
-      ["Y", "method", 17, 17, "X"]
-    ]},
-    "Gerador/progsim.js": {"lang": "js", "linhas": 963, "simbolos": [
-      ["tcode", "function", 13, 13, ""],
-      ["ErroLeitura", "function", 14, 14, ""],
-      ["numTxt", "function", 18, 21, ""],
-      ["decPalavra", "function", 23, 26, ""],
-      ["limpa", "function", 30, 44, ""],
-      ["com", "object", 31, 31, "limpa"],
-      ["prepara", "function", 45, 65, ""],
-      ["arcoPontos", "function", 69, 76, ""],
-      ["centroPorR", "function", 78, 83, ""],
-      ["sinal", "function", 84, 84, ""],
-      ["interpretar", "function", 87, 794, ""],
-      ["V", "object", 93, 93, "interpretar"],
-      ["aviso", "function", 97, 101, "interpretar"],
-      ["dica", "function", 102, 106, "interpretar"],
-      ["erro", "function", 107, 107, "interpretar"],
-      ["falha", "function", 108, 108, "interpretar"],
-      ["ch", "function", 112, 112, "interpretar"],
-      ["inicio", "function", 113, 113, "interpretar"],
-      ["lerVar", "function", 114, 122, "interpretar"],
-      ["indice", "function", 123, 130, "interpretar"],
-      ["funcao", "function", 131, 156, "interpretar"],
-      ["primario", "function", 157, 169, "interpretar"],
-      ["unario", "function", 170, 175, "interpretar"],
-      ["mul", "function", 176, 185, "interpretar"],
-      ["soma", "function", 186, 195, "interpretar"],
-      ["expr", "function", 196, 211, "interpretar"],
-      ["atribuicoes", "function", 213, 225, "interpretar"],
-      ["palavras", "function", 226, 241, "interpretar"],
-      ["st", "object", 244, 245, "interpretar"],
-      ["snapshot", "function", 247, 247, "interpretar"],
-      ["restaura", "function", 248, 248, "interpretar"],
-      ["spin", "function", 249, 252, "interpretar"],
-      ["rpmDe", "function", 253, 257, "interpretar"],
-      ["fichaFerr", "function", 258, 269, "interpretar"],
-      ["trocaFerramenta", "function", 270, 278, "interpretar"],
-      ["emite", "function", 281, 304, "interpretar"],
-      ["rapido", "function", 305, 305, "interpretar"],
-      ["avanco", "function", 306, 309, "interpretar"],
-      ["fRev", "function", 310, 318, "interpretar"],
-      ["checaS", "function", 319, 322, "interpretar"],
-      ["alvo", "function", 324, 334, "interpretar"],
-      ["temCoord", "function", 335, 335, "interpretar"],
-      ["mover", "function", 337, 356, "interpretar"],
-      ["acha", "function", 359, 364, "interpretar"],
-      ["capturaPerfil", "function", 365, 370, "interpretar"],
-      ["checaContorno", "function", 372, 376, "interpretar"],
-      ["nota", "function", 377, 377, "interpretar"],
-      ["ciclo71", "function", 379, 448, "interpretar"],
-      ["ciclo70", "function", 450, 461, "interpretar"],
-      ["ciclo73", "function", 463, 486, "interpretar"],
-      ["ciclo74", "function", 488, 511, "interpretar"],
-      ["ciclo75", "function", 513, 542, "interpretar"],
-      ["ciclo76", "function", 544, 570, "interpretar"],
-      ["ciclo83", "function", 572, 594, "interpretar"],
-      ["retorno", "function", 596, 605, "interpretar"],
-      ["execSimples", "function", 609, 720, "interpretar"],
-      ["alvoDesvio", "function", 723, 727, "interpretar"],
-      ["bloco", "function", 728, 767, "interpretar"],
-      ["sugereTipo", "function", 797, 805, ""],
-      ["sugestoes", "function", 806, 821, ""],
-      ["num", "method", 814, 814, "sugestoes"],
-      ["narizDe", "function", 828, 832, ""],
-      ["segComp", "function", 833, 838, ""],
-      ["d", "object", 836, 836, "segComp"],
-      ["compTrecho", "function", 839, 870, ""],
-      ["vai", "function", 841, 846, "compTrecho"],
-      ["desloca", "function", 847, 847, "compTrecho"],
-      ["compensar", "function", 872, 900, ""],
-      ["out", "object", 874, 874, "compensar"],
-      ["avisa", "function", 875, 875, "compensar"],
-      ["kindDe", "function", 904, 913, ""],
-      ["formaFerr", "function", 914, 917, ""],
-      ["montarCena", "function", 919, 943, ""],
-      ["pos", "method", 923, 923, "montarCena"],
-      ["bruto", "object", 926, 926, "montarCena"],
-      ["tools", "object", 928, 928, "montarCena"],
-      ["comCompensacao", "function", 947, 950, ""],
-      ["comDecodificado", "function", 954, 959, ""]
-    ]},
-    "Gerador/progview.js": {"lang": "js", "linhas": 343, "simbolos": [
-      ["$", "method", 5, 5, ""],
-      ["$$", "method", 6, 6, ""],
-      ["esc", "function", 7, 7, ""],
-      ["fx", "function", 8, 8, ""],
-      ["st", "object", 12, 12, ""],
-      ["EXEMPLO", "object", 14, 59, ""],
-      ["load", "function", 62, 72, ""],
-      ["save", "function", 73, 73, ""],
-      ["tcode", "function", 76, 76, ""],
-      ["escolhida", "function", 77, 85, ""],
-      ["ORIENT", "object", 86, 89, ""],
-      ["orientDe", "function", 90, 95, ""],
-      ["TIPOS", "object", 96, 96, ""],
-      ["rotuloTool", "function", 97, 97, ""],
-      ["legendaForma", "function", 100, 112, ""],
-      ["rect", "function", 114, 114, ""],
-      ["espelhaR", "function", 115, 115, ""],
-      ["pecasFerr", "function", 116, 152, ""],
-      ["rot", "method", 143, 143, "pecasFerr"],
-      ["sh", "method", 146, 146, "pecasFerr"],
-      ["svgFerr", "function", 153, 171, ""],
-      ["X", "function", 158, 158, "svgFerr"],
-      ["Y", "function", 159, 159, "svgFerr"],
-      ["poly", "function", 160, 160, "svgFerr"],
-      ["ler", "function", 174, 185, ""],
-      ["assinatura", "function", 186, 186, ""],
-      ["agenda", "function", 187, 187, ""],
-      ["linhasUteis", "function", 189, 189, ""],
-      ["avisosComp", "object", 190, 190, ""],
-      ["diagLista", "object", 191, 191, ""],
-      ["renderMsgs", "function", 192, 209, ""],
-      ["pl", "method", 197, 197, "renderMsgs"],
-      ["el.onclick", "method", 205, 205, "renderMsgs"],
-      ["b.onclick", "method", 206, 206, "renderMsgs"],
-      ["onclick", "method", 207, 207, "renderMsgs"],
-      ["onclick", "method", 208, 208, "renderMsgs"],
-      ["aplicarFixes", "function", 210, 216, ""],
-      ["irParaLinha", "function", 217, 223, ""],
-      ["infoPrograma", "function", 226, 231, ""],
-      ["infoBanco", "function", 232, 235, ""],
-      ["renderFerr", "function", 236, 269, ""],
-      ["opt", "method", 243, 243, "renderFerr"],
-      ["s.onchange", "method", 263, 267, "renderFerr"],
-      ["renderBruto", "function", 272, 280, ""],
-      ["ph", "method", 273, 273, "renderBruto"],
-      ["simular", "function", 283, 294, ""],
-      ["cfg", "object", 287, 287, "simular"],
-      ["lerArquivo", "function", 297, 305, ""],
-      ["rd.onload", "method", 299, 303, "lerArquivo"],
-      ["nota", "function", 306, 306, ""],
-      ["init", "function", 308, 332, ""],
-      ["el.oninput", "method", 314, 314, "init"],
-      ["onclick", "method", 316, 316, "init"],
-      ["onclick", "method", 319, 323, "init"],
-      ["onclick", "method", 324, 324, "init"],
-      ["onchange", "method", 325, 325, "init"],
-      ["onclick", "method", 326, 326, "init"],
-      ["onclick", "method", 327, 330, "init"],
-      ["mostrar", "function", 333, 338, ""],
-      ["ocultar", "function", 339, 339, ""],
-      ["redraw", "method", 341, 341, ""],
-      ["window.ProgView", "global", 341, 341, "redraw"]
-    ]},
-    "Gerador/seed.js": {"lang": "js", "linhas": 23, "simbolos": [
-      ["window.CNC_SEED_TOOLS", "global", 4, 22, ""]
-    ]},
-    "Gerador/serve.js": {"lang": "js", "linhas": 14, "simbolos": [
-      ["types", "object", 5, 5, ""]
-    ]},
-    "Gerador/sim.js": {"lang": "js", "linhas": 341, "simbolos": [
-      ["toolShape", "function", 13, 76, ""],
-      ["pts", "object", 14, 14, "toolShape"],
-      ["u1", "object", 40, 40, "toolShape"],
-      ["E1", "object", 41, 41, "toolShape"],
-      ["far", "object", 42, 42, "toolShape"],
-      ["edges", "object", 68, 68, "toolShape"],
-      ["insideShape", "function", 77, 84, ""],
-      ["inPoly", "function", 85, 92, ""],
-      ["distPoly", "function", 94, 103, ""],
-      ["Sim", "function", 106, 185, ""],
-      ["rAt", "function", 114, 124, "Sim"],
-      ["emLista", "function", 142, 142, "Sim"],
-      ["distLista", "function", 143, 143, "Sim"],
-      ["pos", "object", 162, 162, "Sim"],
-      ["groups", "object", 177, 177, "Sim"],
-      ["Sim.prototype.rpmAt", "method", 187, 192, ""],
-      ["Sim.prototype.reset", "method", 194, 197, ""],
-      ["Sim.prototype.posAt", "method", 199, 209, ""],
-      ["Sim.prototype._walk", "method", 212, 226, ""],
-      ["Sim.prototype._stamp", "method", 229, 247, ""],
-      ["Sim.prototype.seek", "method", 250, 259, ""],
-      ["Sim.prototype.state", "method", 261, 264, ""],
-      ["Sim.prototype.analyze", "method", 267, 328, ""],
-      ["add", "function", 272, 278, "Sim.prototype.analyze"],
-      ["info", "object", 282, 282, "Sim.prototype.analyze"],
-      ["stack", "object", 304, 304, "Sim.prototype.analyze"],
-      ["fx", "function", 329, 329, ""],
-      ["Sim.prototype.toolPoly", "method", 331, 334, ""]
-    ]},
-    "Gerador/simview.js": {"lang": "js", "linhas": 355, "simbolos": [
-      ["$", "method", 4, 4, ""],
-      ["create", "function", 5, 351, ""],
-      ["ID", "function", 6, 6, "create"],
-      ["esc", "function", 7, 7, "create"],
-      ["fx", "function", 8, 8, "create"],
-      ["mmss", "function", 9, 9, "create"],
-      ["view", "object", 12, 12, "create"],
-      ["st", "object", 13, 13, "create"],
-      ["cols", "object", 15, 15, "create"],
-      ["readCols", "function", 17, 22, "create"],
-      ["build", "function", 25, 36, "create"],
-      ["setResult", "function", 38, 43, "create"],
-      ["show", "function", 44, 44, "create"],
-      ["hide", "function", 45, 45, "create"],
-      ["resize", "function", 48, 54, "create"],
-      ["fit", "function", 55, 62, "create"],
-      ["fitProfile", "function", 63, 69, "create"],
-      ["sx", "function", 70, 70, "create"],
-      ["sy", "function", 71, 71, "create"],
-      ["draw", "function", 74, 176, "create"],
-      ["rgb", "function", 177, 181, "create"],
-      ["updateReadout", "function", 184, 193, "create"],
-      ["mostraDec", "function", 196, 205, "create"],
-      ["highlightLine", "function", 206, 216, "create"],
-      ["renderSide", "function", 217, 252, "create"],
-      ["b.onclick", "method", 233, 233, "renderSide"],
-      ["el.onclick", "method", 240, 245, "renderSide"],
-      ["tituloAlerta", "function", 253, 255, "create"],
-      ["updateControls", "function", 256, 260, "create"],
-      ["seek", "function", 263, 266, "create"],
-      ["tick", "function", 267, 274, "create"],
-      ["play", "function", 275, 280, "create"],
-      ["pause", "function", 281, 281, "create"],
-      ["stepSeg", "function", 283, 289, "create"],
-      ["stepLine", "function", 290, 298, "create"],
-      ["init", "function", 301, 348, "create"],
-      ["onclick", "method", 303, 303, "init"],
-      ["onclick", "method", 304, 304, "init"],
-      ["onclick", "method", 305, 305, "init"],
-      ["onclick", "method", 306, 306, "init"],
-      ["onclick", "method", 307, 307, "init"],
-      ["onclick", "method", 308, 308, "init"],
-      ["onchange", "method", 309, 309, "init"],
-      ["oninput", "method", 310, 310, "init"],
-      ["onchange", "method", 311, 311, "init"],
-      ["onchange", "method", 312, 312, "init"],
-      ["onchange", "method", 313, 313, "init"],
-      ["onclick", "method", 314, 314, "init"],
-      ["onclick", "method", 315, 315, "init"],
-      ["onclick", "method", 316, 321, "init"],
-      ["setAviso", "method", 350, 350, "create"],
-      ["redraw", "method", 350, 350, "setAviso"]
-    ]},
-    "Gerador/style.css": {"lang": "css", "linhas": 403, "simbolos": [
-      ["estrutura: menu lateral (abaixo do logo) + conteudo. Em telas largas a pagina nao rola: o ", "secao", 51, 51, ""],
-      ["explicacoes (dicas): escondidas; o \"i\" ao lado do nome abre uma, e Configuracoes pode most", "secao", 101, 101, ""],
-      ["entrada e acesso por usuario (v2.3.0)", "secao", 125, 125, ""],
-      ["simulador", "secao", 160, 160, ""],
-      ["faixa \"programa decodificado\" sob o codigo (modulo Simulacao, v2.4.0)", "secao", 183, 183, ""],
-      ["diagnostico do programa (diagnostico.js): erro / aviso / dica com causa e solucao", "secao", 194, 194, ""],
-      ["seletor de lado (peças de dois lados)", "secao", 225, 225, ""],
-      ["lista de trechos (peça simples)", "secao", 231, 231, ""],
-      ["incrementos de corte", "secao", 280, 280, ""],
-      ["desenho com caixas de digitação nas letras", "secao", 288, 288, ""],
-      ["desenho da peca (elementos, lista, janela com cotas)", "secao", 302, 302, ""],
-      ["escolha do canto no desenho", "secao", 349, 349, ""],
-      ["desenho grande do porta-matriz (viewBox 560x440): caixas menores em relacao ao desenho", "secao", 367, 367, ""],
-      ["modulo Simulacao (programa colado)", "secao", 374, 374, ""]
-    ]},
-    "Gerador/test.js": {"lang": "js", "linhas": 269, "simbolos": [
-      ["t1", "object", 2, 2, ""],
-      ["t2", "object", 3, 3, ""],
-      ["fs", "object", 4, 4, ""],
-      ["ft", "object", 5, 5, ""],
-      ["fc", "object", 6, 6, ""],
-      ["fe", "object", 7, 7, ""],
-      ["acab", "object", 8, 8, ""],
-      ["run", "function", 10, 19, ""],
-      ["vars", "function", 20, 23, ""],
-      ["chk", "function", 24, 24, ""],
-      ["fesp", "object", 43, 43, ""],
-      ["ps", "arrow", 59, 59, ""],
-      ["t3", "object", 79, 79, ""],
-      ["t4", "object", 80, 80, ""],
-      ["trE", "object", 81, 81, ""],
-      ["big", "arrow", 82, 82, ""],
-      ["intA", "object", 83, 83, ""],
-      ["bI", "arrow", 121, 121, ""],
-      ["mandA", "object", 122, 122, ""],
-      ["M", "object", 141, 141, ""],
-      ["mig", "arrow", 142, 142, ""],
-      ["igual", "arrow", 143, 143, ""],
-      ["L", "object", 149, 149, ""],
-      ["I", "object", 158, 158, ""],
-      ["furo", "object", 160, 160, ""],
-      ["M", "object", 168, 168, ""],
-      ["cod", "arrow", 169, 169, ""],
-      ["norm", "arrow", 187, 187, ""],
-      ["furo", "object", 225, 225, ""],
-      ["ci", "arrow", 226, 226, ""],
-      ["re", "object", 246, 246, ""],
-      ["ri", "object", 251, 251, ""]
-    ]},
-    "Gerador/testdiag.js": {"lang": "js", "linhas": 278, "simbolos": [
-      ["ok", "function", 6, 6, ""],
-      ["cob", "object", 8, 8, ""],
-      ["diag", "arrow", 9, 9, ""],
-      ["tem", "function", 10, 15, ""],
-      ["nao", "function", 16, 16, ""],
-      ["ciclo", "arrow", 108, 108, ""],
-      ["rosca", "arrow", 129, 129, ""],
-      ["alerta", "arrow", 159, 159, ""],
-      ["casos", "object", 160, 162, ""],
-      ["prog", "object", 185, 185, ""],
-      ["walk", "arrow", 213, 213, ""],
-      ["permitidos", "object", 214, 214, ""],
-      ["t1", "object", 227, 227, ""],
-      ["t2", "object", 228, 228, ""],
-      ["t4", "object", 229, 229, ""],
-      ["t3", "object", 230, 230, ""],
-      ["t6", "object", 231, 231, ""],
-      ["acab", "object", 232, 232, ""],
-      ["trE", "object", 234, 234, ""],
-      ["big", "arrow", 235, 235, ""],
-      ["intA", "object", 236, 236, ""],
-      ["casos", "object", 237, 248, ""]
-    ]},
-    "Gerador/testprog.js": {"lang": "js", "linhas": 393, "simbolos": [
-      ["ok", "function", 5, 5, ""],
-      ["near", "arrow", 6, 6, ""],
-      ["run", "arrow", 8, 8, ""],
-      ["fim", "arrow", 9, 9, ""],
-      ["sobra", "function", 11, 11, ""],
-      ["simula", "function", 12, 12, ""],
-      ["t", "object", 104, 104, ""],
-      ["walk", "arrow", 129, 129, ""],
-      ["t1", "object", 143, 143, ""],
-      ["t2", "object", 144, 144, ""],
-      ["t4", "object", 145, 145, ""],
-      ["t3", "object", 146, 146, ""],
-      ["t6", "object", 147, 147, ""],
-      ["acab", "object", 148, 148, ""],
-      ["trE", "object", 150, 150, ""],
-      ["big", "arrow", 151, 151, ""],
-      ["intA", "object", 152, 152, ""],
-      ["casos", "object", 153, 169, ""],
-      ["gk", "object", 175, 175, ""],
-      ["tm", "object", 176, 176, ""],
-      ["al", "arrow", 185, 185, ""],
-      ["prog", "arrow", 216, 216, ""],
-      ["ferrR", "arrow", 246, 246, ""],
-      ["ref", "arrow", 247, 247, ""],
-      ["cone", "arrow", 276, 276, ""],
-      ["dev", "arrow", 277, 283, ""],
-      ["desvio", "arrow", 305, 312, ""],
-      ["base", "object", 313, 313, ""],
-      ["t1", "object", 328, 328, ""],
-      ["le", "arrow", 346, 346, ""],
-      ["ini", "object", 353, 353, ""],
-      ["foto", "object", 373, 374, ""]
-    ]},
-    "Gerador/version.js": {"lang": "js", "linhas": 2, "simbolos": []},
-    "Gerador/versionar.js": {"lang": "js", "linhas": 20, "simbolos": [
-      ["copia", "function", 10, 17, ""]
-    ]}
+    "CLAUDE.md": {
+      "lang": "md",
+      "linhas": 52,
+      "simbolos": [
+        [
+          "Gerador CNC parametrizado (Fanuc) — Torno ML-600L — Alumasa",
+          "h1",
+          1,
+          35,
+          ""
+        ],
+        [
+          "O que é",
+          "h2",
+          5,
+          7,
+          ""
+        ],
+        [
+          "Estado atual",
+          "h2",
+          8,
+          18,
+          ""
+        ],
+        [
+          "Estrutura (pasta `Gerador/`)",
+          "h2",
+          19,
+          22,
+          ""
+        ],
+        [
+          "Como rodar",
+          "h2",
+          23,
+          27,
+          ""
+        ],
+        [
+          "Regras de trabalho (decididas pelo usuário)",
+          "h2",
+          28,
+          34,
+          ""
+        ],
+        [
+          "Formato das respostas e padrão CNC (instruções do usuário, valem em toda sessão)",
+          "h2",
+          35,
+          35,
+          ""
+        ],
+        [
+          "Output Guidelines",
+          "h1",
+          36,
+          52,
+          ""
+        ],
+        [
+          "Pendências",
+          "h2",
+          42,
+          46,
+          ""
+        ],
+        [
+          "Índice do código (economia de tokens)",
+          "h2",
+          47,
+          52,
+          ""
+        ]
+      ]
+    },
+    "indexer.py": {
+      "lang": "py",
+      "linhas": 406,
+      "simbolos": [
+        [
+          "RAIZ",
+          "const",
+          22,
+          22,
+          ""
+        ],
+        [
+          "SAIDA",
+          "const",
+          23,
+          23,
+          ""
+        ],
+        [
+          "IGNORAR_DIRS",
+          "const",
+          24,
+          27,
+          ""
+        ],
+        [
+          "IGNORAR_ARQ",
+          "const",
+          28,
+          28,
+          ""
+        ],
+        [
+          "EXT",
+          "const",
+          29,
+          29,
+          ""
+        ],
+        [
+          "MAX_PROF_JS",
+          "const",
+          30,
+          30,
+          ""
+        ],
+        [
+          "MAX_MD_LINHAS",
+          "const",
+          31,
+          31,
+          ""
+        ],
+        [
+          "le",
+          "function",
+          34,
+          42,
+          ""
+        ],
+        [
+          "mascara_js",
+          "function",
+          46,
+          117,
+          ""
+        ],
+        [
+          "apaga",
+          "function",
+          51,
+          54,
+          "mascara_js"
+        ],
+        [
+          "fecha",
+          "function",
+          120,
+          133,
+          ""
+        ],
+        [
+          "ID",
+          "const",
+          136,
+          136,
+          ""
+        ],
+        [
+          "PADROES_JS",
+          "const",
+          137,
+          144,
+          ""
+        ],
+        [
+          "CURTO",
+          "const",
+          146,
+          146,
+          ""
+        ],
+        [
+          "PALAVRAS",
+          "const",
+          147,
+          147,
+          ""
+        ],
+        [
+          "indexa_js",
+          "function",
+          150,
+          249,
+          ""
+        ],
+        [
+          "lin",
+          "function",
+          158,
+          159,
+          "indexa_js"
+        ],
+        [
+          "add",
+          "function",
+          162,
+          167,
+          "indexa_js"
+        ],
+        [
+          "indexa_py",
+          "function",
+          253,
+          275,
+          ""
+        ],
+        [
+          "visita",
+          "function",
+          260,
+          271,
+          "indexa_py"
+        ],
+        [
+          "indexa_html",
+          "function",
+          279,
+          293,
+          ""
+        ],
+        [
+          "indexa_css",
+          "function",
+          296,
+          302,
+          ""
+        ],
+        [
+          "indexa_md",
+          "function",
+          305,
+          324,
+          ""
+        ],
+        [
+          "INDEXADORES",
+          "const",
+          327,
+          327,
+          ""
+        ],
+        [
+          "varre",
+          "function",
+          330,
+          348,
+          ""
+        ],
+        [
+          "formata",
+          "function",
+          351,
+          376,
+          ""
+        ],
+        [
+          "sem_data",
+          "function",
+          379,
+          380,
+          ""
+        ],
+        [
+          "main",
+          "function",
+          383,
+          401,
+          ""
+        ]
+      ]
+    },
+    "Gerador/CHANGELOG.md": {
+      "lang": "md",
+      "linhas": 193,
+      "simbolos": [
+        [
+          "Histórico de versões — Gerador CNC Torno",
+          "h1",
+          1,
+          193,
+          ""
+        ],
+        [
+          "2.10.0 — 11/10/2026 — Escala proporcional, edição sobre cotas e seleção de vista no PDF",
+          "h2",
+          11,
+          20,
+          ""
+        ],
+        [
+          "2.9.0 — 11/10/2026 — Projeção CNC de PDF, confirmação e salvamento direto (branch isolada)",
+          "h2",
+          21,
+          30,
+          ""
+        ],
+        [
+          "2.8.0 — 11/10/2026 — Importação assistida de desenho PDF (branch isolada)",
+          "h2",
+          31,
+          41,
+          ""
+        ],
+        [
+          "2.7.1 — 09/10/2026 — Leitor entende o modo ISO do Siemens 802D sl (G291, G290 e G92 S)",
+          "h2",
+          42,
+          49,
+          ""
+        ],
+        [
+          "2.7.0 — 09/10/2026 — Diagnóstico de erros do programa, com causa e solução para cada tipo",
+          "h2",
+          50,
+          59,
+          ""
+        ],
+        [
+          "2.6.0 — 09/10/2026 — Gerador gera G73 e G41/G42 + ângulo do suporte no banco de ferramenta",
+          "h2",
+          60,
+          67,
+          ""
+        ],
+        [
+          "2.5.0 — 09/10/2026 — programa decodificado também no Gerador + programas do COPO BRUTO P2/",
+          "h2",
+          68,
+          74,
+          ""
+        ],
+        [
+          "2.4.0 — 08/10/2026 — Simulação: programa decodificado, G73 e G41/G42",
+          "h2",
+          75,
+          83,
+          ""
+        ],
+        [
+          "2.3.0 — 08/10/2026 — acesso por usuário (tela de entrada)",
+          "h2",
+          84,
+          93,
+          ""
+        ],
+        [
+          "2.2.1 — 07/10/2026 — Simulação: janela em painel próprio e desenho com inserto e suporte",
+          "h2",
+          94,
+          97,
+          ""
+        ],
+        [
+          "2.2.0 — 07/10/2026 — módulo Simulação (programa pronto colado)",
+          "h2",
+          98,
+          106,
+          ""
+        ],
+        [
+          "2.1.2 — 06/10/2026 — desenho do porta-matriz maior e sem cruzamentos",
+          "h2",
+          107,
+          110,
+          ""
+        ],
+        [
+          "2.1.1 — 06/10/2026 — cota M no porta-matriz",
+          "h2",
+          111,
+          113,
+          ""
+        ],
+        [
+          "2.1.0 — 06/10/2026 — porta-matriz com desenho e 2 lados",
+          "h2",
+          114,
+          117,
+          ""
+        ],
+        [
+          "2.0.0 — 06/10/2026 — revisão final",
+          "h2",
+          118,
+          122,
+          ""
+        ],
+        [
+          "1.9.0 — 06/10/2026 — rosca externa e interna (G76)",
+          "h2",
+          123,
+          129,
+          ""
+        ],
+        [
+          "1.8.0 — 06/10/2026 — canal interno",
+          "h2",
+          130,
+          135,
+          ""
+        ],
+        [
+          "1.7.0 — 06/10/2026 — geometria Alimentador padrão",
+          "h2",
+          136,
+          140,
+          ""
+        ],
+        [
+          "1.6.0 — 06/10/2026 — geometria Porta-matriz",
+          "h2",
+          141,
+          146,
+          ""
+        ],
+        [
+          "1.5.0 — 06/10/2026 — geometria BA / BAT",
+          "h2",
+          147,
+          149,
+          ""
+        ],
+        [
+          "1.4.0 — 06/10/2026 — elementos em sequência (canal sequencial)",
+          "h2",
+          150,
+          155,
+          ""
+        ],
+        [
+          "1.3.1 — 06/10/2026 — correção: desenho não chegava ao Gerador",
+          "h2",
+          156,
+          161,
+          ""
+        ],
+        [
+          "1.3.0 — 06/10/2026 — operação “Desenho da peça”",
+          "h2",
+          162,
+          167,
+          ""
+        ],
+        [
+          "1.2.0 — 06/10/2026 — menu lateral, painéis independentes, tema Alumasa padrão, cantos esco",
+          "h2",
+          168,
+          175,
+          ""
+        ],
+        [
+          "1.1.0 — 05/10/2026 — cabeçalho fixo, Configurações, telas mais enxutas",
+          "h2",
+          176,
+          187,
+          ""
+        ],
+        [
+          "1.0.0 — ponto de partida (antes da rodada de 05/10/2026)",
+          "h2",
+          188,
+          193,
+          ""
+        ]
+      ]
+    },
+    "Gerador/LEIAME.md": {
+      "lang": "md",
+      "linhas": 241,
+      "simbolos": [
+        [
+          "Gerador CNC Torno",
+          "h1",
+          1,
+          241,
+          ""
+        ],
+        [
+          "PDF com escala geométrica proporcional (v2.10.0)",
+          "h2",
+          5,
+          14,
+          ""
+        ],
+        [
+          "Desenho a partir de PDF (v2.9.0)",
+          "h2",
+          15,
+          24,
+          ""
+        ],
+        [
+          "Fluxo",
+          "h2",
+          25,
+          30,
+          ""
+        ],
+        [
+          "Geometrias",
+          "h2",
+          31,
+          77,
+          ""
+        ],
+        [
+          "Peça simples (desenho salvo)",
+          "h3",
+          46,
+          77,
+          ""
+        ],
+        [
+          "O que usinar: externo, interno ou ambos",
+          "h4",
+          56,
+          60,
+          ""
+        ],
+        [
+          "Trechos internos (furo + mandrilamento)",
+          "h4",
+          61,
+          71,
+          ""
+        ],
+        [
+          "Bruto com furo existente (recolhido)",
+          "h4",
+          72,
+          77,
+          ""
+        ],
+        [
+          "Campos recolhidos (\"Raios e folgas\")",
+          "h2",
+          78,
+          80,
+          ""
+        ],
+        [
+          "Sentido do desbaste (longitudinal × transversal)",
+          "h2",
+          81,
+          100,
+          ""
+        ],
+        [
+          "Espina",
+          "h3",
+          92,
+          100,
+          ""
+        ],
+        [
+          "Fixação na placa (todas as geometrias)",
+          "h2",
+          101,
+          104,
+          ""
+        ],
+        [
+          "Banco de ferramentas",
+          "h2",
+          105,
+          108,
+          ""
+        ],
+        [
+          "Incrementos de corte (card 4)",
+          "h2",
+          109,
+          116,
+          ""
+        ],
+        [
+          "Simulador (corte 2D XZ, meia seção)",
+          "h2",
+          117,
+          126,
+          ""
+        ],
+        [
+          "Simulação de programa pronto (v2.2.0)",
+          "h2",
+          127,
+          142,
+          ""
+        ],
+        [
+          "Desbaste G73, compensação G41/G42 e ângulo do suporte (v2.6.0)",
+          "h2",
+          143,
+          147,
+          ""
+        ],
+        [
+          "Diagnóstico de erros do programa (v2.7.0)",
+          "h2",
+          148,
+          153,
+          ""
+        ],
+        [
+          "Comando Siemens 802D sl em modo ISO (v2.7.1)",
+          "h2",
+          154,
+          156,
+          ""
+        ],
+        [
+          "Desenvolvimento",
+          "h2",
+          157,
+          161,
+          ""
+        ],
+        [
+          "Tela e temas",
+          "h2",
+          162,
+          169,
+          ""
+        ],
+        [
+          "Raio zero",
+          "h2",
+          170,
+          172,
+          ""
+        ],
+        [
+          "Cabeçalho fixo, Configurações e explicações (v1.1.0)",
+          "h2",
+          173,
+          181,
+          ""
+        ],
+        [
+          "Desenho da peça (v1.3.0)",
+          "h2",
+          182,
+          190,
+          ""
+        ],
+        [
+          "Chanfro e raio em um canto escolhido (v1.2.0)",
+          "h2",
+          191,
+          199,
+          ""
+        ],
+        [
+          "Elementos em sequência (v1.4.0)",
+          "h2",
+          200,
+          206,
+          ""
+        ],
+        [
+          "Porta-matriz (v1.6.0, refeito em 2 lados na v2.1.0)",
+          "h2",
+          207,
+          214,
+          ""
+        ],
+        [
+          "Alimentador padrão (v1.7.0)",
+          "h2",
+          215,
+          223,
+          ""
+        ],
+        [
+          "Canal interno (v1.8.0)",
+          "h2",
+          224,
+          231,
+          ""
+        ],
+        [
+          "Rosca externa e interna (v1.9.0)",
+          "h2",
+          232,
+          241,
+          ""
+        ]
+      ]
+    },
+    "Gerador/VALIDAR-NA-MAQUINA.md": {
+      "lang": "md",
+      "linhas": 60,
+      "simbolos": [
+        [
+          "Itens para validar na máquina (ML-600L)",
+          "h1",
+          1,
+          60,
+          ""
+        ],
+        [
+          "Antes de qualquer programa novo",
+          "h2",
+          5,
+          10,
+          ""
+        ],
+        [
+          "Por geometria",
+          "h2",
+          11,
+          24,
+          ""
+        ],
+        [
+          "Módulo Simulação (programa colado) — suposições do leitor",
+          "h2",
+          25,
+          38,
+          ""
+        ],
+        [
+          "Diagnóstico de programa (2.7.0) — regras que seguem o padrão Fanuc, a conferir na máquina",
+          "h2",
+          39,
+          46,
+          ""
+        ],
+        [
+          "Comando Siemens 802D sl em modo ISO (2.7.1)",
+          "h2",
+          47,
+          51,
+          ""
+        ],
+        [
+          "O que o simulador não mostra",
+          "h2",
+          52,
+          55,
+          ""
+        ],
+        [
+          "Desenhos convertidos de PDF (2.10.0)",
+          "h2",
+          56,
+          60,
+          ""
+        ]
+      ]
+    },
+    "Gerador/acesso.js": {
+      "lang": "js",
+      "linhas": 61,
+      "simbolos": [
+        [
+          "USUARIOS",
+          "object",
+          9,
+          13,
+          ""
+        ],
+        [
+          "BOTAO",
+          "object",
+          14,
+          14,
+          ""
+        ],
+        [
+          "existe",
+          "function",
+          17,
+          17,
+          ""
+        ],
+        [
+          "telasDe",
+          "function",
+          18,
+          18,
+          ""
+        ],
+        [
+          "sha256",
+          "function",
+          19,
+          23,
+          ""
+        ],
+        [
+          "confere",
+          "function",
+          24,
+          27,
+          ""
+        ],
+        [
+          "aplicar",
+          "function",
+          29,
+          36,
+          ""
+        ],
+        [
+          "form.onsubmit",
+          "method",
+          39,
+          50,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          51,
+          54,
+          ""
+        ]
+      ]
+    },
+    "Gerador/app.js": {
+      "lang": "js",
+      "linhas": 698,
+      "simbolos": [
+        [
+          "$",
+          "arrow",
+          2,
+          2,
+          ""
+        ],
+        [
+          "$$",
+          "arrow",
+          3,
+          3,
+          ""
+        ],
+        [
+          "load",
+          "function",
+          5,
+          5,
+          ""
+        ],
+        [
+          "save",
+          "function",
+          7,
+          7,
+          ""
+        ],
+        [
+          "esc",
+          "function",
+          8,
+          8,
+          ""
+        ],
+        [
+          "uid",
+          "function",
+          9,
+          9,
+          ""
+        ],
+        [
+          "dataEfetiva",
+          "function",
+          41,
+          41,
+          ""
+        ],
+        [
+          "persist",
+          "function",
+          43,
+          43,
+          ""
+        ],
+        [
+          "showView",
+          "function",
+          47,
+          47,
+          ""
+        ],
+        [
+          "temaAtual",
+          "function",
+          73,
+          73,
+          ""
+        ],
+        [
+          "temaRotulo",
+          "function",
+          78,
+          78,
+          ""
+        ],
+        [
+          "medeCabecalho",
+          "function",
+          107,
+          107,
+          ""
+        ],
+        [
+          "ger",
+          "function",
+          163,
+          163,
+          ""
+        ],
+        [
+          "buildTipo",
+          "function",
+          164,
+          164,
+          ""
+        ],
+        [
+          "trechosHtml",
+          "function",
+          177,
+          177,
+          ""
+        ],
+        [
+          "trechoNovo",
+          "function",
+          196,
+          196,
+          ""
+        ],
+        [
+          "bindTrechos",
+          "function",
+          200,
+          200,
+          ""
+        ],
+        [
+          "campoHtml",
+          "function",
+          220,
+          220,
+          ""
+        ],
+        [
+          "advKey",
+          "function",
+          235,
+          235,
+          ""
+        ],
+        [
+          "advResumo",
+          "function",
+          238,
+          238,
+          ""
+        ],
+        [
+          "buildCampos",
+          "function",
+          258,
+          258,
+          ""
+        ],
+        [
+          "desenhoAtual",
+          "function",
+          301,
+          301,
+          ""
+        ],
+        [
+          "infoDesenho",
+          "function",
+          302,
+          302,
+          ""
+        ],
+        [
+          "fillDesenhoSel",
+          "function",
+          310,
+          310,
+          ""
+        ],
+        [
+          "vals",
+          "function",
+          318,
+          318,
+          ""
+        ],
+        [
+          "aplicaQuando",
+          "function",
+          337,
+          337,
+          ""
+        ],
+        [
+          "previewSvg",
+          "function",
+          350,
+          350,
+          ""
+        ],
+        [
+          "toolSel",
+          "function",
+          351,
+          351,
+          ""
+        ],
+        [
+          "renderToolSelects",
+          "function",
+          357,
+          357,
+          ""
+        ],
+        [
+          "toolById",
+          "function",
+          375,
+          375,
+          ""
+        ],
+        [
+          "overrides",
+          "function",
+          384,
+          384,
+          ""
+        ],
+        [
+          "ovValido",
+          "function",
+          385,
+          385,
+          ""
+        ],
+        [
+          "incResumo",
+          "function",
+          388,
+          388,
+          ""
+        ],
+        [
+          "incUi",
+          "function",
+          396,
+          396,
+          ""
+        ],
+        [
+          "buildInc",
+          "function",
+          404,
+          404,
+          ""
+        ],
+        [
+          "incNota",
+          "function",
+          424,
+          424,
+          ""
+        ],
+        [
+          "currentTools",
+          "function",
+          432,
+          432,
+          ""
+        ],
+        [
+          "toolInfoHtml",
+          "function",
+          446,
+          446,
+          ""
+        ],
+        [
+          "buildMaq",
+          "function",
+          461,
+          461,
+          ""
+        ],
+        [
+          "aplicaDicas",
+          "function",
+          470,
+          470,
+          ""
+        ],
+        [
+          "buildCfg",
+          "function",
+          471,
+          471,
+          ""
+        ],
+        [
+          "renderLadoSel",
+          "function",
+          486,
+          486,
+          ""
+        ],
+        [
+          "render",
+          "function",
+          499,
+          499,
+          ""
+        ],
+        [
+          "done",
+          "arrow",
+          552,
+          552,
+          ""
+        ],
+        [
+          "download",
+          "function",
+          556,
+          556,
+          ""
+        ],
+        [
+          "baixar",
+          "function",
+          562,
+          562,
+          ""
+        ],
+        [
+          "renderTools",
+          "function",
+          571,
+          571,
+          ""
+        ],
+        [
+          "buildTipoGrid",
+          "function",
+          609,
+          609,
+          ""
+        ],
+        [
+          "syncTipo",
+          "function",
+          627,
+          627,
+          ""
+        ],
+        [
+          "openDlg",
+          "function",
+          635,
+          635,
+          ""
+        ]
+      ]
+    },
+    "Gerador/core.js": {
+      "lang": "js",
+      "linhas": 2911,
+      "simbolos": [
+        [
+          "fmt",
+          "function",
+          12,
+          19,
+          ""
+        ],
+        [
+          "ascii",
+          "function",
+          21,
+          25,
+          ""
+        ],
+        [
+          "tcode",
+          "function",
+          26,
+          26,
+          ""
+        ],
+        [
+          "nomeArquivo",
+          "function",
+          27,
+          29,
+          ""
+        ],
+        [
+          "mesAno",
+          "function",
+          30,
+          34,
+          ""
+        ],
+        [
+          "m",
+          "object",
+          32,
+          32,
+          "mesAno"
+        ],
+        [
+          "plural",
+          "function",
+          35,
+          35,
+          ""
+        ],
+        [
+          "num",
+          "function",
+          36,
+          36,
+          ""
+        ],
+        [
+          "DEFAULT_MAQ",
+          "object",
+          39,
+          39,
+          ""
+        ],
+        [
+          "blocoVariaveis",
+          "function",
+          43,
+          55,
+          ""
+        ],
+        [
+          "lines",
+          "object",
+          44,
+          44,
+          "blocoVariaveis"
+        ],
+        [
+          "dicionario",
+          "function",
+          56,
+          67,
+          ""
+        ],
+        [
+          "PathB",
+          "function",
+          70,
+          70,
+          ""
+        ],
+        [
+          "PathB.prototype.rapid",
+          "method",
+          71,
+          74,
+          ""
+        ],
+        [
+          "PathB.prototype.feed",
+          "method",
+          75,
+          78,
+          ""
+        ],
+        [
+          "PathB.prototype.thread",
+          "method",
+          80,
+          83,
+          ""
+        ],
+        [
+          "PathB.prototype.arc",
+          "method",
+          85,
+          91,
+          ""
+        ],
+        [
+          "arcPts",
+          "function",
+          93,
+          101,
+          ""
+        ],
+        [
+          "PathB.prototype.arcRP",
+          "method",
+          102,
+          105,
+          ""
+        ],
+        [
+          "cyc75",
+          "function",
+          110,
+          119,
+          ""
+        ],
+        [
+          "zi",
+          "object",
+          111,
+          111,
+          "cyc75"
+        ],
+        [
+          "cyc74",
+          "function",
+          122,
+          131,
+          ""
+        ],
+        [
+          "xi",
+          "object",
+          123,
+          123,
+          "cyc74"
+        ],
+        [
+          "simTool",
+          "function",
+          133,
+          139,
+          ""
+        ],
+        [
+          "arcPoints",
+          "function",
+          141,
+          148,
+          ""
+        ],
+        [
+          "pts",
+          "object",
+          142,
+          142,
+          "arcPoints"
+        ],
+        [
+          "faceTurn",
+          "function",
+          154,
+          214,
+          ""
+        ],
+        [
+          "finishBlock",
+          "function",
+          218,
+          246,
+          ""
+        ],
+        [
+          "cabTroca",
+          "function",
+          248,
+          254,
+          ""
+        ],
+        [
+          "cenaGen",
+          "function",
+          257,
+          270,
+          ""
+        ],
+        [
+          "cena",
+          "object",
+          259,
+          266,
+          "cenaGen"
+        ],
+        [
+          "perfilQuina",
+          "function",
+          272,
+          278,
+          ""
+        ],
+        [
+          "resolverLinhas",
+          "function",
+          280,
+          282,
+          ""
+        ],
+        [
+          "validarTool",
+          "function",
+          284,
+          299,
+          ""
+        ],
+        [
+          "metaPadrao",
+          "function",
+          301,
+          307,
+          ""
+        ],
+        [
+          "maqPadrao",
+          "function",
+          308,
+          312,
+          ""
+        ],
+        [
+          "SENT_OPC",
+          "object",
+          316,
+          316,
+          ""
+        ],
+        [
+          "COMP_OPC",
+          "object",
+          319,
+          319,
+          ""
+        ],
+        [
+          "SENT_TORN_OPC",
+          "object",
+          320,
+          320,
+          ""
+        ],
+        [
+          "camposFixacao",
+          "function",
+          322,
+          328,
+          ""
+        ],
+        [
+          "out",
+          "object",
+          324,
+          325,
+          "camposFixacao"
+        ],
+        [
+          "fixacao",
+          "function",
+          329,
+          338,
+          ""
+        ],
+        [
+          "txtPressao",
+          "function",
+          339,
+          342,
+          ""
+        ],
+        [
+          "lerCampos",
+          "function",
+          343,
+          343,
+          ""
+        ],
+        [
+          "n",
+          "object",
+          343,
+          343,
+          "lerCampos"
+        ],
+        [
+          "cabecalhoPrograma",
+          "function",
+          344,
+          346,
+          ""
+        ],
+        [
+          "textoAcab",
+          "function",
+          347,
+          351,
+          ""
+        ],
+        [
+          "MATRIZ_SOLIDA",
+          "object",
+          356,
+          495,
+          ""
+        ],
+        [
+          "nomeAuto",
+          "method",
+          373,
+          373,
+          "MATRIZ_SOLIDA"
+        ],
+        [
+          "derivados",
+          "method",
+          374,
+          376,
+          "MATRIZ_SOLIDA"
+        ],
+        [
+          "gerar",
+          "method",
+          378,
+          494,
+          "MATRIZ_SOLIDA"
+        ],
+        [
+          "P",
+          "method",
+          454,
+          454,
+          "gerar"
+        ],
+        [
+          "MATRIZ_TUBULAR",
+          "object",
+          498,
+          708,
+          ""
+        ],
+        [
+          "nomeAuto",
+          "method",
+          519,
+          519,
+          "MATRIZ_TUBULAR"
+        ],
+        [
+          "derivados",
+          "method",
+          520,
+          522,
+          "MATRIZ_TUBULAR"
+        ],
+        [
+          "gerar",
+          "method",
+          524,
+          707,
+          "MATRIZ_TUBULAR"
+        ],
+        [
+          "P",
+          "method",
+          632,
+          632,
+          "gerar"
+        ],
+        [
+          "ESPINA_CABECA",
+          "object",
+          713,
+          917,
+          ""
+        ],
+        [
+          "nomeAuto",
+          "method",
+          734,
+          734,
+          "ESPINA_CABECA"
+        ],
+        [
+          "derivados",
+          "method",
+          735,
+          737,
+          "ESPINA_CABECA"
+        ],
+        [
+          "gerar",
+          "method",
+          739,
+          916,
+          "ESPINA_CABECA"
+        ],
+        [
+          "P",
+          "method",
+          819,
+          819,
+          "gerar"
+        ],
+        [
+          "contorno",
+          "function",
+          879,
+          887,
+          "gerar"
+        ],
+        [
+          "ESPINA_ENCAIXE",
+          "object",
+          920,
+          1100,
+          ""
+        ],
+        [
+          "nomeAuto",
+          "method",
+          939,
+          939,
+          "ESPINA_ENCAIXE"
+        ],
+        [
+          "derivados",
+          "method",
+          940,
+          942,
+          "ESPINA_ENCAIXE"
+        ],
+        [
+          "gerar",
+          "method",
+          944,
+          1099,
+          "ESPINA_ENCAIXE"
+        ],
+        [
+          "P",
+          "method",
+          1029,
+          1029,
+          "gerar"
+        ],
+        [
+          "ESPINA",
+          "object",
+          1107,
+          1208,
+          ""
+        ],
+        [
+          "nomeAuto",
+          "method",
+          1136,
+          1136,
+          "ESPINA"
+        ],
+        [
+          "desenhoDerivados",
+          "method",
+          1138,
+          1138,
+          "ESPINA"
+        ],
+        [
+          "limites",
+          "method",
+          1140,
+          1145,
+          "ESPINA"
+        ],
+        [
+          "placeholders",
+          "method",
+          1146,
+          1146,
+          "ESPINA"
+        ],
+        [
+          "derivados",
+          "method",
+          1147,
+          1150,
+          "ESPINA"
+        ],
+        [
+          "gerar",
+          "method",
+          1152,
+          1207,
+          "ESPINA"
+        ],
+        [
+          "PS_FORMAS",
+          "object",
+          1215,
+          1222,
+          ""
+        ],
+        [
+          "psN",
+          "function",
+          1223,
+          1223,
+          ""
+        ],
+        [
+          "psRoscaD1",
+          "function",
+          1228,
+          1228,
+          ""
+        ],
+        [
+          "psRoscaPar",
+          "function",
+          1229,
+          1232,
+          ""
+        ],
+        [
+          "psRoscaVars",
+          "function",
+          1234,
+          1245,
+          ""
+        ],
+        [
+          "psNormRosca",
+          "function",
+          1246,
+          1255,
+          ""
+        ],
+        [
+          "addS",
+          "function",
+          1256,
+          1256,
+          ""
+        ],
+        [
+          "subS",
+          "function",
+          1257,
+          1257,
+          ""
+        ],
+        [
+          "xmS",
+          "function",
+          1258,
+          1258,
+          ""
+        ],
+        [
+          "xpS",
+          "function",
+          1259,
+          1259,
+          ""
+        ],
+        [
+          "zS",
+          "function",
+          1260,
+          1260,
+          ""
+        ],
+        [
+          "psRaioEm",
+          "function",
+          1263,
+          1271,
+          ""
+        ],
+        [
+          "psAcerto",
+          "function",
+          1273,
+          1280,
+          ""
+        ],
+        [
+          "psSeq",
+          "function",
+          1284,
+          1299,
+          ""
+        ],
+        [
+          "out",
+          "object",
+          1286,
+          1286,
+          "psSeq"
+        ],
+        [
+          "psContorno",
+          "function",
+          1302,
+          1458,
+          ""
+        ],
+        [
+          "out",
+          "object",
+          1303,
+          1303,
+          "psContorno"
+        ],
+        [
+          "err",
+          "function",
+          1305,
+          1305,
+          "psContorno"
+        ],
+        [
+          "pieces",
+          "object",
+          1310,
+          1310,
+          "psContorno"
+        ],
+        [
+          "aplica",
+          "function",
+          1369,
+          1381,
+          "psContorno"
+        ],
+        [
+          "push",
+          "function",
+          1412,
+          1412,
+          "psContorno"
+        ],
+        [
+          "tz2",
+          "object",
+          1435,
+          1435,
+          "psContorno"
+        ],
+        [
+          "pts",
+          "object",
+          1444,
+          1444,
+          "psContorno"
+        ],
+        [
+          "to",
+          "object",
+          1447,
+          1447,
+          "psContorno"
+        ],
+        [
+          "CANTOS_INT",
+          "object",
+          1464,
+          1464,
+          ""
+        ],
+        [
+          "PS_FORMAS_INT",
+          "object",
+          1465,
+          1473,
+          ""
+        ],
+        [
+          "psNovoId",
+          "function",
+          1479,
+          1479,
+          ""
+        ],
+        [
+          "psPecasLista",
+          "function",
+          1480,
+          1491,
+          ""
+        ],
+        [
+          "pcs",
+          "object",
+          1481,
+          1481,
+          "psPecasLista"
+        ],
+        [
+          "psCantos",
+          "function",
+          1493,
+          1503,
+          ""
+        ],
+        [
+          "psCantosInt",
+          "function",
+          1505,
+          1515,
+          ""
+        ],
+        [
+          "psMigra",
+          "function",
+          1517,
+          1537,
+          ""
+        ],
+        [
+          "pend",
+          "object",
+          1528,
+          1528,
+          "psMigra"
+        ],
+        [
+          "USIN_OPC",
+          "object",
+          1538,
+          1538,
+          ""
+        ],
+        [
+          "psUsos",
+          "function",
+          1540,
+          1556,
+          ""
+        ],
+        [
+          "lados",
+          "object",
+          1541,
+          1541,
+          "psUsos"
+        ],
+        [
+          "u",
+          "object",
+          1543,
+          1543,
+          "psUsos"
+        ],
+        [
+          "psTemMand",
+          "function",
+          1557,
+          1557,
+          ""
+        ],
+        [
+          "PS_FORMAS_BINT",
+          "object",
+          1563,
+          1563,
+          ""
+        ],
+        [
+          "clipLinhaZ",
+          "function",
+          1566,
+          1577,
+          ""
+        ],
+        [
+          "out",
+          "object",
+          1567,
+          1567,
+          "clipLinhaZ"
+        ],
+        [
+          "psBrutoGeom",
+          "function",
+          1579,
+          1596,
+          ""
+        ],
+        [
+          "segs",
+          "object",
+          1580,
+          1580,
+          "psBrutoGeom"
+        ],
+        [
+          "IN",
+          "object",
+          1589,
+          1589,
+          "psBrutoGeom"
+        ],
+        [
+          "psPilotoBruto",
+          "function",
+          1598,
+          1608,
+          ""
+        ],
+        [
+          "psAcertoInt",
+          "function",
+          1611,
+          1618,
+          ""
+        ],
+        [
+          "psSeqInt",
+          "function",
+          1622,
+          1637,
+          ""
+        ],
+        [
+          "out",
+          "object",
+          1624,
+          1624,
+          "psSeqInt"
+        ],
+        [
+          "psContornoInt",
+          "function",
+          1641,
+          1840,
+          ""
+        ],
+        [
+          "out",
+          "object",
+          1642,
+          1642,
+          "psContornoInt"
+        ],
+        [
+          "err",
+          "function",
+          1644,
+          1644,
+          "psContornoInt"
+        ],
+        [
+          "push",
+          "function",
+          1786,
+          1786,
+          "psContornoInt"
+        ],
+        [
+          "tz",
+          "object",
+          1799,
+          1799,
+          "psContornoInt"
+        ],
+        [
+          "tzq",
+          "object",
+          1805,
+          1805,
+          "psContornoInt"
+        ],
+        [
+          "tz2",
+          "object",
+          1815,
+          1815,
+          "psContornoInt"
+        ],
+        [
+          "pts",
+          "object",
+          1823,
+          1823,
+          "psContornoInt"
+        ],
+        [
+          "to",
+          "object",
+          1826,
+          1826,
+          "psContornoInt"
+        ],
+        [
+          "psCavidade",
+          "function",
+          1843,
+          1851,
+          ""
+        ],
+        [
+          "poly",
+          "object",
+          1848,
+          1848,
+          "psCavidade"
+        ],
+        [
+          "cyc71i",
+          "function",
+          1855,
+          1874,
+          ""
+        ],
+        [
+          "cyc72",
+          "function",
+          1878,
+          1895,
+          ""
+        ],
+        [
+          "cyc73",
+          "function",
+          1899,
+          1914,
+          ""
+        ],
+        [
+          "cycG83",
+          "function",
+          1917,
+          1926,
+          ""
+        ],
+        [
+          "cyc71",
+          "function",
+          1930,
+          1946,
+          ""
+        ],
+        [
+          "cycCanal",
+          "function",
+          1949,
+          1965,
+          ""
+        ],
+        [
+          "zi",
+          "object",
+          1950,
+          1950,
+          "cycCanal"
+        ],
+        [
+          "cycCanalI",
+          "function",
+          1968,
+          1984,
+          ""
+        ],
+        [
+          "zi",
+          "object",
+          1969,
+          1969,
+          "cycCanalI"
+        ],
+        [
+          "cycRosca",
+          "function",
+          1988,
+          1999,
+          ""
+        ],
+        [
+          "deps",
+          "object",
+          1989,
+          1989,
+          "cycRosca"
+        ],
+        [
+          "psFace",
+          "function",
+          2002,
+          2020,
+          ""
+        ],
+        [
+          "psLado",
+          "function",
+          2024,
+          2596,
+          ""
+        ],
+        [
+          "erros",
+          "object",
+          2025,
+          2025,
+          "psLado"
+        ],
+        [
+          "chkRosca",
+          "function",
+          2090,
+          2099,
+          "psLado"
+        ],
+        [
+          "defs",
+          "object",
+          2137,
+          2142,
+          "psLado"
+        ],
+        [
+          "bdefs",
+          "object",
+          2144,
+          2144,
+          "psLado"
+        ],
+        [
+          "nomeAuto",
+          "method",
+          2251,
+          2251,
+          "psLado"
+        ],
+        [
+          "L",
+          "object",
+          2253,
+          2253,
+          "psLado"
+        ],
+        [
+          "P",
+          "method",
+          2254,
+          2254,
+          "psLado"
+        ],
+        [
+          "v",
+          "object",
+          2265,
+          2265,
+          "psLado"
+        ],
+        [
+          "runC",
+          "method",
+          2290,
+          2297,
+          "psLado"
+        ],
+        [
+          "ltool",
+          "method",
+          2346,
+          2346,
+          "psLado"
+        ],
+        [
+          "zExpr",
+          "method",
+          2349,
+          2349,
+          "psLado"
+        ],
+        [
+          "zFim",
+          "method",
+          2350,
+          2350,
+          "psLado"
+        ],
+        [
+          "runI",
+          "method",
+          2408,
+          2416,
+          "psLado"
+        ],
+        [
+          "cavINs",
+          "object",
+          2516,
+          2516,
+          "psLado"
+        ],
+        [
+          "tl",
+          "object",
+          2539,
+          2539,
+          "psLado"
+        ],
+        [
+          "holes",
+          "object",
+          2551,
+          2551,
+          "psLado"
+        ],
+        [
+          "mp",
+          "method",
+          2555,
+          2555,
+          "psLado"
+        ],
+        [
+          "est",
+          "object",
+          2563,
+          2563,
+          "psLado"
+        ],
+        [
+          "txtRosca",
+          "method",
+          2587,
+          2589,
+          "psLado"
+        ],
+        [
+          "PECA_SIMPLES",
+          "object",
+          2598,
+          2707,
+          ""
+        ],
+        [
+          "usado",
+          "method",
+          2607,
+          2607,
+          "PECA_SIMPLES"
+        ],
+        [
+          "usado",
+          "method",
+          2608,
+          2608,
+          "PECA_SIMPLES"
+        ],
+        [
+          "usado",
+          "method",
+          2609,
+          2609,
+          "PECA_SIMPLES"
+        ],
+        [
+          "usado",
+          "method",
+          2610,
+          2610,
+          "PECA_SIMPLES"
+        ],
+        [
+          "usado",
+          "method",
+          2611,
+          2611,
+          "PECA_SIMPLES"
+        ],
+        [
+          "usado",
+          "method",
+          2612,
+          2612,
+          "PECA_SIMPLES"
+        ],
+        [
+          "quando",
+          "method",
+          2619,
+          2619,
+          "PECA_SIMPLES"
+        ],
+        [
+          "quando",
+          "method",
+          2622,
+          2622,
+          "PECA_SIMPLES"
+        ],
+        [
+          "quando",
+          "method",
+          2624,
+          2624,
+          "PECA_SIMPLES"
+        ],
+        [
+          "quando",
+          "method",
+          2625,
+          2625,
+          "PECA_SIMPLES"
+        ],
+        [
+          "quando",
+          "method",
+          2628,
+          2628,
+          "PECA_SIMPLES"
+        ],
+        [
+          "quando",
+          "method",
+          2630,
+          2630,
+          "PECA_SIMPLES"
+        ],
+        [
+          "quando",
+          "method",
+          2631,
+          2631,
+          "PECA_SIMPLES"
+        ],
+        [
+          "quando",
+          "method",
+          2632,
+          2632,
+          "PECA_SIMPLES"
+        ],
+        [
+          "quando",
+          "method",
+          2633,
+          2633,
+          "PECA_SIMPLES"
+        ],
+        [
+          "quando",
+          "method",
+          2634,
+          2634,
+          "PECA_SIMPLES"
+        ],
+        [
+          "quando",
+          "method",
+          2635,
+          2635,
+          "PECA_SIMPLES"
+        ],
+        [
+          "quando",
+          "method",
+          2637,
+          2637,
+          "PECA_SIMPLES"
+        ],
+        [
+          "nomeAuto",
+          "method",
+          2638,
+          2638,
+          "PECA_SIMPLES"
+        ],
+        [
+          "derivados",
+          "method",
+          2639,
+          2644,
+          "PECA_SIMPLES"
+        ],
+        [
+          "soma",
+          "method",
+          2640,
+          2640,
+          "derivados"
+        ],
+        [
+          "gerar",
+          "method",
+          2646,
+          2706,
+          "PECA_SIMPLES"
+        ],
+        [
+          "mk",
+          "method",
+          2673,
+          2673,
+          "gerar"
+        ],
+        [
+          "bi1",
+          "method",
+          2674,
+          2674,
+          "gerar"
+        ],
+        [
+          "psBase",
+          "function",
+          2714,
+          2717,
+          ""
+        ],
+        [
+          "b",
+          "object",
+          2715,
+          2715,
+          "psBase"
+        ],
+        [
+          "usinDe",
+          "function",
+          2718,
+          2718,
+          ""
+        ],
+        [
+          "TIPO_L_OPC",
+          "object",
+          2719,
+          2719,
+          ""
+        ],
+        [
+          "PORTA_MATRIZ",
+          "object",
+          2720,
+          2808,
+          ""
+        ],
+        [
+          "nomeAuto",
+          "method",
+          2752,
+          2752,
+          "PORTA_MATRIZ"
+        ],
+        [
+          "derivados",
+          "method",
+          2753,
+          2753,
+          "PORTA_MATRIZ"
+        ],
+        [
+          "gerar",
+          "method",
+          2754,
+          2807,
+          "PORTA_MATRIZ"
+        ],
+        [
+          "ALIMENTADOR",
+          "object",
+          2813,
+          2875,
+          ""
+        ],
+        [
+          "nomeAuto",
+          "method",
+          2843,
+          2843,
+          "ALIMENTADOR"
+        ],
+        [
+          "derivados",
+          "method",
+          2844,
+          2844,
+          "ALIMENTADOR"
+        ],
+        [
+          "gerar",
+          "method",
+          2845,
+          2874,
+          "ALIMENTADOR"
+        ],
+        [
+          "dFuroOk",
+          "function",
+          2876,
+          2876,
+          ""
+        ],
+        [
+          "BA_PADRAO",
+          "object",
+          2880,
+          2880,
+          ""
+        ],
+        [
+          "nomeAuto",
+          "method",
+          2891,
+          2891,
+          ""
+        ],
+        [
+          "gerar",
+          "method",
+          2892,
+          2896,
+          ""
+        ],
+        [
+          "GERADORES",
+          "object",
+          2899,
+          2899,
+          ""
+        ],
+        [
+          "INTERNOS",
+          "object",
+          2901,
+          2901,
+          ""
+        ],
+        [
+          "PLANEJADOS",
+          "object",
+          2904,
+          2905,
+          ""
+        ]
+      ]
+    },
+    "Gerador/desenho.js": {
+      "lang": "js",
+      "linhas": 458,
+      "simbolos": [
+        [
+          "$",
+          "arrow",
+          4,
+          4,
+          ""
+        ],
+        [
+          "$$",
+          "arrow",
+          5,
+          5,
+          ""
+        ],
+        [
+          "esc",
+          "function",
+          6,
+          6,
+          ""
+        ],
+        [
+          "clone",
+          "arrow",
+          7,
+          7,
+          ""
+        ],
+        [
+          "uid",
+          "function",
+          8,
+          8,
+          ""
+        ],
+        [
+          "load",
+          "function",
+          9,
+          9,
+          ""
+        ],
+        [
+          "save",
+          "function",
+          10,
+          10,
+          ""
+        ],
+        [
+          "campo",
+          "arrow",
+          13,
+          13,
+          ""
+        ],
+        [
+          "tk",
+          "function",
+          19,
+          19,
+          ""
+        ],
+        [
+          "dH",
+          "function",
+          20,
+          20,
+          ""
+        ],
+        [
+          "dV",
+          "function",
+          21,
+          21,
+          ""
+        ],
+        [
+          "ld",
+          "arrow",
+          22,
+          22,
+          ""
+        ],
+        [
+          "cav",
+          "arrow",
+          24,
+          24,
+          ""
+        ],
+        [
+          "cil",
+          "method",
+          26,
+          26,
+          ""
+        ],
+        [
+          "cone",
+          "method",
+          27,
+          27,
+          ""
+        ],
+        [
+          "canal",
+          "method",
+          28,
+          28,
+          ""
+        ],
+        [
+          "canalz",
+          "method",
+          29,
+          29,
+          ""
+        ],
+        [
+          "rosca",
+          "method",
+          30,
+          30,
+          ""
+        ],
+        [
+          "furo",
+          "method",
+          31,
+          31,
+          ""
+        ],
+        [
+          "icil",
+          "method",
+          32,
+          32,
+          ""
+        ],
+        [
+          "icone",
+          "method",
+          33,
+          33,
+          ""
+        ],
+        [
+          "irosca",
+          "method",
+          34,
+          34,
+          ""
+        ],
+        [
+          "icanal",
+          "method",
+          35,
+          35,
+          ""
+        ],
+        [
+          "rotulos",
+          "arrow",
+          71,
+          71,
+          ""
+        ],
+        [
+          "chaves",
+          "arrow",
+          72,
+          72,
+          ""
+        ],
+        [
+          "tipoEl",
+          "arrow",
+          73,
+          73,
+          ""
+        ],
+        [
+          "resumo",
+          "function",
+          74,
+          74,
+          ""
+        ],
+        [
+          "rotCanto",
+          "function",
+          88,
+          88,
+          ""
+        ],
+        [
+          "norm",
+          "function",
+          94,
+          94,
+          ""
+        ],
+        [
+          "vazio",
+          "function",
+          99,
+          99,
+          ""
+        ],
+        [
+          "seed",
+          "function",
+          100,
+          100,
+          ""
+        ],
+        [
+          "persistWork",
+          "function",
+          120,
+          120,
+          ""
+        ],
+        [
+          "strip",
+          "function",
+          121,
+          121,
+          ""
+        ],
+        [
+          "salvoDe",
+          "function",
+          122,
+          122,
+          ""
+        ],
+        [
+          "sujo",
+          "function",
+          123,
+          123,
+          ""
+        ],
+        [
+          "avisaMudou",
+          "function",
+          124,
+          124,
+          ""
+        ],
+        [
+          "dRefEfetivo",
+          "function",
+          128,
+          128,
+          ""
+        ],
+        [
+          "buildF",
+          "function",
+          141,
+          141,
+          ""
+        ],
+        [
+          "rodar",
+          "function",
+          154,
+          154,
+          ""
+        ],
+        [
+          "cantosDe",
+          "function",
+          167,
+          167,
+          ""
+        ],
+        [
+          "lista_",
+          "arrow",
+          173,
+          173,
+          ""
+        ],
+        [
+          "seg",
+          "function",
+          176,
+          176,
+          ""
+        ],
+        [
+          "pal",
+          "function",
+          180,
+          180,
+          ""
+        ],
+        [
+          "cabecalho",
+          "function",
+          187,
+          187,
+          ""
+        ],
+        [
+          "listas",
+          "function",
+          202,
+          202,
+          ""
+        ],
+        [
+          "grafico",
+          "function",
+          227,
+          227,
+          ""
+        ],
+        [
+          "tela",
+          "function",
+          235,
+          235,
+          ""
+        ],
+        [
+          "mudou",
+          "function",
+          243,
+          243,
+          ""
+        ],
+        [
+          "abrirId",
+          "function",
+          246,
+          246,
+          ""
+        ],
+        [
+          "confirmaDescartar",
+          "function",
+          250,
+          250,
+          ""
+        ],
+        [
+          "salvar",
+          "function",
+          256,
+          256,
+          ""
+        ],
+        [
+          "inicial",
+          "function",
+          304,
+          304,
+          ""
+        ],
+        [
+          "comItem",
+          "function",
+          316,
+          316,
+          ""
+        ],
+        [
+          "semItem",
+          "function",
+          321,
+          321,
+          ""
+        ],
+        [
+          "cursorZ",
+          "function",
+          327,
+          327,
+          ""
+        ],
+        [
+          "desenhoDlg",
+          "function",
+          336,
+          336,
+          ""
+        ],
+        [
+          "miniPv",
+          "function",
+          346,
+          346,
+          ""
+        ],
+        [
+          "pickDlg",
+          "function",
+          352,
+          352,
+          ""
+        ],
+        [
+          "marca",
+          "function",
+          369,
+          369,
+          ""
+        ],
+        [
+          "novosErros",
+          "function",
+          380,
+          380,
+          ""
+        ],
+        [
+          "pickErro",
+          "function",
+          384,
+          384,
+          ""
+        ],
+        [
+          "abre",
+          "function",
+          388,
+          388,
+          ""
+        ],
+        [
+          "lista",
+          "method",
+          419,
+          419,
+          ""
+        ],
+        [
+          "obter",
+          "method",
+          420,
+          420,
+          ""
+        ],
+        [
+          "abrir",
+          "method",
+          421,
+          421,
+          ""
+        ],
+        [
+          "novo",
+          "method",
+          422,
+          422,
+          ""
+        ],
+        [
+          "importarPDF",
+          "method",
+          423,
+          423,
+          ""
+        ],
+        [
+          "salvarPDF",
+          "method",
+          438,
+          438,
+          ""
+        ],
+        [
+          "mostrar",
+          "method",
+          443,
+          443,
+          ""
+        ],
+        [
+          "sujoId",
+          "method",
+          444,
+          444,
+          ""
+        ],
+        [
+          "aoSair",
+          "method",
+          446,
+          446,
+          ""
+        ]
+      ]
+    },
+    "Gerador/diagnostico.js": {
+      "lang": "js",
+      "linhas": 487,
+      "simbolos": [
+        [
+          "CAT",
+          "object",
+          15,
+          185,
+          ""
+        ],
+        [
+          "REGRAS",
+          "object",
+          188,
+          229,
+          ""
+        ],
+        [
+          "classifica",
+          "function",
+          230,
+          233,
+          ""
+        ],
+        [
+          "codAlerta",
+          "function",
+          236,
+          246,
+          ""
+        ],
+        [
+          "deAlerta",
+          "function",
+          247,
+          247,
+          ""
+        ],
+        [
+          "varre",
+          "function",
+          250,
+          261,
+          ""
+        ],
+        [
+          "palavras",
+          "function",
+          263,
+          281,
+          ""
+        ],
+        [
+          "out",
+          "object",
+          264,
+          264,
+          "palavras"
+        ],
+        [
+          "GRUPOS",
+          "object",
+          282,
+          282,
+          ""
+        ],
+        [
+          "lint",
+          "function",
+          284,
+          354,
+          ""
+        ],
+        [
+          "temN",
+          "object",
+          286,
+          286,
+          "lint"
+        ],
+        [
+          "oProg",
+          "object",
+          288,
+          288,
+          "lint"
+        ],
+        [
+          "add",
+          "function",
+          294,
+          294,
+          "lint"
+        ],
+        [
+          "cont",
+          "object",
+          329,
+          329,
+          "lint"
+        ],
+        [
+          "acharFim",
+          "function",
+          358,
+          362,
+          ""
+        ],
+        [
+          "fixPara",
+          "function",
+          363,
+          391,
+          ""
+        ],
+        [
+          "aplicarLinha",
+          "function",
+          392,
+          399,
+          ""
+        ],
+        [
+          "ORDEM_OP",
+          "object",
+          400,
+          400,
+          ""
+        ],
+        [
+          "aplicar",
+          "function",
+          401,
+          411,
+          ""
+        ],
+        [
+          "ORDEM_SEV",
+          "object",
+          414,
+          414,
+          ""
+        ],
+        [
+          "diagnosticar",
+          "function",
+          416,
+          437,
+          ""
+        ],
+        [
+          "lista",
+          "object",
+          418,
+          418,
+          "diagnosticar"
+        ],
+        [
+          "add",
+          "function",
+          419,
+          427,
+          "diagnosticar"
+        ],
+        [
+          "resumo",
+          "function",
+          438,
+          442,
+          ""
+        ],
+        [
+          "r",
+          "object",
+          439,
+          439,
+          "resumo"
+        ],
+        [
+          "fixesExatos",
+          "function",
+          443,
+          443,
+          ""
+        ],
+        [
+          "analisarTexto",
+          "function",
+          446,
+          449,
+          ""
+        ],
+        [
+          "esc",
+          "function",
+          452,
+          452,
+          ""
+        ],
+        [
+          "ROTULO",
+          "object",
+          453,
+          453,
+          ""
+        ],
+        [
+          "listaHtml",
+          "function",
+          454,
+          454,
+          ""
+        ],
+        [
+          "corpo",
+          "function",
+          456,
+          466,
+          ""
+        ],
+        [
+          "html",
+          "function",
+          467,
+          477,
+          ""
+        ],
+        [
+          "htmlAlerta",
+          "function",
+          479,
+          482,
+          ""
+        ]
+      ]
+    },
+    "Gerador/index.html": {
+      "lang": "html",
+      "linhas": 468,
+      "simbolos": [
+        [
+          "style.css",
+          "css",
+          8,
+          8,
+          ""
+        ],
+        [
+          "#loginForm",
+          "form",
+          19,
+          19,
+          ""
+        ],
+        [
+          "GERADOR",
+          "secao",
+          52,
+          52,
+          ""
+        ],
+        [
+          "#view-gerador",
+          "section",
+          53,
+          53,
+          ""
+        ],
+        [
+          "DESENHO DA PEÇA",
+          "secao",
+          178,
+          178,
+          ""
+        ],
+        [
+          "#view-desenho",
+          "section",
+          179,
+          179,
+          ""
+        ],
+        [
+          "#pdfEditDialog",
+          "dialog",
+          202,
+          202,
+          ""
+        ],
+        [
+          "#pdfEditForm",
+          "form",
+          202,
+          202,
+          ""
+        ],
+        [
+          "SIMULAÇÃO (programa colado)",
+          "secao",
+          257,
+          257,
+          ""
+        ],
+        [
+          "#view-sim",
+          "section",
+          258,
+          258,
+          ""
+        ],
+        [
+          "CONFIGURAÇÕES",
+          "secao",
+          346,
+          346,
+          ""
+        ],
+        [
+          "#view-cfg",
+          "section",
+          347,
+          347,
+          ""
+        ],
+        [
+          "FERRAMENTAS",
+          "secao",
+          377,
+          377,
+          ""
+        ],
+        [
+          "#view-ferr",
+          "section",
+          378,
+          378,
+          ""
+        ],
+        [
+          "#dlgFerr",
+          "dialog",
+          395,
+          395,
+          ""
+        ],
+        [
+          "#frmFerr",
+          "form",
+          396,
+          396,
+          ""
+        ],
+        [
+          "#dlgEl",
+          "dialog",
+          434,
+          434,
+          ""
+        ],
+        [
+          "#frmEl",
+          "form",
+          435,
+          435,
+          ""
+        ],
+        [
+          "version.js",
+          "script",
+          450,
+          450,
+          ""
+        ],
+        [
+          "core.js",
+          "script",
+          451,
+          451,
+          ""
+        ],
+        [
+          "sim.js",
+          "script",
+          452,
+          452,
+          ""
+        ],
+        [
+          "progsim.js",
+          "script",
+          453,
+          453,
+          ""
+        ],
+        [
+          "diagnostico.js",
+          "script",
+          454,
+          454,
+          ""
+        ],
+        [
+          "seed.js",
+          "script",
+          455,
+          455,
+          ""
+        ],
+        [
+          "simview.js",
+          "script",
+          456,
+          456,
+          ""
+        ],
+        [
+          "progview.js",
+          "script",
+          457,
+          457,
+          ""
+        ],
+        [
+          "pecaview.js",
+          "script",
+          458,
+          458,
+          ""
+        ],
+        [
+          "desenho.js",
+          "script",
+          459,
+          459,
+          ""
+        ],
+        [
+          "pdfrecognizer.js",
+          "script",
+          460,
+          460,
+          ""
+        ],
+        [
+          "pdfprofile.js",
+          "script",
+          461,
+          461,
+          ""
+        ],
+        [
+          "pdfvector.js",
+          "script",
+          462,
+          462,
+          ""
+        ],
+        [
+          "pdfimport.js",
+          "script",
+          463,
+          463,
+          ""
+        ],
+        [
+          "app.js",
+          "script",
+          464,
+          464,
+          ""
+        ],
+        [
+          "acesso.js",
+          "script",
+          465,
+          465,
+          ""
+        ]
+      ]
+    },
+    "Gerador/pecaview.js": {
+      "lang": "js",
+      "linhas": 49,
+      "simbolos": [
+        [
+          "esc",
+          "function",
+          5,
+          5,
+          ""
+        ],
+        [
+          "previewSvg",
+          "function",
+          7,
+          46,
+          ""
+        ],
+        [
+          "X",
+          "method",
+          17,
+          17,
+          "previewSvg"
+        ],
+        [
+          "Y",
+          "method",
+          17,
+          17,
+          "X"
+        ]
+      ]
+    },
+    "Gerador/progsim.js": {
+      "lang": "js",
+      "linhas": 963,
+      "simbolos": [
+        [
+          "tcode",
+          "function",
+          13,
+          13,
+          ""
+        ],
+        [
+          "ErroLeitura",
+          "function",
+          14,
+          14,
+          ""
+        ],
+        [
+          "numTxt",
+          "function",
+          18,
+          21,
+          ""
+        ],
+        [
+          "decPalavra",
+          "function",
+          23,
+          26,
+          ""
+        ],
+        [
+          "limpa",
+          "function",
+          30,
+          44,
+          ""
+        ],
+        [
+          "com",
+          "object",
+          31,
+          31,
+          "limpa"
+        ],
+        [
+          "prepara",
+          "function",
+          45,
+          65,
+          ""
+        ],
+        [
+          "arcoPontos",
+          "function",
+          69,
+          76,
+          ""
+        ],
+        [
+          "centroPorR",
+          "function",
+          78,
+          83,
+          ""
+        ],
+        [
+          "sinal",
+          "function",
+          84,
+          84,
+          ""
+        ],
+        [
+          "interpretar",
+          "function",
+          87,
+          794,
+          ""
+        ],
+        [
+          "V",
+          "object",
+          93,
+          93,
+          "interpretar"
+        ],
+        [
+          "aviso",
+          "function",
+          97,
+          101,
+          "interpretar"
+        ],
+        [
+          "dica",
+          "function",
+          102,
+          106,
+          "interpretar"
+        ],
+        [
+          "erro",
+          "function",
+          107,
+          107,
+          "interpretar"
+        ],
+        [
+          "falha",
+          "function",
+          108,
+          108,
+          "interpretar"
+        ],
+        [
+          "ch",
+          "function",
+          112,
+          112,
+          "interpretar"
+        ],
+        [
+          "inicio",
+          "function",
+          113,
+          113,
+          "interpretar"
+        ],
+        [
+          "lerVar",
+          "function",
+          114,
+          122,
+          "interpretar"
+        ],
+        [
+          "indice",
+          "function",
+          123,
+          130,
+          "interpretar"
+        ],
+        [
+          "funcao",
+          "function",
+          131,
+          156,
+          "interpretar"
+        ],
+        [
+          "primario",
+          "function",
+          157,
+          169,
+          "interpretar"
+        ],
+        [
+          "unario",
+          "function",
+          170,
+          175,
+          "interpretar"
+        ],
+        [
+          "mul",
+          "function",
+          176,
+          185,
+          "interpretar"
+        ],
+        [
+          "soma",
+          "function",
+          186,
+          195,
+          "interpretar"
+        ],
+        [
+          "expr",
+          "function",
+          196,
+          211,
+          "interpretar"
+        ],
+        [
+          "atribuicoes",
+          "function",
+          213,
+          225,
+          "interpretar"
+        ],
+        [
+          "palavras",
+          "function",
+          226,
+          241,
+          "interpretar"
+        ],
+        [
+          "st",
+          "object",
+          244,
+          245,
+          "interpretar"
+        ],
+        [
+          "snapshot",
+          "function",
+          247,
+          247,
+          "interpretar"
+        ],
+        [
+          "restaura",
+          "function",
+          248,
+          248,
+          "interpretar"
+        ],
+        [
+          "spin",
+          "function",
+          249,
+          252,
+          "interpretar"
+        ],
+        [
+          "rpmDe",
+          "function",
+          253,
+          257,
+          "interpretar"
+        ],
+        [
+          "fichaFerr",
+          "function",
+          258,
+          269,
+          "interpretar"
+        ],
+        [
+          "trocaFerramenta",
+          "function",
+          270,
+          278,
+          "interpretar"
+        ],
+        [
+          "emite",
+          "function",
+          281,
+          304,
+          "interpretar"
+        ],
+        [
+          "rapido",
+          "function",
+          305,
+          305,
+          "interpretar"
+        ],
+        [
+          "avanco",
+          "function",
+          306,
+          309,
+          "interpretar"
+        ],
+        [
+          "fRev",
+          "function",
+          310,
+          318,
+          "interpretar"
+        ],
+        [
+          "checaS",
+          "function",
+          319,
+          322,
+          "interpretar"
+        ],
+        [
+          "alvo",
+          "function",
+          324,
+          334,
+          "interpretar"
+        ],
+        [
+          "temCoord",
+          "function",
+          335,
+          335,
+          "interpretar"
+        ],
+        [
+          "mover",
+          "function",
+          337,
+          356,
+          "interpretar"
+        ],
+        [
+          "acha",
+          "function",
+          359,
+          364,
+          "interpretar"
+        ],
+        [
+          "capturaPerfil",
+          "function",
+          365,
+          370,
+          "interpretar"
+        ],
+        [
+          "checaContorno",
+          "function",
+          372,
+          376,
+          "interpretar"
+        ],
+        [
+          "nota",
+          "function",
+          377,
+          377,
+          "interpretar"
+        ],
+        [
+          "ciclo71",
+          "function",
+          379,
+          448,
+          "interpretar"
+        ],
+        [
+          "ciclo70",
+          "function",
+          450,
+          461,
+          "interpretar"
+        ],
+        [
+          "ciclo73",
+          "function",
+          463,
+          486,
+          "interpretar"
+        ],
+        [
+          "ciclo74",
+          "function",
+          488,
+          511,
+          "interpretar"
+        ],
+        [
+          "ciclo75",
+          "function",
+          513,
+          542,
+          "interpretar"
+        ],
+        [
+          "ciclo76",
+          "function",
+          544,
+          570,
+          "interpretar"
+        ],
+        [
+          "ciclo83",
+          "function",
+          572,
+          594,
+          "interpretar"
+        ],
+        [
+          "retorno",
+          "function",
+          596,
+          605,
+          "interpretar"
+        ],
+        [
+          "execSimples",
+          "function",
+          609,
+          720,
+          "interpretar"
+        ],
+        [
+          "alvoDesvio",
+          "function",
+          723,
+          727,
+          "interpretar"
+        ],
+        [
+          "bloco",
+          "function",
+          728,
+          767,
+          "interpretar"
+        ],
+        [
+          "sugereTipo",
+          "function",
+          797,
+          805,
+          ""
+        ],
+        [
+          "sugestoes",
+          "function",
+          806,
+          821,
+          ""
+        ],
+        [
+          "num",
+          "method",
+          814,
+          814,
+          "sugestoes"
+        ],
+        [
+          "narizDe",
+          "function",
+          828,
+          832,
+          ""
+        ],
+        [
+          "segComp",
+          "function",
+          833,
+          838,
+          ""
+        ],
+        [
+          "d",
+          "object",
+          836,
+          836,
+          "segComp"
+        ],
+        [
+          "compTrecho",
+          "function",
+          839,
+          870,
+          ""
+        ],
+        [
+          "vai",
+          "function",
+          841,
+          846,
+          "compTrecho"
+        ],
+        [
+          "desloca",
+          "function",
+          847,
+          847,
+          "compTrecho"
+        ],
+        [
+          "compensar",
+          "function",
+          872,
+          900,
+          ""
+        ],
+        [
+          "out",
+          "object",
+          874,
+          874,
+          "compensar"
+        ],
+        [
+          "avisa",
+          "function",
+          875,
+          875,
+          "compensar"
+        ],
+        [
+          "kindDe",
+          "function",
+          904,
+          913,
+          ""
+        ],
+        [
+          "formaFerr",
+          "function",
+          914,
+          917,
+          ""
+        ],
+        [
+          "montarCena",
+          "function",
+          919,
+          943,
+          ""
+        ],
+        [
+          "pos",
+          "method",
+          923,
+          923,
+          "montarCena"
+        ],
+        [
+          "bruto",
+          "object",
+          926,
+          926,
+          "montarCena"
+        ],
+        [
+          "tools",
+          "object",
+          928,
+          928,
+          "montarCena"
+        ],
+        [
+          "comCompensacao",
+          "function",
+          947,
+          950,
+          ""
+        ],
+        [
+          "comDecodificado",
+          "function",
+          954,
+          959,
+          ""
+        ]
+      ]
+    },
+    "Gerador/progview.js": {
+      "lang": "js",
+      "linhas": 343,
+      "simbolos": [
+        [
+          "$",
+          "method",
+          5,
+          5,
+          ""
+        ],
+        [
+          "$$",
+          "method",
+          6,
+          6,
+          ""
+        ],
+        [
+          "esc",
+          "function",
+          7,
+          7,
+          ""
+        ],
+        [
+          "fx",
+          "function",
+          8,
+          8,
+          ""
+        ],
+        [
+          "st",
+          "object",
+          12,
+          12,
+          ""
+        ],
+        [
+          "EXEMPLO",
+          "object",
+          14,
+          59,
+          ""
+        ],
+        [
+          "load",
+          "function",
+          62,
+          72,
+          ""
+        ],
+        [
+          "save",
+          "function",
+          73,
+          73,
+          ""
+        ],
+        [
+          "tcode",
+          "function",
+          76,
+          76,
+          ""
+        ],
+        [
+          "escolhida",
+          "function",
+          77,
+          85,
+          ""
+        ],
+        [
+          "ORIENT",
+          "object",
+          86,
+          89,
+          ""
+        ],
+        [
+          "orientDe",
+          "function",
+          90,
+          95,
+          ""
+        ],
+        [
+          "TIPOS",
+          "object",
+          96,
+          96,
+          ""
+        ],
+        [
+          "rotuloTool",
+          "function",
+          97,
+          97,
+          ""
+        ],
+        [
+          "legendaForma",
+          "function",
+          100,
+          112,
+          ""
+        ],
+        [
+          "rect",
+          "function",
+          114,
+          114,
+          ""
+        ],
+        [
+          "espelhaR",
+          "function",
+          115,
+          115,
+          ""
+        ],
+        [
+          "pecasFerr",
+          "function",
+          116,
+          152,
+          ""
+        ],
+        [
+          "rot",
+          "method",
+          143,
+          143,
+          "pecasFerr"
+        ],
+        [
+          "sh",
+          "method",
+          146,
+          146,
+          "pecasFerr"
+        ],
+        [
+          "svgFerr",
+          "function",
+          153,
+          171,
+          ""
+        ],
+        [
+          "X",
+          "function",
+          158,
+          158,
+          "svgFerr"
+        ],
+        [
+          "Y",
+          "function",
+          159,
+          159,
+          "svgFerr"
+        ],
+        [
+          "poly",
+          "function",
+          160,
+          160,
+          "svgFerr"
+        ],
+        [
+          "ler",
+          "function",
+          174,
+          185,
+          ""
+        ],
+        [
+          "assinatura",
+          "function",
+          186,
+          186,
+          ""
+        ],
+        [
+          "agenda",
+          "function",
+          187,
+          187,
+          ""
+        ],
+        [
+          "linhasUteis",
+          "function",
+          189,
+          189,
+          ""
+        ],
+        [
+          "avisosComp",
+          "object",
+          190,
+          190,
+          ""
+        ],
+        [
+          "diagLista",
+          "object",
+          191,
+          191,
+          ""
+        ],
+        [
+          "renderMsgs",
+          "function",
+          192,
+          209,
+          ""
+        ],
+        [
+          "pl",
+          "method",
+          197,
+          197,
+          "renderMsgs"
+        ],
+        [
+          "el.onclick",
+          "method",
+          205,
+          205,
+          "renderMsgs"
+        ],
+        [
+          "b.onclick",
+          "method",
+          206,
+          206,
+          "renderMsgs"
+        ],
+        [
+          "onclick",
+          "method",
+          207,
+          207,
+          "renderMsgs"
+        ],
+        [
+          "onclick",
+          "method",
+          208,
+          208,
+          "renderMsgs"
+        ],
+        [
+          "aplicarFixes",
+          "function",
+          210,
+          216,
+          ""
+        ],
+        [
+          "irParaLinha",
+          "function",
+          217,
+          223,
+          ""
+        ],
+        [
+          "infoPrograma",
+          "function",
+          226,
+          231,
+          ""
+        ],
+        [
+          "infoBanco",
+          "function",
+          232,
+          235,
+          ""
+        ],
+        [
+          "renderFerr",
+          "function",
+          236,
+          269,
+          ""
+        ],
+        [
+          "opt",
+          "method",
+          243,
+          243,
+          "renderFerr"
+        ],
+        [
+          "s.onchange",
+          "method",
+          263,
+          267,
+          "renderFerr"
+        ],
+        [
+          "renderBruto",
+          "function",
+          272,
+          280,
+          ""
+        ],
+        [
+          "ph",
+          "method",
+          273,
+          273,
+          "renderBruto"
+        ],
+        [
+          "simular",
+          "function",
+          283,
+          294,
+          ""
+        ],
+        [
+          "cfg",
+          "object",
+          287,
+          287,
+          "simular"
+        ],
+        [
+          "lerArquivo",
+          "function",
+          297,
+          305,
+          ""
+        ],
+        [
+          "rd.onload",
+          "method",
+          299,
+          303,
+          "lerArquivo"
+        ],
+        [
+          "nota",
+          "function",
+          306,
+          306,
+          ""
+        ],
+        [
+          "init",
+          "function",
+          308,
+          332,
+          ""
+        ],
+        [
+          "el.oninput",
+          "method",
+          314,
+          314,
+          "init"
+        ],
+        [
+          "onclick",
+          "method",
+          316,
+          316,
+          "init"
+        ],
+        [
+          "onclick",
+          "method",
+          319,
+          323,
+          "init"
+        ],
+        [
+          "onclick",
+          "method",
+          324,
+          324,
+          "init"
+        ],
+        [
+          "onchange",
+          "method",
+          325,
+          325,
+          "init"
+        ],
+        [
+          "onclick",
+          "method",
+          326,
+          326,
+          "init"
+        ],
+        [
+          "onclick",
+          "method",
+          327,
+          330,
+          "init"
+        ],
+        [
+          "mostrar",
+          "function",
+          333,
+          338,
+          ""
+        ],
+        [
+          "ocultar",
+          "function",
+          339,
+          339,
+          ""
+        ],
+        [
+          "redraw",
+          "method",
+          341,
+          341,
+          ""
+        ],
+        [
+          "window.ProgView",
+          "global",
+          341,
+          341,
+          "redraw"
+        ]
+      ]
+    },
+    "Gerador/seed.js": {
+      "lang": "js",
+      "linhas": 23,
+      "simbolos": [
+        [
+          "window.CNC_SEED_TOOLS",
+          "global",
+          4,
+          22,
+          ""
+        ]
+      ]
+    },
+    "Gerador/serve.js": {
+      "lang": "js",
+      "linhas": 14,
+      "simbolos": [
+        [
+          "types",
+          "object",
+          5,
+          5,
+          ""
+        ]
+      ]
+    },
+    "Gerador/sim.js": {
+      "lang": "js",
+      "linhas": 341,
+      "simbolos": [
+        [
+          "toolShape",
+          "function",
+          13,
+          76,
+          ""
+        ],
+        [
+          "pts",
+          "object",
+          14,
+          14,
+          "toolShape"
+        ],
+        [
+          "u1",
+          "object",
+          40,
+          40,
+          "toolShape"
+        ],
+        [
+          "E1",
+          "object",
+          41,
+          41,
+          "toolShape"
+        ],
+        [
+          "far",
+          "object",
+          42,
+          42,
+          "toolShape"
+        ],
+        [
+          "edges",
+          "object",
+          68,
+          68,
+          "toolShape"
+        ],
+        [
+          "insideShape",
+          "function",
+          77,
+          84,
+          ""
+        ],
+        [
+          "inPoly",
+          "function",
+          85,
+          92,
+          ""
+        ],
+        [
+          "distPoly",
+          "function",
+          94,
+          103,
+          ""
+        ],
+        [
+          "Sim",
+          "function",
+          106,
+          185,
+          ""
+        ],
+        [
+          "rAt",
+          "function",
+          114,
+          124,
+          "Sim"
+        ],
+        [
+          "emLista",
+          "function",
+          142,
+          142,
+          "Sim"
+        ],
+        [
+          "distLista",
+          "function",
+          143,
+          143,
+          "Sim"
+        ],
+        [
+          "pos",
+          "object",
+          162,
+          162,
+          "Sim"
+        ],
+        [
+          "groups",
+          "object",
+          177,
+          177,
+          "Sim"
+        ],
+        [
+          "Sim.prototype.rpmAt",
+          "method",
+          187,
+          192,
+          ""
+        ],
+        [
+          "Sim.prototype.reset",
+          "method",
+          194,
+          197,
+          ""
+        ],
+        [
+          "Sim.prototype.posAt",
+          "method",
+          199,
+          209,
+          ""
+        ],
+        [
+          "Sim.prototype._walk",
+          "method",
+          212,
+          226,
+          ""
+        ],
+        [
+          "Sim.prototype._stamp",
+          "method",
+          229,
+          247,
+          ""
+        ],
+        [
+          "Sim.prototype.seek",
+          "method",
+          250,
+          259,
+          ""
+        ],
+        [
+          "Sim.prototype.state",
+          "method",
+          261,
+          264,
+          ""
+        ],
+        [
+          "Sim.prototype.analyze",
+          "method",
+          267,
+          328,
+          ""
+        ],
+        [
+          "add",
+          "function",
+          272,
+          278,
+          "Sim.prototype.analyze"
+        ],
+        [
+          "info",
+          "object",
+          282,
+          282,
+          "Sim.prototype.analyze"
+        ],
+        [
+          "stack",
+          "object",
+          304,
+          304,
+          "Sim.prototype.analyze"
+        ],
+        [
+          "fx",
+          "function",
+          329,
+          329,
+          ""
+        ],
+        [
+          "Sim.prototype.toolPoly",
+          "method",
+          331,
+          334,
+          ""
+        ]
+      ]
+    },
+    "Gerador/simview.js": {
+      "lang": "js",
+      "linhas": 355,
+      "simbolos": [
+        [
+          "$",
+          "method",
+          4,
+          4,
+          ""
+        ],
+        [
+          "create",
+          "function",
+          5,
+          351,
+          ""
+        ],
+        [
+          "ID",
+          "function",
+          6,
+          6,
+          "create"
+        ],
+        [
+          "esc",
+          "function",
+          7,
+          7,
+          "create"
+        ],
+        [
+          "fx",
+          "function",
+          8,
+          8,
+          "create"
+        ],
+        [
+          "mmss",
+          "function",
+          9,
+          9,
+          "create"
+        ],
+        [
+          "view",
+          "object",
+          12,
+          12,
+          "create"
+        ],
+        [
+          "st",
+          "object",
+          13,
+          13,
+          "create"
+        ],
+        [
+          "cols",
+          "object",
+          15,
+          15,
+          "create"
+        ],
+        [
+          "readCols",
+          "function",
+          17,
+          22,
+          "create"
+        ],
+        [
+          "build",
+          "function",
+          25,
+          36,
+          "create"
+        ],
+        [
+          "setResult",
+          "function",
+          38,
+          43,
+          "create"
+        ],
+        [
+          "show",
+          "function",
+          44,
+          44,
+          "create"
+        ],
+        [
+          "hide",
+          "function",
+          45,
+          45,
+          "create"
+        ],
+        [
+          "resize",
+          "function",
+          48,
+          54,
+          "create"
+        ],
+        [
+          "fit",
+          "function",
+          55,
+          62,
+          "create"
+        ],
+        [
+          "fitProfile",
+          "function",
+          63,
+          69,
+          "create"
+        ],
+        [
+          "sx",
+          "function",
+          70,
+          70,
+          "create"
+        ],
+        [
+          "sy",
+          "function",
+          71,
+          71,
+          "create"
+        ],
+        [
+          "draw",
+          "function",
+          74,
+          176,
+          "create"
+        ],
+        [
+          "rgb",
+          "function",
+          177,
+          181,
+          "create"
+        ],
+        [
+          "updateReadout",
+          "function",
+          184,
+          193,
+          "create"
+        ],
+        [
+          "mostraDec",
+          "function",
+          196,
+          205,
+          "create"
+        ],
+        [
+          "highlightLine",
+          "function",
+          206,
+          216,
+          "create"
+        ],
+        [
+          "renderSide",
+          "function",
+          217,
+          252,
+          "create"
+        ],
+        [
+          "b.onclick",
+          "method",
+          233,
+          233,
+          "renderSide"
+        ],
+        [
+          "el.onclick",
+          "method",
+          240,
+          245,
+          "renderSide"
+        ],
+        [
+          "tituloAlerta",
+          "function",
+          253,
+          255,
+          "create"
+        ],
+        [
+          "updateControls",
+          "function",
+          256,
+          260,
+          "create"
+        ],
+        [
+          "seek",
+          "function",
+          263,
+          266,
+          "create"
+        ],
+        [
+          "tick",
+          "function",
+          267,
+          274,
+          "create"
+        ],
+        [
+          "play",
+          "function",
+          275,
+          280,
+          "create"
+        ],
+        [
+          "pause",
+          "function",
+          281,
+          281,
+          "create"
+        ],
+        [
+          "stepSeg",
+          "function",
+          283,
+          289,
+          "create"
+        ],
+        [
+          "stepLine",
+          "function",
+          290,
+          298,
+          "create"
+        ],
+        [
+          "init",
+          "function",
+          301,
+          348,
+          "create"
+        ],
+        [
+          "onclick",
+          "method",
+          303,
+          303,
+          "init"
+        ],
+        [
+          "onclick",
+          "method",
+          304,
+          304,
+          "init"
+        ],
+        [
+          "onclick",
+          "method",
+          305,
+          305,
+          "init"
+        ],
+        [
+          "onclick",
+          "method",
+          306,
+          306,
+          "init"
+        ],
+        [
+          "onclick",
+          "method",
+          307,
+          307,
+          "init"
+        ],
+        [
+          "onclick",
+          "method",
+          308,
+          308,
+          "init"
+        ],
+        [
+          "onchange",
+          "method",
+          309,
+          309,
+          "init"
+        ],
+        [
+          "oninput",
+          "method",
+          310,
+          310,
+          "init"
+        ],
+        [
+          "onchange",
+          "method",
+          311,
+          311,
+          "init"
+        ],
+        [
+          "onchange",
+          "method",
+          312,
+          312,
+          "init"
+        ],
+        [
+          "onchange",
+          "method",
+          313,
+          313,
+          "init"
+        ],
+        [
+          "onclick",
+          "method",
+          314,
+          314,
+          "init"
+        ],
+        [
+          "onclick",
+          "method",
+          315,
+          315,
+          "init"
+        ],
+        [
+          "onclick",
+          "method",
+          316,
+          321,
+          "init"
+        ],
+        [
+          "setAviso",
+          "method",
+          350,
+          350,
+          "create"
+        ],
+        [
+          "redraw",
+          "method",
+          350,
+          350,
+          "setAviso"
+        ]
+      ]
+    },
+    "Gerador/style.css": {
+      "lang": "css",
+      "linhas": 403,
+      "simbolos": [
+        [
+          "estrutura: menu lateral (abaixo do logo) + conteudo. Em telas largas a pagina nao rola: o ",
+          "secao",
+          51,
+          51,
+          ""
+        ],
+        [
+          "explicacoes (dicas): escondidas; o \"i\" ao lado do nome abre uma, e Configuracoes pode most",
+          "secao",
+          101,
+          101,
+          ""
+        ],
+        [
+          "entrada e acesso por usuario (v2.3.0)",
+          "secao",
+          125,
+          125,
+          ""
+        ],
+        [
+          "simulador",
+          "secao",
+          160,
+          160,
+          ""
+        ],
+        [
+          "faixa \"programa decodificado\" sob o codigo (modulo Simulacao, v2.4.0)",
+          "secao",
+          183,
+          183,
+          ""
+        ],
+        [
+          "diagnostico do programa (diagnostico.js): erro / aviso / dica com causa e solucao",
+          "secao",
+          194,
+          194,
+          ""
+        ],
+        [
+          "seletor de lado (peças de dois lados)",
+          "secao",
+          225,
+          225,
+          ""
+        ],
+        [
+          "lista de trechos (peça simples)",
+          "secao",
+          231,
+          231,
+          ""
+        ],
+        [
+          "incrementos de corte",
+          "secao",
+          280,
+          280,
+          ""
+        ],
+        [
+          "desenho com caixas de digitação nas letras",
+          "secao",
+          288,
+          288,
+          ""
+        ],
+        [
+          "desenho da peca (elementos, lista, janela com cotas)",
+          "secao",
+          302,
+          302,
+          ""
+        ],
+        [
+          "escolha do canto no desenho",
+          "secao",
+          349,
+          349,
+          ""
+        ],
+        [
+          "desenho grande do porta-matriz (viewBox 560x440): caixas menores em relacao ao desenho",
+          "secao",
+          367,
+          367,
+          ""
+        ],
+        [
+          "modulo Simulacao (programa colado)",
+          "secao",
+          374,
+          374,
+          ""
+        ]
+      ]
+    },
+    "Gerador/test.js": {
+      "lang": "js",
+      "linhas": 269,
+      "simbolos": [
+        [
+          "t1",
+          "object",
+          2,
+          2,
+          ""
+        ],
+        [
+          "t2",
+          "object",
+          3,
+          3,
+          ""
+        ],
+        [
+          "fs",
+          "object",
+          4,
+          4,
+          ""
+        ],
+        [
+          "ft",
+          "object",
+          5,
+          5,
+          ""
+        ],
+        [
+          "fc",
+          "object",
+          6,
+          6,
+          ""
+        ],
+        [
+          "fe",
+          "object",
+          7,
+          7,
+          ""
+        ],
+        [
+          "acab",
+          "object",
+          8,
+          8,
+          ""
+        ],
+        [
+          "run",
+          "function",
+          10,
+          19,
+          ""
+        ],
+        [
+          "vars",
+          "function",
+          20,
+          23,
+          ""
+        ],
+        [
+          "chk",
+          "function",
+          24,
+          24,
+          ""
+        ],
+        [
+          "fesp",
+          "object",
+          43,
+          43,
+          ""
+        ],
+        [
+          "ps",
+          "arrow",
+          59,
+          59,
+          ""
+        ],
+        [
+          "t3",
+          "object",
+          79,
+          79,
+          ""
+        ],
+        [
+          "t4",
+          "object",
+          80,
+          80,
+          ""
+        ],
+        [
+          "trE",
+          "object",
+          81,
+          81,
+          ""
+        ],
+        [
+          "big",
+          "arrow",
+          82,
+          82,
+          ""
+        ],
+        [
+          "intA",
+          "object",
+          83,
+          83,
+          ""
+        ],
+        [
+          "bI",
+          "arrow",
+          121,
+          121,
+          ""
+        ],
+        [
+          "mandA",
+          "object",
+          122,
+          122,
+          ""
+        ],
+        [
+          "M",
+          "object",
+          141,
+          141,
+          ""
+        ],
+        [
+          "mig",
+          "arrow",
+          142,
+          142,
+          ""
+        ],
+        [
+          "igual",
+          "arrow",
+          143,
+          143,
+          ""
+        ],
+        [
+          "L",
+          "object",
+          149,
+          149,
+          ""
+        ],
+        [
+          "I",
+          "object",
+          158,
+          158,
+          ""
+        ],
+        [
+          "furo",
+          "object",
+          160,
+          160,
+          ""
+        ],
+        [
+          "M",
+          "object",
+          168,
+          168,
+          ""
+        ],
+        [
+          "cod",
+          "arrow",
+          169,
+          169,
+          ""
+        ],
+        [
+          "norm",
+          "arrow",
+          187,
+          187,
+          ""
+        ],
+        [
+          "furo",
+          "object",
+          225,
+          225,
+          ""
+        ],
+        [
+          "ci",
+          "arrow",
+          226,
+          226,
+          ""
+        ],
+        [
+          "re",
+          "object",
+          246,
+          246,
+          ""
+        ],
+        [
+          "ri",
+          "object",
+          251,
+          251,
+          ""
+        ]
+      ]
+    },
+    "Gerador/testdiag.js": {
+      "lang": "js",
+      "linhas": 278,
+      "simbolos": [
+        [
+          "ok",
+          "function",
+          6,
+          6,
+          ""
+        ],
+        [
+          "cob",
+          "object",
+          8,
+          8,
+          ""
+        ],
+        [
+          "diag",
+          "arrow",
+          9,
+          9,
+          ""
+        ],
+        [
+          "tem",
+          "function",
+          10,
+          15,
+          ""
+        ],
+        [
+          "nao",
+          "function",
+          16,
+          16,
+          ""
+        ],
+        [
+          "ciclo",
+          "arrow",
+          108,
+          108,
+          ""
+        ],
+        [
+          "rosca",
+          "arrow",
+          129,
+          129,
+          ""
+        ],
+        [
+          "alerta",
+          "arrow",
+          159,
+          159,
+          ""
+        ],
+        [
+          "casos",
+          "object",
+          160,
+          162,
+          ""
+        ],
+        [
+          "prog",
+          "object",
+          185,
+          185,
+          ""
+        ],
+        [
+          "walk",
+          "arrow",
+          213,
+          213,
+          ""
+        ],
+        [
+          "permitidos",
+          "object",
+          214,
+          214,
+          ""
+        ],
+        [
+          "t1",
+          "object",
+          227,
+          227,
+          ""
+        ],
+        [
+          "t2",
+          "object",
+          228,
+          228,
+          ""
+        ],
+        [
+          "t4",
+          "object",
+          229,
+          229,
+          ""
+        ],
+        [
+          "t3",
+          "object",
+          230,
+          230,
+          ""
+        ],
+        [
+          "t6",
+          "object",
+          231,
+          231,
+          ""
+        ],
+        [
+          "acab",
+          "object",
+          232,
+          232,
+          ""
+        ],
+        [
+          "trE",
+          "object",
+          234,
+          234,
+          ""
+        ],
+        [
+          "big",
+          "arrow",
+          235,
+          235,
+          ""
+        ],
+        [
+          "intA",
+          "object",
+          236,
+          236,
+          ""
+        ],
+        [
+          "casos",
+          "object",
+          237,
+          248,
+          ""
+        ]
+      ]
+    },
+    "Gerador/testprog.js": {
+      "lang": "js",
+      "linhas": 393,
+      "simbolos": [
+        [
+          "ok",
+          "function",
+          5,
+          5,
+          ""
+        ],
+        [
+          "near",
+          "arrow",
+          6,
+          6,
+          ""
+        ],
+        [
+          "run",
+          "arrow",
+          8,
+          8,
+          ""
+        ],
+        [
+          "fim",
+          "arrow",
+          9,
+          9,
+          ""
+        ],
+        [
+          "sobra",
+          "function",
+          11,
+          11,
+          ""
+        ],
+        [
+          "simula",
+          "function",
+          12,
+          12,
+          ""
+        ],
+        [
+          "t",
+          "object",
+          104,
+          104,
+          ""
+        ],
+        [
+          "walk",
+          "arrow",
+          129,
+          129,
+          ""
+        ],
+        [
+          "t1",
+          "object",
+          143,
+          143,
+          ""
+        ],
+        [
+          "t2",
+          "object",
+          144,
+          144,
+          ""
+        ],
+        [
+          "t4",
+          "object",
+          145,
+          145,
+          ""
+        ],
+        [
+          "t3",
+          "object",
+          146,
+          146,
+          ""
+        ],
+        [
+          "t6",
+          "object",
+          147,
+          147,
+          ""
+        ],
+        [
+          "acab",
+          "object",
+          148,
+          148,
+          ""
+        ],
+        [
+          "trE",
+          "object",
+          150,
+          150,
+          ""
+        ],
+        [
+          "big",
+          "arrow",
+          151,
+          151,
+          ""
+        ],
+        [
+          "intA",
+          "object",
+          152,
+          152,
+          ""
+        ],
+        [
+          "casos",
+          "object",
+          153,
+          169,
+          ""
+        ],
+        [
+          "gk",
+          "object",
+          175,
+          175,
+          ""
+        ],
+        [
+          "tm",
+          "object",
+          176,
+          176,
+          ""
+        ],
+        [
+          "al",
+          "arrow",
+          185,
+          185,
+          ""
+        ],
+        [
+          "prog",
+          "arrow",
+          216,
+          216,
+          ""
+        ],
+        [
+          "ferrR",
+          "arrow",
+          246,
+          246,
+          ""
+        ],
+        [
+          "ref",
+          "arrow",
+          247,
+          247,
+          ""
+        ],
+        [
+          "cone",
+          "arrow",
+          276,
+          276,
+          ""
+        ],
+        [
+          "dev",
+          "arrow",
+          277,
+          283,
+          ""
+        ],
+        [
+          "desvio",
+          "arrow",
+          305,
+          312,
+          ""
+        ],
+        [
+          "base",
+          "object",
+          313,
+          313,
+          ""
+        ],
+        [
+          "t1",
+          "object",
+          328,
+          328,
+          ""
+        ],
+        [
+          "le",
+          "arrow",
+          346,
+          346,
+          ""
+        ],
+        [
+          "ini",
+          "object",
+          353,
+          353,
+          ""
+        ],
+        [
+          "foto",
+          "object",
+          373,
+          374,
+          ""
+        ]
+      ]
+    },
+    "Gerador/version.js": {
+      "lang": "js",
+      "linhas": 2,
+      "simbolos": []
+    },
+    "Gerador/versionar.js": {
+      "lang": "js",
+      "linhas": 20,
+      "simbolos": [
+        [
+          "copia",
+          "function",
+          10,
+          17,
+          ""
+        ]
+      ]
+    },
+    "Gerador/pdfprofile.js": {
+      "lang": "js",
+      "linhas": 94,
+      "simbolos": [
+        [
+          "num",
+          "function",
+          8,
+          8,
+          ""
+        ],
+        [
+          "valid",
+          "function",
+          9,
+          9,
+          ""
+        ],
+        [
+          "fmt",
+          "function",
+          10,
+          10,
+          ""
+        ],
+        [
+          "analyze",
+          "function",
+          11,
+          11,
+          ""
+        ],
+        [
+          "at",
+          "function",
+          28,
+          28,
+          ""
+        ],
+        [
+          "scaleFor",
+          "function",
+          35,
+          35,
+          ""
+        ],
+        [
+          "svg",
+          "function",
+          36,
+          36,
+          ""
+        ],
+        [
+          "x",
+          "function",
+          45,
+          45,
+          ""
+        ],
+        [
+          "y",
+          "function",
+          46,
+          46,
+          ""
+        ],
+        [
+          "ln",
+          "function",
+          47,
+          47,
+          ""
+        ],
+        [
+          "text",
+          "function",
+          48,
+          48,
+          ""
+        ],
+        [
+          "profile",
+          "function",
+          49,
+          49,
+          ""
+        ],
+        [
+          "path",
+          "function",
+          52,
+          52,
+          ""
+        ],
+        [
+          "clickLabel",
+          "function",
+          53,
+          53,
+          ""
+        ]
+      ]
+    },
+    "Gerador/pdfvector.js": {
+      "lang": "js",
+      "linhas": 113,
+      "simbolos": [
+        [
+          "transform",
+          "function",
+          8,
+          8,
+          ""
+        ],
+        [
+          "multiply",
+          "function",
+          9,
+          9,
+          ""
+        ],
+        [
+          "extract",
+          "function",
+          10,
+          10,
+          ""
+        ],
+        [
+          "point",
+          "function",
+          13,
+          13,
+          ""
+        ],
+        [
+          "add",
+          "function",
+          14,
+          14,
+          ""
+        ],
+        [
+          "traceVertical",
+          "function",
+          35,
+          35,
+          ""
+        ],
+        [
+          "pairedAt",
+          "function",
+          58,
+          58,
+          ""
+        ],
+        [
+          "rounded",
+          "function",
+          76,
+          76,
+          ""
+        ],
+        [
+          "compress",
+          "function",
+          77,
+          77,
+          ""
+        ],
+        [
+          "modelSegments",
+          "function",
+          90,
+          90,
+          ""
+        ],
+        [
+          "trace",
+          "function",
+          101,
+          101,
+          ""
+        ]
+      ]
+    },
+    "Gerador/pdfimport.js": {
+      "lang": "js",
+      "linhas": 261,
+      "simbolos": [
+        [
+          "$",
+          "arrow",
+          4,
+          4,
+          ""
+        ],
+        [
+          "status",
+          "function",
+          8,
+          8,
+          ""
+        ],
+        [
+          "fmt",
+          "function",
+          9,
+          9,
+          ""
+        ],
+        [
+          "valid",
+          "function",
+          10,
+          10,
+          ""
+        ],
+        [
+          "setText",
+          "function",
+          11,
+          11,
+          ""
+        ],
+        [
+          "invalidate",
+          "function",
+          12,
+          12,
+          ""
+        ],
+        [
+          "fresh",
+          "function",
+          13,
+          13,
+          ""
+        ],
+        [
+          "loadPdfjs",
+          "function",
+          14,
+          14,
+          ""
+        ],
+        [
+          "renderPreview",
+          "function",
+          23,
+          23,
+          ""
+        ],
+        [
+          "showFallback",
+          "function",
+          40,
+          40,
+          ""
+        ],
+        [
+          "showCanvas",
+          "function",
+          44,
+          44,
+          ""
+        ],
+        [
+          "showPage",
+          "function",
+          47,
+          47,
+          ""
+        ],
+        [
+          "cropItems",
+          "function",
+          69,
+          69,
+          ""
+        ],
+        [
+          "recognizePage",
+          "function",
+          77,
+          77,
+          ""
+        ],
+        [
+          "paintSuggestions",
+          "function",
+          136,
+          136,
+          ""
+        ],
+        [
+          "drawSelection",
+          "function",
+          144,
+          144,
+          ""
+        ],
+        [
+          "pointer",
+          "function",
+          152,
+          152,
+          ""
+        ],
+        [
+          "openEditor",
+          "function",
+          186,
+          186,
+          ""
+        ],
+        [
+          "closeEditor",
+          "function",
+          199,
+          199,
+          ""
+        ],
+        [
+          "kind",
+          "arrow",
+          224,
+          224,
+          ""
+        ]
+      ]
+    },
+    "Gerador/pdfrecognizer.js": {
+      "lang": "js",
+      "linhas": 42,
+      "simbolos": [
+        [
+          "number",
+          "function",
+          7,
+          7,
+          ""
+        ],
+        [
+          "candidates",
+          "function",
+          8,
+          8,
+          ""
+        ],
+        [
+          "recognize",
+          "function",
+          20,
+          20,
+          ""
+        ]
+      ]
+    },
+    "Gerador/testpdf.js": {
+      "lang": "js",
+      "linhas": 11,
+      "simbolos": [
+        [
+          "t",
+          "function",
+          3,
+          3,
+          ""
+        ]
+      ]
+    },
+    "Gerador/testpdfview.js": {
+      "lang": "js",
+      "linhas": 29,
+      "simbolos": []
+    },
+    "Gerador/testpdfscale.js": {
+      "lang": "js",
+      "linhas": 33,
+      "simbolos": []
+    }
   }
 }
