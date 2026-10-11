@@ -91,7 +91,7 @@ function trace(lines,diam,length,region){
  function modelSegments(rr,internal){
   if(!rr.length)return[];
   return rr.map(function(q,i){
-   var next=rr[i+1],mm=i===rr.length-1?length-(q.start-best.top)/pxPerMm:(next.start-q.start)/pxPerMm;
+   var next=rr[i+1],mm=next?(next.start-q.start)/pxPerMm:length-(q.start-rr[0].start)/pxPerMm;
    return {side:'1',tipo:internal?'icil':'cil',a:rounded(q.d),b:rounded(mm),c:''};
   });
  }
