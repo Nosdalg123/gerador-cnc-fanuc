@@ -18,7 +18,7 @@
 .pdf-orientation-control select{min-height:46px;width:100%}
 #pdfCotas .pdf-dimension{border:1px solid #aec3d9;border-radius:7px;padding:5px 9px;display:inline-flex;gap:4px;background:#edf4fa;color:#253b53;font-size:13px}
 #pdfCotas .pdf-dimension small{opacity:.7}#pdfOrientationStatus{padding:8px;border-radius:6px}
-</style></head>
+</style><style>.pdf-review{margin:14px 0;padding:13px;border:1px solid var(--border,#9bb3cd);border-radius:10px}.pdf-review summary{cursor:pointer;margin-bottom:10px}.pdf-review-row{padding:9px 0;border-bottom:1px solid #c4d1df;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pdf-review-row .pdf-review-info{flex:1 1 230px}.pdf-review-row .pdf-review-control{flex:1 1 230px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}.pdf-review-row select{min-width:160px;max-width:250px;flex:1 1 160px}.pdf-review-row small{display:block;color:var(--muted,#64748b)}.pdf-review-issues{font-weight:650}</style></head>
 <body>
 <div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="loginTit">
   <form class="login-box" id="loginForm" autocomplete="off">
@@ -199,7 +199,10 @@
 </div></div>
 <details class="pdf-extracted"><summary>Texto e cotas detectadas no PDF</summary><label for="pdfTexto">Texto extraído do PDF (quando disponível)</label><textarea id="pdfTexto" rows="3" readonly placeholder="PDF digitalizado: copie as cotas visualmente para os campos abaixo."></textarea>
 <div id="pdfCotas" class="toolbar" aria-label="Cotas identificadas para conferência"></div></details>
-<h3>3 · Conferir orientação, cotas e salvar</h3>
+<details id="pdfReview" class="pdf-review" open><summary><strong>3 · Conferência das cotas entre vistas</strong> <span id="pdfReviewCount" class="note">Nenhuma geometria carregada</span></summary>
+<p class="note">As cotas de outras vistas são sugestões até que sejam associadas à característica correta. Dimensões sem vínculo, conflito entre vistas e detalhes não suportados impedem o salvamento direto.</p>
+<div id="pdfReviewRows" role="list" aria-live="polite"></div></details>
+<h3>4 · Conferir orientação e salvar</h3>
 <div class="pdf-orientation-control"><div class="field"><label for="pdfFaceChoice"><strong>Face do desenho que será Z0 no torno CNC</strong></label>
 <select id="pdfFaceChoice"><option value="">Selecione a face de usinagem (obrigatório)</option><option value="start">Face esquerda da vista lateral (ou superior, se a vista estiver vertical)</option><option value="end">Face direita da vista lateral (ou inferior, se a vista estiver vertical)</option></select></div>
 <p class="note">O eixo de rotação corresponde ao centro da peça (X0). A usinagem avança da face Z0 em direção ao fundo (Z negativo). Escolher outra face inverte a ordem das cotas no CNC.</p></div>
@@ -468,6 +471,7 @@
 <script src="desenho.js"></script>
 <script src="pdfrecognizer.js"></script>
 <script src="pdfdimensions.js"></script>
+<script src="pdfreconcile.js"></script>
 <script src="pdfviews.js"></script>
 <script src="pdforientation.js"></script>
 <script src="pdfprofile.js"></script>
