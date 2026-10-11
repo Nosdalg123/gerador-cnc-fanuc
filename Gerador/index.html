@@ -195,7 +195,7 @@
 <div class="toolbar" style="margin-bottom:8px"><button type="button" class="btn sm" id="pdfAddExt">Acrescentar ao contorno externo</button><button type="button" class="btn sm" id="pdfAddInt">Acrescentar ao contorno interno</button><button type="button" class="btn sm" id="pdfReverseProfile">Inverter face Z0</button><button type="button" class="btn sm" id="pdfPreviewZoomIn">+ Zoom</button><button type="button" class="btn sm" id="pdfPreviewZoomOut">− Zoom</button><button type="button" class="btn sm" id="pdfPreviewZoomReset">Ajustar</button><select id="pdfProfileSide" aria-label="Lado projetado"><option value="1">Lado 1</option><option value="2">Lado 2</option></select></div>
 <div id="pdfProfileSvg" class="pdf-profile-svg" aria-live="polite"><p class="note">A projeção aparecerá aqui após reconhecer ou informar as cotas.</p></div>
 <div id="pdfProfileMsg" class="note" role="status">Confira as cotas projetadas com o PDF original.</div>
-<div id="pdfOrientationStatus" class="note" role="status" style="margin:8px 0;font-weight:650">Face de referência não confirmada.</div>
+<div id="pdfOrientationStatus" class="note" role="status" style="margin:8px 0;font-weight:650">Face de referência não confirmada.</div><div id="pdfUnresolved" class="note" role="alert" style="margin:10px 0;font-weight:600"></div>
 </div></div>
 <details class="pdf-extracted"><summary>Texto e cotas detectadas no PDF</summary><label for="pdfTexto">Texto extraído do PDF (quando disponível)</label><textarea id="pdfTexto" rows="3" readonly placeholder="PDF digitalizado: copie as cotas visualmente para os campos abaixo."></textarea>
 <div id="pdfCotas" class="toolbar" aria-label="Cotas identificadas para conferência"></div></details>
@@ -207,7 +207,7 @@
 <input type="hidden" id="pdfComprimento">
 <label class="chk pdf-confirm"><input type="checkbox" id="pdfConfirmado"> Confirmo que a geometria projetada, a vista selecionada e todas as cotas correspondem ao PDF original.</label>
 <div class="pdf-save-strip"><div class="pdf-name"><label for="pdfNome"><strong>Nome do desenho</strong></label><input id="pdfNome" autocomplete="off" placeholder="Ex.: Bucha Ø50 x 30"></div><button type="button" class="btn primary pdf-save-button" id="pdfAplicar" disabled>Salvar desenho confirmado</button></div>
-<div class="toolbar"><button type="button" class="btn" id="pdfAbrirGerador" hidden>Usar desenho no Gerador</button></div><div class="note" id="pdfSaved" role="status"></div>
+<div class="toolbar"><button type="button" class="btn" id="pdfCompleteEditor">Concluir raios, roscas e detalhes no editor completo</button><button type="button" class="btn" id="pdfAbrirGerador" hidden>Usar desenho no Gerador</button></div><div class="note" id="pdfSaved" role="status"></div>
 <dialog id="pdfEditDialog" class="pdf-edit-dialog"><form method="dialog" id="pdfEditForm"><h3 id="pdfEditTitle">Editar cota</h3>
 <div class="row" id="pdfEditFields">
 <div class="field"><label for="pdfEditTipo">Tipo de trecho</label><select id="pdfEditTipo"><option value="cil">Cilindro externo</option><option value="cone">Cone externo</option><option value="icil">Cilindro interno</option><option value="icone">Cone interno</option></select></div>
