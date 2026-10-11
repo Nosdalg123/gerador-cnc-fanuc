@@ -25,6 +25,8 @@ function check(args){
  groups.forEach(([label,g])=>{
   if(!g||!g.selected||!g.selected.length)return;
   if(g.connection&&g.connection.components!==1)problems.push('Perfil '+label+' tem partes desconectadas.');
+  if(g.connection&&g.connection.branches&&g.connection.branches.length)problems.push('Perfil '+label+' possui ramificações não resolvidas.');
+  if(g.connection&&g.connection.gaps&&g.connection.gaps.length!==2)problems.push('Perfil '+label+' não é um percurso aberto único de duas extremidades.');
   if(g.classified&&g.classified.some(t=>t.kind!=='cil'&&t.kind!=='cone'))
    problems.push('Perfil '+label+' contém arco, face/degrau ou curva ainda sem tradução CNC.');
   let intervals=g.selected.map(s=>{
