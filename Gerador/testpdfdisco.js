@@ -46,4 +46,4 @@ assert.deepStrictEqual(O.fromDrawing(origin,'horizontal','direita','1'),flipped)
 assert.deepStrictEqual(O.fromDrawing(origin,'vertical','inferior','1'),flipped);
 const metadata=O.orientation('horizontal','esquerda','1');
 assert.deepStrictEqual([metadata.origem,metadata.zAvanca,metadata.xModo],['Z0','negativo','diametro']);
-console.log('Disco 7: 25 verificações de cotas, segurança da leitura e inversão X/Z aprovadas.');
+console.log('Disco 7: 26 verificações de cotas, segurança da leitura e inversão X/Z aprovadas.');
