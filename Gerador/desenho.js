@@ -240,6 +240,9 @@
       if (!el.hidden) seg(el, [[1, 'Lado 1'], [2, 'Lado 2']], ui.lado, function (v) { ui.lado = +v; tela(); });
     });
     listas(); grafico();
+    var pending=work.pdfControle&&work.pdfControle.pendencias||[],panel=$('#dsPdfRevisao');
+    panel.hidden=!pending.length;
+    $('#dsPdfPendencias').textContent=pending.length?'Ainda não liberados para o Gerador: '+pending.map(p=>p.rotulo+' ('+(p.view||'outra vista')+')').join(' · '):'';
   }
   function mudou() { persistWork(); tela(); }
 
@@ -255,6 +258,10 @@
   $('#dsLPeca').oninput = function () { work.lPeca = this.value; mudou(); };
   $('#dsDRef').oninput = function () { work.dRef = this.value; mudou(); };
   function salvar() {
+    if(work.pdfControle&&work.pdfControle.pendencias&&work.pdfControle.pendencias.length){
+      alert('O desenho ainda possui características do PDF não verificadas: '+work.pdfControle.pendencias.map(q=>q.rotulo).join(', ')+'.\nAdicione os elementos no editor e use "Verificar detalhes" antes de salvar.');
+      return false;
+    }
     if (!String(work.nome).trim()) return false;
     work.nome = String(work.nome).trim();
     var agora = new Date().toISOString();
@@ -264,6 +271,16 @@
     return true;
   }
   $('#dsSalvar').onclick = salvar;
+  $('#dsPdfVerificar').onclick = function(){
+    var current=work.pdfControle;
+    if(!current||!current.pendencias||!current.pendencias.length)return;
+    var report=root.CNCPDFAuditoria&&root.CNCPDFAuditoria.verify(work,current.pendencias);
+    if(!report){alert('Auditoria geométrica indisponível.');return}
+    if(!report.ready){current.pendencias=report.unresolved;persistWork();tela();alert('Ainda há detalhes que não podem ser associados com segurança ao perfil CNC: '+report.unresolved.map(q=>q.rotulo).join(', '));return}
+    if(!confirm('Todos os detalhes obrigatórios possuem elementos correspondentes. Você conferiu suas posições, cotas e orientação no PDF e deseja liberar o desenho para salvar?'))return;
+    current.pendencias=[];current.status='confirmado';current.confirmadoEm=new Date().toISOString();
+    persistWork();tela();
+  };
   $('#dsDup').onclick = function () {
     if (!work.id) return; var c = clone(work); c.id = uid(); c.nome = work.nome + ' (cópia)'; c.criado = c.alterado = new Date().toISOString();
     lista.push(c); save(K_DES, lista); work = clone(c); ui.lado = 1; persistWork(); tela(); avisaMudou(); $('#dsNome').focus(); $('#dsNome').select();
@@ -428,6 +445,10 @@
       novo.lPeca = dados.lPeca;
       novo.dRef = dados.dRef;
       novo.lados = dados.items.some(function (it) { return it.side === '2'; }) ? '2' : '1';
+      if(Array.isArray(dados.pendencias)&&dados.pendencias.length){
+        novo.pdfControle={origem:'PDF vetorial',status:'revisao',
+          orientacao:dados.orientacao||null,pendencias:clone(dados.pendencias)};
+      }
       dados.items.forEach(function (it) {
         var el = { id: uid(), tipo: it.tipo, a: it.a, b: it.b };
         if (it.tipo === 'cone' || it.tipo === 'icone') el.c = it.c;
