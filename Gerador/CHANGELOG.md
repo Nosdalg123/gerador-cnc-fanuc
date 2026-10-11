@@ -8,6 +8,17 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.15.0 — 11/10/2026 — Editor CAD assistido com seleção automática e retângulo visível (branch isolada)
+- Primeira proposta automática ao carregar a vista lateral de DXF: separação axial/radial de cadeias candidatas externas e internas. **Sugestão, não geometria CNC validada.**
+- Corrigida delimitação da vista: **retângulo azul desenhado durante o arraste**, mantendo caixa visível após soltar o mouse.
+- Novos modos de clique no perfil: **Adicionar externo**, **Adicionar interno**, **Desmarcar perfil**, **Apagar linha**, **Apagar por retângulo** e **Estender linha**.
+- **Estender linha LINE** em mm, escolhendo ponta inicial/final; mantém alinhamento e atualiza as coordenadas. Arcos e polilinhas não são estendidos automaticamente.
+- Histórico **Desfazer** e **Restaurar desenho original**; alterações só na cópia projetada. A referência CAD original permanece íntegra.
+- Botões diretos **Z0 na esquerda / Z0 na direita / Z0 pendente**, com indicação visual na projeção. Face física deve ser confirmada na preparação.
+- Rascunhos mantêm região, eixo, Z0, segmentos externos/internos, linhas ocultadas e extensões, armazenando as diferenças em vez de duplicar o CAD inteiro.
+- Bloqueio do CNC se a geometria foi alterada ou se arcos, roscas, descontinuidades e dimensões não estão representados integralmente; alternativa de completar no editor manual.
+- `dxfedit.js`, `testdxfedit.js`, regressão Chromium atualizada, relatório `TESTE-DXF-EDITOR-2.15.md`.
+
 ## 2.14.0 — 11/10/2026 — Corrigir reconstrução DXF ramificada (branch isolada)
 - Auditoria direta dos DXFs reais Disco 7″ e Copo 7″: a maior componente incluía caminhos ramificados que não são um único perfil CNC. Corrigida causa raiz.
 - `dxfchains.js`: separação em cadeias por pontas/bifurcações, snap por distância geométrica real e destaque de caminhos internos/externos individuais.
