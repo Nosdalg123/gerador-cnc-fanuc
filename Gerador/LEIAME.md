@@ -2,6 +2,13 @@
 
 Abrir: dois cliques em `index.html` (Chrome ou Edge). O Gerador funciona localmente; a importação automática de texto do PDF precisa carregar a biblioteca PDF.js na primeira utilização.
 
+## Separação de vistas e detalhes — teste Copo 7″ (v2.12.0)
+- Ao abrir um PDF, selecione manualmente uma vista com o botão **Selecionar vista no PDF**. Não se reconstrói um contorno com todas as vistas da página misturadas.
+- Atalhos de “SEÇÃO Y-Y” ou “DETALHE Z” **localizam legendas**, mas não escolhem uma caixa de tamanho adivinhado. Arraste o retângulo em torno da vista e de suas cotas.
+- O leitor de cotas reconhece indicações de rosca minúsculas (m10), roscas como M64 P4, raios R3 e R6,50 e ângulos como 6°. Números sem glifo Ø permanecem sem classificação geométrica até serem conferidos.
+- Se o recorte for vetorialmente denso ou contiver entidades ainda não representáveis (roscas, raios, ângulos), **Salvar desenho confirmado** fica bloqueado. É intencional: evitar programa CNC incorreto.
+- Veja `TESTE-COPO7.md` para medições extraídas diretamente do arquivo e limitações reais.
+
 ## Orientação PDF → Torno CNC e teste Disco 7″ (v2.11.0)
 - **Selecionar a vista** com um retângulo incluindo suas cotas; o PDF pode conter várias vistas e escalas diferentes.
 - Em **Orientação em relação ao torno CNC**, escolher eixo horizontal/vertical e qual extremidade real da vista ficará voltada para a ferramenta (**Z0**). A face oposta ficará voltada à placa.
