@@ -2,6 +2,18 @@
 
 Abrir: dois cliques em `index.html` (Chrome ou Edge). O Gerador funciona localmente; a importação automática de texto do PDF precisa carregar a biblioteca PDF.js na primeira utilização.
 
+## Editor DXF interativo — v2.15.0
+1. Clique **Importar CAD DXF (geometria real)** e selecione o arquivo. O sistema delimita uma vista principal sugerida e marca uma **proposta de contorno externo/interno**. Corrija-a antes de liberar CNC.
+2. **Delimitar outra vista**: pressione o botão, clique e arraste no desenho original. O retângulo azul acompanha o mouse; solte para aplicar. A caixa fica visível.
+3. No painel projetado, escolha **Externo**, **Interno** ou **Desmarcar perfil**; clique em cada linha para adicioná-la/removê-la da proposta sem apagar a geometria.
+4. Escolha **Apagar linha** e clique em uma entidade para ocultá-la da cópia de trabalho; ou **Apagar por retângulo** e arraste uma caixa azul sobre várias linhas para removê-las juntas. A fonte original continua intacta.
+5. Para **Estender linha**, escolha o modo, clique em uma entidade LINE, marque **Inicial** ou **Final**, digite o comprimento em milímetros e pressione **Aplicar extensão**. ARC/LWPOLYLINE não são elegíveis.
+6. Use **Desfazer edição** para voltar um passo e **Restaurar desenho original** para reiniciar o contorno de trabalho.
+7. Z0: clique em **Z0 na esquerda**, **Z0 na direita** ou **Z0 pendente**. A indicação aparece no desenho; a fixação da peça deve ser confirmada na preparação da máquina.
+8. Salve em **Rascunho CAD** para continuar mais tarde, inclusive sem Z0. Se tiver apagado/estendido segmentos, revise o CAD e complete as operações antes de transferir para o Gerador CNC.
+
+O reconhecimento não substitui engenharia de processo: raios, SPLINE, canais, roscas, paredes internas e transições devem ser inteiramente associados e validados. Veja `TESTE-DXF-EDITOR-2.15.md`.
+
 ## Escolher cadeias CAD reais e corrigir rascunhos (v2.14.0)
 **Problema corrigido:** o Disco tem várias cadeias desconectadas e o Copo tem várias bifurcações. A versão também corrige dois erros que impediam a projeção no navegador: inicialização do módulo DXF e escala NaN ao recortar a vista. O teste Chromium automatizado cobre a importação e o salvamento de rascunho. Selecionar a maior componente inteira mistura perfis externos, internos e auxiliares.
 
