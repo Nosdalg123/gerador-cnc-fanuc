@@ -86,8 +86,33 @@ function explode(e){
  }
  return [];
 }
+function nurbsPoint(curve,t){
+ const pts=curve.control,degree=curve.degree,knots=curve.knots,weights=curve.weights||[];
+ const n=pts.length-1;if(!pts.length||degree<1||degree>5||knots.length!==n+degree+2)return null;
+ let k=degree;while(k<n&&t>=knots[k+1])k++;
+ let d=[];for(let j=0;j<=degree;j++){
+  let i=k-degree+j,w=weights[i]||1,p=pts[i];if(!p)return null;
+  d[j]=[p[0]*w,p[1]*w,w];
+ }
+ for(let r=1;r<=degree;r++)for(let j=degree;j>=r;j--){
+  let i=k-degree+j,den=knots[i+degree-r+1]-knots[i],a=Math.abs(den)<1e-12?0:(t-knots[i])/den;
+  for(let q=0;q<3;q++)d[j][q]=(1-a)*d[j-1][q]+a*d[j][q];
+ }
+ let p=d[degree];return p[2]!==0?[p[0]/p[2],p[1]/p[2]]:null;
+}
+function splinePoints(curve,n=96){
+ const p=curve.degree,k=curve.knots,cs=curve.control;
+ if(k.length===cs.length+p+1&&p>=1&&p<=5){
+  let start=k[p],end=k[cs.length],out=[];
+  if(!(end>start))return [];
+  for(let j=0;j<=n;j++){const q=nurbsPoint(curve,j===n?end-1e-10*(end-start):start+(end-start)*j/n);if(q)out.push(q)}
+  if(out.length>3)return out;
+ }
+ return curve.fit.length>=2?curve.fit:curve.control;
+}
 function sample(seg,n=32){
  if(seg.kind==='line')return [seg.a,seg.b];
+ if(seg.type==='SPLINE')return splinePoints(seg,Math.max(64,n));
  if(seg.kind==='arc'){
   const [a,b]=seg.a&&seg.b?[seg.a,seg.b]:arcEnds(seg);
   let start=Math.atan2(a[1]-seg.c[1],a[0]-seg.c[0]),end=Math.atan2(b[1]-seg.c[1],b[0]-seg.c[0]);
@@ -101,7 +126,7 @@ function bounds(entities){let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity;
  for(const e of entities){let pts=[];
   if(e.type==='LINE')pts=[e.a,e.b];else if(e.type==='CIRCLE')pts=[[e.c[0]-e.r,e.c[1]-e.r],[e.c[0]+e.r,e.c[1]+e.r]];
   else if(e.type==='ARC')pts=sample(Object.assign({kind:'arc'},e),48);else if(e.type==='LWPOLYLINE')pts=e.v.map(q=>[q.x,q.y]);
-  else if(e.type==='SPLINE')pts=e.fit.length?e.fit:e.control;else if(e.at)pts=[e.at];
+  else if(e.type==='SPLINE')pts=splinePoints(e,32);else if(e.at)pts=[e.at];
   for(const p of pts)if(Number.isFinite(p[0])&&Number.isFinite(p[1])){x1=Math.min(x1,p[0]);x2=Math.max(x2,p[0]);y1=Math.min(y1,p[1]);y2=Math.max(y2,p[1])}
  }
  return Number.isFinite(x1)?{x1,y1,x2,y2,width:x2-x1,height:y2-y1}:null;
@@ -115,5 +140,5 @@ function candidateAxis(entities,rect){
  let clusters=[];for(const y of centers){let c=clusters.find(x=>Math.abs(x.y-y)<.3);if(c){c.sum+=y;c.count++;c.y=c.sum/c.count}else clusters.push({y,sum:y,count:1})}
  clusters.sort((a,b)=>b.count-a.count);return clusters[0].count>=2?clusters[0].y:null;
 }
-return {read,explode,sample,bounds,cut,nativeCotas,candidateAxis,bulgeArc};
+return {read,explode,sample,bounds,cut,nativeCotas,candidateAxis,bulgeArc,splinePoints};
 });
