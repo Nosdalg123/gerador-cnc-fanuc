@@ -2,14 +2,38 @@
    confirmada de entidades geometricamente representáveis. Sem exportar curvas omitidas. */
 (function(root){
 'use strict';
-const $=q=>document.querySelector(q),DX=root.CNCDXF,P=root.CNCDXFPerfil;
-let doc=null,rect=null,axis=NaN,suggest=null,active=false,start=null,zoom=1,fileName='',selected={externo:new Set(),interno:new Set()},chainInfo=null;
+const $=q=>document.querySelector(q),DX=root.CNCDXF,P=root.CNCDXFPerfil,E=root.CNCDXFEdicao;
+let doc=null,sourceDoc=null,rect=null,axis=NaN,suggest=null,active=false,start=null,zoom=1,fileName='',
+ selected={externo:new Set(),interno:new Set()},chainInfo=null,hidden=new Set(),undo=[],pendingExtension=null,
+ editCount=0,dragRect=null,projDrag=null,skipProjectedClick=false;
 const KEY='cnc_dxf_rascunhos_v1';
 const val=id=>$(id).value;
 const fmt=n=>Number(n).toLocaleString('pt-BR',{maximumFractionDigits:3});
 const status=(s,bad)=>{$('#dxfStatus').textContent=s;$('#dxfStatus').style.color=bad?'#b23927':''};
 const checked=()=>$('#dxfChecked').checked;
+const clone=obj=>JSON.parse(JSON.stringify(obj));
+const mode=()=>document.querySelector('input[name=dxfAssign]:checked')?.value||'externo';
 function resetConfirm(){$('#dxfChecked').checked=false;$('#dxfSaveCNC').disabled=true;$('#dxfSaved').textContent=''}
+function remember(){
+ if(!doc)return;
+ undo.push({doc:clone(doc),hidden:[...hidden],externo:[...selected.externo],interno:[...selected.interno],editCount});
+ if(undo.length>25)undo.shift();$('#dxfUndo').disabled=false;
+}
+function markEdited(){editCount++;resetConfirm();renderProjection()}
+function removeLine(id){
+ if(hidden.has(id))return;
+ remember();hidden.add(id);selected.externo.delete(id);selected.interno.delete(id);
+ if(pendingExtension===id)pendingExtension=null;
+ markEdited();
+}
+function updateZ0(face){
+ $('#dxfFace').value=face;
+ for(const [name,f] of [['dxfZ0Left','esquerda'],['dxfZ0Right','direita'],['dxfZ0Pending','']])
+  $('#'+name).setAttribute('aria-pressed',String(f===face));
+ $('#dxfZ0Hint').textContent=face?'Z0 na face '+face+' (confirmar na preparação e simulação).':
+  'Z0 pendente — permitido salvar rascunho, CNC bloqueado.';
+ resetConfirm();renderProjection();
+}
 function draftList(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(_){return []}}
 function refreshDrafts(){
  let ls=draftList(),s=$('#dxfDraftList');s.replaceChildren();
@@ -31,7 +55,7 @@ function screenPt(pt,b){
 }
 function renderSource(){
  if(!doc)return;
- const b=DX.bounds(doc.geometry),host=$('#dxfSource');host.innerHTML=P.svg(doc,null);
+ const base=sourceDoc||doc,b=DX.bounds(base.geometry),host=$('#dxfSource');host.innerHTML=P.svg(base,null);
  let svg=host.querySelector('svg');svg.style.width=zoom*100+'%';svg.style.maxWidth='none';
  if(rect&&b){
   let a=screenPt([rect.x1,rect.y1],b),c=screenPt([rect.x2,rect.y2],b);
@@ -43,7 +67,7 @@ function renderSource(){
   svg.appendChild(box);
  }
 }
-function dimsForRect(){return doc&&rect?DX.nativeCotas(doc.dimensions,rect):[]}
+function dimsForRect(){return sourceDoc&&rect?DX.nativeCotas(sourceDoc.dimensions,rect):[]}
 function renderMeasures(){
  if(!doc)return;
  let dims=dimsForRect(),host=$('#dxfDimensions');host.replaceChildren();
@@ -76,13 +100,14 @@ function renderMeasures(){
 function analyse(mode){
  if(!doc||!rect)return null;
  let a=Number(val('#dxfAxis'));
- return P.analyze(doc,rect,a,val('#dxfFace'),selected[mode]);
+ if(val('#dxfAxis')==='')a=NaN;
+ return P.analyze(doc,rect,a,val('#dxfFace'),selected[mode],hidden);
 }
 function drawChains(){
  const host=$('#dxfChains');host.replaceChildren();chainInfo=null;
  if(!doc||!rect||val('#dxfAxis')===''){host.textContent='Selecione a vista e indique o eixo X0 para encontrar as cadeias.';return}
  const y=Number(val('#dxfAxis'));if(!Number.isFinite(y))return;
- const seg=P.segments(doc.geometry,rect).filter(s=>P.above(s,y));
+ const seg=P.segments(doc.geometry,rect,hidden).filter(s=>P.above(s,y));
  chainInfo=root.CNCDXFCadeias.build(seg,{axis:y,tol:0.16});
  const info=document.createElement('p');info.className='note';
  info.textContent=chainInfo.chains.length+' cadeias · '+chainInfo.bifurcations.length+' bifurcações · '+chainInfo.tips.length+' pontas abertas.';
@@ -110,8 +135,8 @@ function renderProjection(){
  let all=new Set([...selected.externo,...selected.interno]),a=Number(val('#dxfAxis')),none=val('#dxfAxis')==='';
  if(none)a=NaN;
  axis=a;
- let cand=P.analyze(doc,rect,a,val('#dxfFace'),new Set()).candidate;
- host.innerHTML=P.svg(doc,rect,{axis:a,face:val('#dxfFace'),selected:all,candidate:new Set(cand.map(s=>s.uid)),dimensions:dimsForRect()});
+ let cand=P.analyze(doc,rect,a,val('#dxfFace'),new Set(),hidden).candidate;
+ host.innerHTML=P.svg(doc,rect,{axis:a,face:val('#dxfFace'),selected:all,hidden,candidate:new Set(cand.map(s=>s.uid)),dimensions:dimsForRect()});
  drawChains();
  const e=analyse('externo'),i=analyse('interno'),warn=$('#dxfWarnings');
  if(!e){warn.textContent='Selecione a seção longitudinal do DXF. A geometria original é exibida sem conversão inventada.';$('#dxfSaveCNC').disabled=true;return}
@@ -131,17 +156,28 @@ function renderProjection(){
  more.problems.forEach(problem=>{if(!issues.includes(problem))issues.push(problem)});
   let out=issues.length?issues.map((t,k)=>(k+1)+'. '+t).join('\n'):'Perfil selecionado sem advertências topológicas básicas. Conferir todos os detalhes, furos e fixação.';
  warn.textContent=out;warn.style.whiteSpace='pre-line';
+ if(hidden.size||editCount)issues.push('CAD editado na cópia de trabalho ('+hidden.size+' linhas ocultadas, '+editCount+' edições). Revise e confirme no editor manual antes de gerar CNC.');
+ warn.textContent=issues.length?issues.map((t,k)=>(k+1)+'. '+t).join('\n'):'Perfil sem pendências topológicas detectadas; ainda requer validação da preparação.';
  $('#dxfSaveCNC').disabled=!(checked()&&!issues.length&&e.canExport&&(!i.selected.length||i.canExport)&&doc.units===4);
 }
+function autoRecognize(){
+ if(!doc||!rect||val('#dxfAxis')==='')return;
+ const result=E.autoSelect(doc,rect,Number(val('#dxfAxis')));
+ selected.externo=new Set(result.externo);selected.interno=new Set(result.interno);
+ resetConfirm();renderProjection();
+ status(result.reason+(result.chains?' · '+result.chains.bifurcations.length+' bifurcações identificadas.':''));
+}
 function view(rectangle){
- rect=rectangle;selected.externo.clear();selected.interno.clear();chainInfo=null;resetConfirm();renderSource();renderMeasures();renderProjection();
+ rect=rectangle;selected.externo.clear();selected.interno.clear();chainInfo=null;
+ active=false;start=null;pendingExtension=null;resetConfirm();renderSource();renderMeasures();renderProjection();
+ if(rect&&val('#dxfAxis')!=='')autoRecognize();
 }
 function suggestView(){
  if(!doc)return;
  suggest=P.sectionSuggestion(doc);
  if(suggest){
-  view(suggest.rect);if(!val('#dxfAxis'))$('#dxfAxis').value=suggest.axis.toFixed(5);
-  renderProjection();
+  if(!val('#dxfAxis'))$('#dxfAxis').value=suggest.axis.toFixed(5);
+  view(suggest.rect);
   status('Vista lateral sugerida pelas circunferências concêntricas. Confira o recorte e defina a face Z0.');
  }else status('Não encontrei vista lateral com confiança. Use Delimitar outra vista e indique o eixo manualmente.',true);
 }
@@ -155,9 +191,11 @@ $('#dxfFile').onchange=async function(){
   let bytes=await f.arrayBuffer(),text=new TextDecoder('windows-1252').decode(bytes);
   status('Analisando entidades CAD, cotas e vistas do arquivo...');
   await new Promise(resolve=>root.requestAnimationFrame?root.requestAnimationFrame(()=>resolve()):resolve());
-  doc=DX.read(text);fileName=f.name;rect=null;suggest=null;axis=NaN;zoom=1;active=false;
+  doc=DX.read(text);sourceDoc=clone(doc);fileName=f.name;rect=null;suggest=null;axis=NaN;zoom=1;active=false;
+  hidden.clear();undo=[];editCount=0;pendingExtension=null;$('#dxfUndo').disabled=true;$('#dxfRestore').disabled=false;
   $('#dxfNome').value=f.name.replace(/\.dxf$/i,'');$('#dxfLength').value='';$('#dxfAxis').value='';$('#dxfFace').value='';
   selected.externo.clear();selected.interno.clear();chainInfo=null;$('#dxfSourceZoom').value=100;resetConfirm();
+  updateZ0('');
   ['#dxfSuggest','#dxfSelect','#dxfAll','#dxfAuto','#dxfClear'].forEach(q=>$(q).disabled=false);
   renderSource();renderMeasures();
   suggestView();
