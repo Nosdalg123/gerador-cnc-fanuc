@@ -88,8 +88,8 @@ function analyze(doc,rect,axis,face,chosen){
  if(!rect)alerts.push('Selecione a vista lateral da peça.');
  if(!selected.length)alerts.push('Nenhuma entidade selecionada para o perfil CNC. Use a prévia CAD e selecione o contorno.');
  if(cn.components>1)alerts.push('Perfil descontínuo: '+cn.components+' grupos separados. Conecte os trechos que pertencem ao perfil.');
- if(cn.branches.length)alerts.push('Interseções com ramificações ('+cn.branches.length+'). Remova linhas auxiliares do perfil selecionado.');
- if(cn.gaps.length>2)alerts.push('Contorno aberto em '+cn.gaps.length+' extremidades. Revise a continuidade.');
+ if(cn.branches.length)alerts.push('Ramificações ('+cn.branches.length+'): '+cn.branches.slice(0,4).map(p=>'Z CAD '+fmt(p[0])+' / Ø'+fmt(2*Math.abs(p[1]-axis))).join('; ')+'. Selecione as cadeias corretas, excluindo linhas auxiliares.');
+ if(cn.gaps.length>2)alerts.push('Perfil com '+cn.gaps.length+' pontas abertas. Primeiras lacunas em '+cn.gaps.slice(0,5).map(p=>'Z CAD '+fmt(p[0])+' / Ø'+fmt(2*Math.abs(p[1]-axis))).join('; ')+'. Selecione a cadeia seguinte ou corrija o DXF.');
  if(classified.some(q=>q.kind==='raio'))alerts.push('Raios CAD preservados visualmente; associação CNC de canto requer conferência.');
  if(classified.some(q=>q.kind==='face'))alerts.push('Degraus radiais presentes: ordenar transições antes de liberar G71.');
  if(doc.geometry.some(e=>e.type==='SPLINE'&&(!rect||intersect(e,rect))))alerts.push('SPLINE encontrada: projeção aproximada; exigida conversão/aprovação de geometria.');
