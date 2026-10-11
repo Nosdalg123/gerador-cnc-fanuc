@@ -13,11 +13,11 @@ function sectionSuggestion(doc){
  circles.forEach(e=>{let g=groups.find(v=>Math.hypot(v.x-e.c[0],v.y-e.c[1])<1);if(!g)groups.push(g={x:e.c[0],y:e.c[1],n:0,max:0});g.n++;g.max=Math.max(g.max,e.r)});
  groups.sort((a,b)=>b.n-a.n);
  let front=groups.find(g=>g.n>=3&&g.x>0);if(!front)return null;
- let right=front.x-front.max*.66-8;
+ let right=front.x-front.max-10;
  let cand=doc.geometry.filter(e=>{
   if(!['LINE','ARC','LWPOLYLINE','SPLINE'].includes(e.type))return false;
   let b=DX.bounds([e]);if(!b)return false;
-  return b.x1>0&&b.x2<right&&b.y1>front.y-front.max*1.27&&b.y2<front.y+front.max*1.27;
+  return b.x1>0&&b.x2<right&&b.y1>front.y-front.max-2&&b.y2<front.y+front.max+2;
  });
  if(!cand.length)return null;
  let b=DX.bounds(cand);
