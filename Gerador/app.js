@@ -327,6 +327,7 @@
     if (ger().usaDesenho) { // perfil, comprimento final e lados vem do desenho salvo
       var d = desenhoAtual();
       f.desenhoNome = d ? d.nome : ''; f.lPeca = d ? Number(d.lPeca) : NaN; f.lados = d ? d.lados : '1';
+      f.pdfPendente = !!(d && d.pdfControle && Array.isArray(d.pdfControle.pendencias) && d.pdfControle.pendencias.length);
       ['trechos1', 'trechos2', 'internos1', 'internos2'].forEach(function (k) { f[k] = d ? d[k] : []; });
       ['1', '2'].forEach(function (k) { // lado so com furo/mandrilamento no desenho: 'externo e interno' vira so interno (nao pede perfil externo)
         if (f['usin' + k] === 'ambos' && !f['trechos' + k].length && f['internos' + k].length) f['usin' + k] = 'int';
