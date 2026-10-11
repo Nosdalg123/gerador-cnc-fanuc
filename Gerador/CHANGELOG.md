@@ -8,6 +8,18 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.12.0 — 11/10/2026 — Reconciliação de cotas entre vistas e auditoria CNC
+- Escopo firmado: somente geometrias de revolução e PDFs técnicos vetoriais; PDFs escaneados e recursos fora do eixo de rotação não são convertidos automaticamente.
+- Novo `pdfreconcile.js`: separa dimensão extraída, característica CNC, vista de origem, referência explícita, estado conferido e vínculo escolhido pelo usuário.
+- Medidas de outras vistas aparecem como **sugestões** de correspondência. O valor só é aplicado depois de associar a cota ao campo correto; valores iguais sem identidade da característica não bastam para provar o vínculo.
+- Detecta dimensão sem cota confirmada, cota conflitante para a mesma característica, dimensão em outra vista e anotação não representada no perfil. O salvamento direto exige resolução de todas as pendências e escolha da face Z0.
+- Solucionador `solveAxial`: calcula distâncias usando somas/diferenças de restrições axiais com extremos identificados; reporta falta de âncora e contradição, sem estimar dimensões por pixels. Ainda requer a associação confiável dos extremos das linhas de cota.
+- Sugere face Z0 conforme limitações geométricas do G71, mas a aplicação exige decisão humana e conferência de fixação.
+- Novo `pdfaudit.js`: controla raios, roscas e detalhes que exigem elementos explícitos; ao abrir rascunho no editor completo o salvamento fica bloqueado até revisão geométrica. O Gerador também impede código CNC se um desenho salvo contiver pendências.
+- Desenhos conferidos guardam a origem do PDF, orientação e evidências das cotas juntamente com seu modelo CNC.
+- Testes automatizados em `testpdfreconcile.js`, preservados todos os testes de versões anteriores. Não foi feita certificação de usinagem.
+- **Limitação explícita:** ainda não existe reconhecedor universal de qualquer contorno curvo/raio/rosca, nem correspondência totalmente automática de todas as cotas entre vistas. A versão adiciona a infraestrutura e as verificações de segurança para evoluir esse reconhecimento.
+
 ## 2.11.0 — 11/10/2026 — Testes com Disco de Pressão 7″, orientação de torno e leitura por vista
 - Avaliado PDF vetorial real de desenho mecânico com vista lateral, frontal, isométrica, vários comprimentos e diâmetros, M39 P2, M8×50, R3,50, R20 e 61°.
 - Classificador de texto distingue comprimentos, diâmetros, raios, ângulos, roscas e chamadas roscadas. Datas e notas não entram como cotas.
