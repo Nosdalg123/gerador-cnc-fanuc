@@ -138,11 +138,17 @@ function nativeCotas(dims,rect){
  return (dims||[]).filter(d=>contains(d.position)||contains(d.a)||contains(d.b)||
    (d.kind===0||d.kind===1)&&contains([(d.a[0]+d.b[0])/2,(d.a[1]+d.b[1])/2]));
 }
+function annotations(entities,rect,pad=22){
+ return (entities||[]).filter(e=>e.at&&['MTEXT','TEXT'].includes(e.type)).filter(e=>{
+  if(!rect)return true;
+  return e.at[0]>=rect.x1-pad&&e.at[0]<=rect.x2+pad&&e.at[1]>=rect.y1-pad&&e.at[1]<=rect.y2+pad;
+ });
+}
 function candidateAxis(entities,rect){
  let centers=(entities||[]).filter(e=>e.type==='CIRCLE'&&e.c[0]>rect.x2&&e.c[1]>=rect.y1&&e.c[1]<=rect.y2).map(e=>e.c[1]);
  if(!centers.length)return null;centers.sort((a,b)=>a-b);
  let clusters=[];for(const y of centers){let c=clusters.find(x=>Math.abs(x.y-y)<.3);if(c){c.sum+=y;c.count++;c.y=c.sum/c.count}else clusters.push({y,sum:y,count:1})}
  clusters.sort((a,b)=>b.count-a.count);return clusters[0].count>=2?clusters[0].y:null;
 }
-return {read,explode,sample,bounds,cut,nativeCotas,candidateAxis,bulgeArc,splinePoints};
+return {read,explode,sample,bounds,cut,nativeCotas,annotations,candidateAxis,bulgeArc,splinePoints};
 });
