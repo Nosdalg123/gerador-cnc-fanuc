@@ -3,7 +3,7 @@
 Abrir: dois cliques em `index.html` (Chrome ou Edge). O Gerador funciona localmente; a importação automática de texto do PDF precisa carregar a biblioteca PDF.js na primeira utilização.
 
 ## Escolher cadeias CAD reais e corrigir rascunhos (v2.14.0)
-**Problema corrigido:** o Disco tem várias cadeias desconectadas e o Copo tem várias bifurcações. Selecionar a maior componente inteira mistura perfis externos, internos e auxiliares.
+**Problema corrigido:** o Disco tem várias cadeias desconectadas e o Copo tem várias bifurcações. A versão também corrige dois erros que impediam a projeção no navegador: inicialização do módulo DXF e escala NaN ao recortar a vista. O teste Chromium automatizado cobre a importação e o salvamento de rascunho. Selecionar a maior componente inteira mistura perfis externos, internos e auxiliares.
 
 1. Importe o DXF e confira a vista lateral sugerida. O sistema mantém escala igual em X e Z e preserva dimensões/raios da fonte CAD.
 2. Informe/confira o **eixo X0**; a face Z0 pode continuar pendente para rascunho, mas é obrigatória para salvar perfil pronto.
