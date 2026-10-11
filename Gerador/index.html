@@ -40,6 +40,33 @@
 .dxf-extend-controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px;margin-bottom:8px;background:#eef6fa;color:#21445d;border-radius:8px;border:1px solid #b5d1e6}
 .dxf-extend-controls[hidden]{display:none}
 .dxf-extend-controls input{width:90px;min-height:34px}
+</style><style>
+#dxfPanel .pdf-workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+#dxfPanel.show-original .pdf-workspace{grid-template-columns:repeat(2,minmax(0,1fr))}
+#dxfOriginalPane[hidden],#dxfViewPicker[hidden],#dxfContext[hidden]{display:none!important}
+#dxfPanel:not(.advanced) .dxf-advanced-only{display:none!important}
+.dxf-guidance{background:transparent;border-left:3px solid #3991ad;padding:9px 12px;margin:8px 0;font-weight:600}
+.dxf-main-actions{gap:6px;flex-wrap:wrap;margin:9px 0}
+.dxf-view-picker{border:1px solid #a9c5da;border-radius:8px;padding:12px;margin:10px 0}
+.dxf-view-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin:8px 0}
+.dxf-view-choice{background:#f7fafc;border:1px solid #bdd3e4;padding:8px;border-radius:8px;text-align:left;cursor:pointer}
+.dxf-view-choice[aria-pressed=true]{border:2px solid #1675ac;background:#eaf5fb}
+.dxf-view-choice svg{display:block;width:100%;height:86px;pointer-events:none}
+.dxf-view-choice strong,.dxf-view-choice small{display:block}
+.dxf-view-choice small{font-size:11px;color:#526679}
+.dxf-context{border-left:3px solid #28769c;padding:10px;background:#f1f7fa;margin:7px 0;border-radius:5px}
+.dxf-context .toolbar{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.dxf-context .btn{font-size:12px}
+.dxf-problems{padding:10px 4px;margin:9px 0}
+.dxf-problem{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid #ccd9e1;padding:8px 0}
+.dxf-problem small{display:block;color:#657b8f;margin-top:3px}
+.dxf-problem button{white-space:nowrap}
+.dxf-legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:12px;color:#476078;margin:6px 0}
+.dxf-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
+.dxf-dot.recognized{background:#ea6700}.dxf-dot.pending{background:#c99b37}.dxf-dot.other{background:#668ba8}
+#dxfPanel .pdf-projection{min-width:0}
+#dxfPanel #dxfProjected{max-height:520px}
+@media (max-width:900px){#dxfPanel.show-original .pdf-workspace{grid-template-columns:1fr}}
 </style></head>
 <body>
 <div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="loginTit">
@@ -205,17 +232,30 @@
   <!-- ===== DESENHO DA PEÇA ===== -->
   <section id="view-desenho" hidden><div class="card" style="margin-bottom:12px"><div class="toolbar"><button class="btn" id="pdfModo" type="button">Importar desenho PDF</button><button class="btn primary" id="dxfModo" type="button">Importar CAD DXF (geometria real)</button><span class="note">Alternativa à montagem manual. Requer conferência de todas as cotas.</span></div></div>
 <div id="dxfPanel" hidden>
-<div class="card"><h2>Importação CAD DXF — geometria e cotas nativas</h2>
+<div class="card"><h2>Importação inteligente CAD</h2>
+<p class="note">Importe o DXF. O contorno aparece sugerido automaticamente; clique nas linhas para corrigir. Você pode trocar a vista a qualquer momento.</p>
 <div class="toolbar"><button class="btn" id="dxfVoltar" type="button">Voltar ao editor manual</button><input id="dxfFile" type="file" accept=".dxf,.DXF"></div>
-<div id="dxfStatus" class="note" role="status">Selecione um arquivo DXF ASCII. Arquivos DWG devem ser exportados para DXF.</div>
-<div class="toolbar"><button class="btn primary" id="dxfSuggest" type="button" disabled>Localizar vista principal sugerida</button><button class="btn" id="dxfSelect" type="button" disabled>Delimitar outra vista</button><button class="btn" id="dxfAll" type="button" disabled>Ver folha inteira</button></div>
+<div id="dxfStatus" class="note" role="status">Selecione um DXF em milímetros para começar.</div>
+<div id="dxfGuidance" class="dxf-guidance" role="status">1. Importe um DXF para reconhecer o contorno.</div>
+<div class="toolbar dxf-main-actions">
+ <button type="button" class="btn" id="dxfChangeView">Trocar vista</button>
+ <button type="button" class="btn" id="dxfQuickUndo">Desfazer</button>
+ <button type="button" class="btn" id="dxfAdvancedToggle" aria-expanded="false">Edição avançada</button>
+</div>
+<div id="dxfViewPicker" class="dxf-view-picker" hidden>
+ <strong>Qual vista deseja usar?</strong>
+ <p class="note">A seção longitudinal é proposta automaticamente. As outras vistas servem para conferência; não são convertidas em perfil CNC.</p>
+ <div id="dxfViewOptions" class="dxf-view-options"></div>
+ <button type="button" class="btn" id="dxfPickRegion">Selecionar outra região no desenho original</button>
+</div>
+<div class="toolbar dxf-advanced-only"><button class="btn primary" id="dxfSuggest" type="button" disabled>Localizar vista principal sugerida</button><button class="btn" id="dxfSelect" type="button" disabled>Delimitar outra vista</button><button class="btn" id="dxfAll" type="button" disabled>Ver folha inteira</button></div>
 <div class="pdf-workspace">
-<div class="pdf-original"><div class="pdf-workspace-title"><strong>1 · Geometria CAD original</strong><span>Entidades LINE, ARC, CIRCLE, POLYLINE e SPLINE</span></div>
+<div class="pdf-original" id="dxfOriginalPane" hidden><div class="pdf-workspace-title"><strong>1 · Geometria CAD original</strong><span>Entidades LINE, ARC, CIRCLE, POLYLINE e SPLINE</span></div>
 <div id="dxfSource" class="dxf-graphics" aria-label="Desenho vetorial do DXF"></div><div class="note" id="dxfSelectionHint" role="status">Ao delimitar, o retângulo azul será visível durante o arraste. O CAD original não é alterado.</div>
 <div class="note">Arraste um retângulo na vista para delimitá-la. Linhas azuis são geometria; cotas vêm das entidades DIMENSION.</div>
 <div class="toolbar"><label for="dxfSourceZoom">Zoom da folha</label><input id="dxfSourceZoom" type="range" min="70" max="250" value="100"></div></div>
 <div class="pdf-projection"><div class="pdf-workspace-title"><strong>2 · Reconstrução vetorial para o torno</strong><span id="dxfScale">Escala uniforme X / Z · CAD em mm</span></div>
-<div class="row dxf-setting-row">
+<div class="row dxf-setting-row dxf-advanced-only">
 <div class="field"><label for="dxfAxis">Eixo central da peça (coordenada Y CAD)</label><input type="number" id="dxfAxis" step="any" placeholder="Identificar no desenho"></div>
 <div class="field"><label for="dxfFace">Face Z0 voltada à ferramenta</label><select id="dxfFace"><option value="">Definir na preparação</option><option value="esquerda">Esquerda do CAD</option><option value="direita">Direita do CAD</option></select></div>
 </div>
@@ -226,40 +266,52 @@
  <button type="button" class="btn" id="dxfZ0Pending">Z0 pendente</button>
  <span id="dxfZ0Hint" class="note">Selecione a face livre voltada à ferramenta quando conhecer a fixação.</span>
 </div>
-<div class="toolbar"><span>Marcar no perfil:</span><label><input type="radio" name="dxfAssign" value="externo" checked> Externo</label><label><input type="radio" name="dxfAssign" value="interno"> Interno</label><label><input type="radio" name="dxfAssign" value="remover"> Desmarcar perfil</label>
+<div class="toolbar dxf-advanced-only"><span>Marcar no perfil:</span><label><input type="radio" name="dxfAssign" value="externo" checked> Externo</label><label><input type="radio" name="dxfAssign" value="interno"> Interno</label><label><input type="radio" name="dxfAssign" value="remover"> Desmarcar perfil</label>
 <label><input type="radio" name="dxfAssign" value="apagar"> <strong>Apagar linha</strong></label>
 <label><input type="radio" name="dxfAssign" value="quadro"> <strong>Apagar por retângulo</strong></label>
 <label><input type="radio" name="dxfAssign" value="estender"> <strong>Estender linha</strong></label></div>
-<div id="dxfExtendControls" class="dxf-extend-controls" hidden>
+<div id="dxfExtendControls" class="dxf-extend-controls dxf-advanced-only" hidden>
  <strong>Estender linha selecionada</strong>
  <span id="dxfExtendSelected">Clique numa linha LINE para selecionar.</span>
  <label>Extremidade <select id="dxfExtendEnd"><option value="fim">Final</option><option value="ini">Inicial</option></select></label>
  <label>Extensão (mm) <input id="dxfExtendAmount" type="number" min="0.001" max="10000" step="0.1" value="5"></label>
  <button class="btn primary" type="button" id="dxfExtendApply">Aplicar extensão</button>
 </div>
-<div id="dxfProjected" class="dxf-graphics" aria-label="Projeção CAD vetorial com seleção do contorno CNC"></div><div id="dxfEntityInfo" class="note" role="status">Clique em uma linha, cone, degrau ou raio para inspecionar as dimensões CAD reais.</div>
-<div class="toolbar"><button class="btn primary" id="dxfAuto" type="button" disabled>Reconhecer perfil automaticamente</button>
+<div id="dxfProjected" class="dxf-graphics" aria-label="Contorno CAD reconhecido automaticamente; clique para selecionar ou retirar linhas"></div>
+<div class="dxf-legend"><span><b class="dxf-dot recognized"></b> Selecionado</span><span><b class="dxf-dot pending"></b> Para corrigir</span><span><b class="dxf-dot other"></b> Referência CAD</span></div><div id="dxfEntityInfo" class="note" role="status">Clique numa linha colorida para incluí-la ou retirá-la do contorno. Se necessário, selecione uma correção abaixo.</div>
+<div id="dxfContext" class="dxf-context" hidden>
+ <strong id="dxfContextTitle">Trecho selecionado</strong>
+ <div class="toolbar">
+  <button type="button" class="btn" id="dxfContextExternal">Adicionar externo</button>
+  <button type="button" class="btn" id="dxfContextInternal">Adicionar interno</button>
+  <button type="button" class="btn" id="dxfContextRemove">Retirar do contorno</button>
+  <button type="button" class="btn" id="dxfContextDelete">Apagar linha da cópia</button>
+  <button type="button" class="btn" id="dxfContextExtend">Estender...</button>
+ </div>
+</div>
+<div class="dxf-problems"><strong>Pontos a conferir</strong><div id="dxfSimpleProblems" role="status">O diagnóstico aparece após a importação.</div></div>
+<div class="toolbar dxf-advanced-only"><button class="btn primary" id="dxfAuto" type="button" disabled>Reconhecer perfil automaticamente</button>
 <button class="btn" id="dxfClear" type="button" disabled>Limpar seleção do perfil</button>
 <button class="btn" id="dxfUndo" type="button" disabled>Desfazer edição</button>
 <button class="btn" id="dxfRestore" type="button" disabled>Restaurar desenho original</button></div>
-<div class="dxf-chain-box">
+<div class="dxf-chain-box dxf-advanced-only">
   <strong>Cadeias CAD detectadas — escolha a superfície, não a maior componente</strong>
   <p class="note">O sistema propõe automaticamente o contorno externo. Ajuste a proposta clicando nas linhas. Para excluir elementos do desenho de trabalho, use Apagar linha ou Apagar por retângulo. O original permanece intacto no painel 1.</p>
   <div id="dxfChains" class="dxf-chain-list" aria-label="Cadeias vetoriais identificadas"></div>
 </div>
-<div id="dxfWarnings" class="note" role="status">A geometria CAD aparece aqui antes da conversão. Clique nas linhas e nos arcos para definir o perfil.</div></div>
+<div id="dxfWarnings" class="note dxf-advanced-only" role="status">A geometria CAD aparece aqui antes da conversão. Clique nas linhas e nos arcos para definir o perfil.</div></div>
 </div>
-<div class="card"><h3>Cotas e elementos reconhecidos</h3><div id="dxfMetrics" class="note"></div>
+<details id="dxfTechnicalDetails" class="card"><summary><strong>Ver cotas e detalhes técnicos do CAD</strong></summary><h3>Cotas e elementos reconhecidos</h3><div id="dxfMetrics" class="note"></div>
 <div id="dxfDimensions" class="dxf-measures" aria-label="Cotas CAD medidas por suas entidades"></div><div id="dxfAnnotations" class="dxf-measures" aria-label="Roscas notas e chamadas CAD" style="margin-top:8px"></div>
-<h3>Conferência e salvamento</h3><div class="note">O rascunho preserva a seleção CAD mesmo com Z0 indefinido. O envio ao Gerador é bloqueado se houver curvas, conexões abertas, detalhes ou medidas sem representação confirmada.</div>
+</details><div class="card"><h3>Salvar desenho</h3><div class="note">O rascunho preserva a seleção CAD mesmo com Z0 indefinido. O envio ao Gerador é bloqueado se houver curvas, conexões abertas, detalhes ou medidas sem representação confirmada.</div>
 <div class="dxf-save-bar">
 <div class="field"><label for="dxfNome"><strong>Nome do desenho</strong></label><input id="dxfNome" placeholder="Ex.: Copo 7 polegadas" autocomplete="off"></div>
 <div class="field"><label for="dxfLength"><strong>Comprimento nominal cotado (mm)</strong></label><input id="dxfLength" type="number" min="0.001" step="any" placeholder="Ex.: 185"></div>
-<button type="button" id="dxfSaveDraft" class="btn primary">Salvar rascunho CAD</button><button type="button" id="dxfEditManual" class="btn">Corrigir trechos no editor manual</button>
+<button type="button" id="dxfSaveDraft" class="btn primary">Salvar desenho (rascunho)</button><button type="button" id="dxfEditManual" class="btn">Corrigir trechos no editor manual</button>
 </div>
-<label class="chk"><input id="dxfChecked" type="checkbox"> Confirmei as cotas, os perfis e a orientação. Todos os elementos necessários estão representados no CNC.</label>
-<div class="toolbar"><button type="button" class="btn primary" id="dxfSaveCNC" disabled>Salvar perfil confirmado na lista do Gerador</button><span id="dxfSaved" class="note"></span></div>
-<h4>Rascunhos CAD locais</h4><div class="toolbar"><select id="dxfDraftList" aria-label="Rascunhos salvos"></select><button class="btn" type="button" id="dxfOpenDraft">Abrir rascunho</button></div>
+<label class="chk dxf-advanced-only"><input id="dxfChecked" type="checkbox"> Confirmei as cotas, os perfis e a orientação. Todos os elementos necessários estão representados no CNC.</label>
+<div class="toolbar dxf-advanced-only"><button type="button" class="btn primary" id="dxfSaveCNC" disabled>Salvar perfil confirmado na lista do Gerador</button><span id="dxfSaved" class="note"></span></div>
+<h4>Desenhos salvos neste navegador</h4><div class="toolbar"><select id="dxfDraftList" aria-label="Rascunhos salvos"></select><button class="btn" type="button" id="dxfOpenDraft">Abrir rascunho</button></div>
 </div></div></div>
 <div id="pdfPanel" hidden>
 <div class="card"><h2>Importação assistida de PDF</h2>
@@ -561,6 +613,7 @@
 <script src="dxfprofile.js"></script>
 <script src="dxfchains.js"></script>
 <script src="dxfedit.js"></script>
+<script src="dxfassist.js"></script>
 <script src="dxfaudit.js"></script>
 <script src="dxfimport.js"></script>
 <script src="app.js"></script>
