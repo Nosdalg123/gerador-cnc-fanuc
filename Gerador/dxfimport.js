@@ -3,7 +3,7 @@
 (function(root){
 'use strict';
 const $=q=>document.querySelector(q),DX=root.CNCDXF,P=root.CNCDXFPerfil;
-let doc=null,rect=null,axis=NaN,suggest=null,active=false,start=null,zoom=1,fileName='',selected={externo:new Set(),interno:new Set()};
+let doc=null,rect=null,axis=NaN,suggest=null,active=false,start=null,zoom=1,fileName='',selected={externo:new Set(),interno:new Set()},chainInfo=null;
 const KEY='cnc_dxf_rascunhos_v1';
 const val=id=>$(id).value;
 const fmt=n=>Number(n).toLocaleString('pt-BR',{maximumFractionDigits:3});
@@ -78,6 +78,32 @@ function analyse(mode){
  let a=Number(val('#dxfAxis'));
  return P.analyze(doc,rect,a,val('#dxfFace'),selected[mode]);
 }
+function drawChains(){
+ const host=$('#dxfChains');host.replaceChildren();chainInfo=null;
+ if(!doc||!rect||val('#dxfAxis')===''){host.textContent='Selecione a vista e indique o eixo X0 para encontrar as cadeias.';return}
+ const y=Number(val('#dxfAxis'));if(!Number.isFinite(y))return;
+ const seg=P.segments(doc.geometry,rect).filter(s=>P.above(s,y));
+ chainInfo=root.CNCDXFCadeias.build(seg,{axis:y,tol:0.16});
+ const info=document.createElement('p');info.className='note';
+ info.textContent=chainInfo.chains.length+' cadeias · '+chainInfo.bifurcations.length+' bifurcações · '+chainInfo.tips.length+' pontas abertas.';
+ host.appendChild(info);
+ chainInfo.chains.slice(0,32).forEach((c,i)=>{
+  const b=document.createElement('button');b.type='button';b.className='btn sm';
+  b.textContent=(i+1)+'. '+c.count+' elementos · '+fmt(c.spanX)+' mm Z · '+c.arcCount+' arcos'+(c.branchEnd?' · bifurcação':'');
+  if(c.ids.every(id=>selected.externo.has(id)||selected.interno.has(id)))b.classList.add('chosen');
+  b.onclick=function(){
+   const mode=document.querySelector('input[name=dxfAssign]:checked')?.value||'externo';
+   c.ids.forEach(id=>{
+    selected.externo.delete(id);selected.interno.delete(id);
+    if(mode!=='remover')selected[mode].add(id);
+   });
+   resetConfirm();renderProjection();
+   status('Cadeia '+(i+1)+' marcada como '+mode+'. Confira o perfil completo antes de salvar.');
+  };
+  host.appendChild(b);
+ });
+ if(chainInfo.chains.length>32){const p=document.createElement('p');p.className='note';p.textContent='Outras cadeias estão disponíveis por clique nas linhas.';host.appendChild(p)}
+}
 function renderProjection(){
  if(!doc)return;
  let host=$('#dxfProjected');
@@ -86,6 +112,7 @@ function renderProjection(){
  axis=a;
  let cand=P.analyze(doc,rect,a,val('#dxfFace'),new Set()).candidate;
  host.innerHTML=P.svg(doc,rect,{axis:a,face:val('#dxfFace'),selected:all,candidate:new Set(cand.map(s=>s.uid)),dimensions:dimsForRect()});
+ drawChains();
  const e=analyse('externo'),i=analyse('interno'),warn=$('#dxfWarnings');
  if(!e){warn.textContent='Selecione a seção longitudinal do DXF. A geometria original é exibida sem conversão inventada.';$('#dxfSaveCNC').disabled=true;return}
  const issues=e.alerts.concat(i.selected.length?i.alerts.filter(t=>!t.includes('Nenhuma entidade')):[]);
@@ -101,7 +128,7 @@ function renderProjection(){
  $('#dxfSaveCNC').disabled=!(checked()&&!issues.length&&e.canExport&&(!i.selected.length||i.canExport)&&doc.units===4);
 }
 function view(rectangle){
- rect=rectangle;selected.externo.clear();selected.interno.clear();resetConfirm();renderSource();renderMeasures();renderProjection();
+ rect=rectangle;selected.externo.clear();selected.interno.clear();chainInfo=null;resetConfirm();renderSource();renderMeasures();renderProjection();
 }
 function suggestView(){
  if(!doc)return;
@@ -120,7 +147,7 @@ $('#dxfFile').onchange=async function(){
   let bytes=await f.arrayBuffer(),text=new TextDecoder('windows-1252').decode(bytes);
   doc=DX.read(text);fileName=f.name;rect=null;suggest=null;axis=NaN;zoom=1;active=false;
   $('#dxfNome').value=f.name.replace(/\.dxf$/i,'');$('#dxfLength').value='';$('#dxfAxis').value='';$('#dxfFace').value='';
-  selected.externo.clear();selected.interno.clear();$('#dxfSourceZoom').value=100;resetConfirm();
+  selected.externo.clear();selected.interno.clear();chainInfo=null;$('#dxfSourceZoom').value=100;resetConfirm();
   ['#dxfSuggest','#dxfSelect','#dxfAll','#dxfAuto','#dxfClear'].forEach(q=>$(q).disabled=false);
   renderSource();renderMeasures();
   suggestView();
@@ -159,14 +186,9 @@ $('#dxfLength').oninput=resetConfirm;
 $('#dxfNome').oninput=resetConfirm;
 $('#dxfChecked').onchange=renderProjection;
 $('#dxfAuto').onclick=function(){
- if(!doc||!rect){status('Selecione a vista primeiro.',true);return}
- const a=Number(val('#dxfAxis'));if(!Number.isFinite(a)||val('#dxfAxis')===''){status('Indique o eixo X0 no CAD.',true);return}
- const all=P.segments(doc.geometry,rect).filter(s=>P.above(s,a));
- const c=P.connectivity(all);selected.externo.clear();selected.interno.clear();
- // Apenas a maior cadeia. O CAD real pode conter interseções; toda ramificação fica avisada.
- (c.chain||[]).forEach(id=>selected.externo.add(id));
- resetConfirm();renderProjection();
- status('Cadeia de '+selected.externo.size+' segmentos sugerida. Revise cada arco, degrau, furo e ligação marcada em laranja antes de exportar.');
+ drawChains();
+ if(!chainInfo){status('Defina vista e eixo X0 antes de localizar cadeias.',true);return}
+ status('Identificadas '+chainInfo.chains.length+' cadeias com '+chainInfo.bifurcations.length+' bifurcações. Escolha as cadeias nas opções abaixo da projeção.');
 };
 $('#dxfClear').onclick=function(){selected.externo.clear();selected.interno.clear();resetConfirm();renderProjection()};
 $('#dxfSaveDraft').onclick=function(){
