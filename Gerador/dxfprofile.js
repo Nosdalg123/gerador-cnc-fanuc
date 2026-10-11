@@ -91,7 +91,13 @@ function svg(doc,rect,options){
  options=options||{};let b=rect||DX.bounds(doc.geometry);
  if(!b)return '<svg viewBox="0 0 400 200"><text x="15" y="35">Sem geometria</text></svg>';
  let W=900,H=480,margin=30,scale=Math.min((W-2*margin)/Math.max(1,b.width),(H-2*margin)/Math.max(1,b.height));
- const pos=p=>[margin+(p[0]-b.x1)*scale,H-margin-(p[1]-b.y1)*scale];
+ const pos=p=>{
+  let xx=margin+(p[0]-b.x1)*scale;
+  // O perfil CNC sempre mostra Z0 à direita. Se Z0 está à esquerda do CAD,
+  // espelha-se apenas a apresentação, sem alterar nenhuma medida.
+  if(options.face==='esquerda')xx=W-xx;
+  return [xx,H-margin-(p[1]-b.y1)*scale];
+ };
  let out='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Desenho CAD vetorial original; escala geométrica uniforme" data-unit-scale="'+scale.toFixed(6)+'">';
  out+='<rect width="'+W+'" height="'+H+'" fill="#ffffff"/>';
  const color={LINE:'#375777',ARC:'#2a78b4',CIRCLE:'#8ea9b5',LWPOLYLINE:'#375777',SPLINE:'#9a679c',ELLIPSE:'#9a679c'};
