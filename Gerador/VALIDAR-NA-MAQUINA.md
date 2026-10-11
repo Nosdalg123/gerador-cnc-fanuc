@@ -70,3 +70,11 @@ O leitor segue os mesmos critérios dos geradores; o que não foi confirmado na 
 - [ ] Confirmar se m10 identifica furo/rosca/elemento com outra função; não deduzir usinagem sem as vistas e cotas associadas.
 - [ ] Confirmar face livre Z0 e fixação real; não definida no PDF.
 - [ ] Exigir reconstrução CAD confiável e simulação antes de gerar qualquer programa para usinagem real.
+
+## CAD DXF real — v2.13.0
+- [ ] Confirmar Model Space e $INSUNITS=4 (mm), unidade/escala geométrica e recorte da vista longitudinal.
+- [ ] Comparar eixo de simetria X0, Z0, lado preso na placa, offset das castanhas e sentido negativo de Z.
+- [ ] Conferir todos os trechos externos/internos, canais, furos, chanfros, raios ARC, cones e roscas apontados pelo DXF.
+- [ ] As entidades visualizadas em DXF não equivalem a código CNC completo. Não programar raios ou SPLINE como linhas substitutas sem tratamento geométrico.
+- [ ] Rascunhos do editor manual marcados `cadOrigem.incompleto` estão bloqueados para geração; confirmar apenas após comparar todas as superfícies com a fonte CAD.
+- [ ] Realizar simulação, verificação a seco e conferência da máquina/controlador e das ferramentas antes da produção.
