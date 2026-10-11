@@ -162,7 +162,7 @@ function renderProjection(){
 }
 function autoRecognize(){
  if(!doc||!rect||val('#dxfAxis')==='')return;
- const result=E.autoSelect(doc,rect,Number(val('#dxfAxis')));
+ const result=E.autoSelect(doc,rect,Number(val('#dxfAxis')),hidden);
  selected.externo=new Set(result.externo);selected.interno=new Set(result.interno);
  resetConfirm();renderProjection();
  status(result.reason+(result.chains?' · '+result.chains.bifurcations.length+' bifurcações identificadas.':''));
