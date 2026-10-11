@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-10-11: DXF browser smoke + correção de inicialização e escala SVG",
+  "gerado_em": "2026-10-11: DXF editor interativo com Z0, extensão, exclusão e seleção visual",
   "como_ler": "simbolos = [nome, tipo, linha_inicio, linha_fim, pai]; linhas comecam em 1. Leia so a faixa necessaria (Read com offset/limit).",
   "regerar": "python indexer.py",
   "ignorado": [
@@ -21,12 +21,12 @@
     "versoes"
   ],
   "totais": {
-    "arquivos": 51,
-    "simbolos": 1074,
+    "arquivos": 54,
+    "simbolos": 1096,
     "por_linguagem": {
-      "md": 8,
+      "md": 9,
       "py": 1,
-      "js": 40,
+      "js": 42,
       "html": 1,
       "css": 1
     }
@@ -312,7 +312,7 @@
     },
     "Gerador/CHANGELOG.md": {
       "lang": "md",
-      "linhas": 237,
+      "linhas": 251,
       "simbolos": [
         [
           "Histórico de versões — Gerador CNC Torno",
@@ -521,7 +521,7 @@
     },
     "Gerador/LEIAME.md": {
       "lang": "md",
-      "linhas": 284,
+      "linhas": 296,
       "simbolos": [
         [
           "Gerador CNC Torno",
@@ -765,90 +765,97 @@
     },
     "Gerador/VALIDAR-NA-MAQUINA.md": {
       "lang": "md",
-      "linhas": 90,
+      "linhas": 98,
       "simbolos": [
         [
           "Itens para validar na máquina (ML-600L)",
           "h1",
           1,
-          90,
+          98,
           ""
         ],
         [
           "Antes de qualquer programa novo",
           "h2",
           5,
-          90,
+          98,
           ""
         ],
         [
           "Por geometria",
           "h2",
           11,
-          90,
+          98,
           ""
         ],
         [
           "Módulo Simulação (programa colado) — suposições do leitor",
           "h2",
           25,
-          90,
+          98,
           ""
         ],
         [
           "Diagnóstico de programa (2.7.0) — regras que seguem o padrão Fanuc, a conferir na máquina",
           "h2",
           39,
-          90,
+          98,
           ""
         ],
         [
           "Comando Siemens 802D sl em modo ISO (2.7.1)",
           "h2",
           47,
-          90,
+          98,
           ""
         ],
         [
           "O que o simulador não mostra",
           "h2",
           52,
-          90,
+          98,
           ""
         ],
         [
           "Desenhos convertidos de PDF (2.10.0)",
           "h2",
           56,
-          90,
+          98,
           ""
         ],
         [
           "Orientação de importações PDF — v2.11.0",
           "h2",
           61,
-          90,
+          98,
           ""
         ],
         [
           "Copo 7″ / Baioneta — PDF (v2.12.0)",
           "h2",
           67,
-          90,
+          98,
           ""
         ],
         [
           "CAD DXF real — v2.13.0",
           "h2",
           74,
-          90,
+          98,
           ""
         ],
         [
           "DXF com cadeias ramificadas — v2.14.0",
           "h2",
           82,
-          90,
+          98,
+          ""
+        ],
+        [
+          "Editor CAD interativo — v2.15.0",
+          "h2",
+          91,
+          98,
           ""
         ]
       ]
@@ -4140,7 +4147,7 @@
     },
     "Gerador/index.html": {
       "lang": "html",
-      "linhas": 539,
+      "linhas": 570,
       "simbolos": [
         [
           "style.css",
@@ -7431,7 +7438,7 @@
     },
     "Gerador/dxfprofile.js": {
       "lang": "js",
-      "linhas": 140,
+      "linhas": 152,
       "simbolos": [
         [
           "fmt",
@@ -7497,128 +7504,191 @@
           ""
         ],
         [
+          "node",
+          "function",
+          56,
+          56,
+          ""
+        ],
+        [
           "analyze",
           "function",
-          67,
-          67,
+          79,
+          79,
           ""
         ],
         [
           "polyPath",
           "function",
-          89,
-          89,
+          101,
+          101,
           ""
         ],
         [
           "svg",
           "function",
-          90,
-          90,
+          102,
+          102,
           ""
         ]
       ]
     },
     "Gerador/dxfimport.js": {
       "lang": "js",
-      "linhas": 288,
+      "linhas": 433,
       "simbolos": [
         [
           "resetConfirm",
           "function",
-          12,
-          12,
+          16,
+          16,
+          ""
+        ],
+        [
+          "remember",
+          "function",
+          17,
+          17,
+          ""
+        ],
+        [
+          "markEdited",
+          "function",
+          22,
+          22,
+          ""
+        ],
+        [
+          "removeLine",
+          "function",
+          23,
+          23,
+          ""
+        ],
+        [
+          "updateZ0",
+          "function",
+          29,
+          29,
           ""
         ],
         [
           "draftList",
           "function",
-          13,
-          13,
+          37,
+          37,
           ""
         ],
         [
           "refreshDrafts",
           "function",
-          14,
-          14,
+          38,
+          38,
           ""
         ],
         [
           "viewPoint",
           "function",
-          19,
-          19,
+          43,
+          43,
           ""
         ],
         [
           "drawingPoint",
           "function",
-          24,
-          24,
+          48,
+          48,
           ""
         ],
         [
           "screenPt",
           "function",
-          28,
-          28,
+          52,
+          52,
           ""
         ],
         [
           "renderSource",
           "function",
-          32,
-          32,
+          56,
+          56,
           ""
         ],
         [
           "dimsForRect",
           "function",
-          46,
-          46,
+          70,
+          70,
           ""
         ],
         [
           "renderMeasures",
           "function",
-          47,
-          47,
+          71,
+          71,
           ""
         ],
         [
           "analyse",
           "function",
-          76,
-          76,
+          100,
+          100,
+          ""
+        ],
+        [
+          "drawChains",
+          "function",
+          106,
+          106,
           ""
         ],
         [
           "renderProjection",
           "function",
-          81,
-          81,
+          132,
+          132,
+          ""
+        ],
+        [
+          "autoRecognize",
+          "function",
+          163,
+          163,
           ""
         ],
         [
           "view",
           "function",
-          103,
-          103,
+          170,
+          170,
           ""
         ],
         [
           "suggestView",
           "function",
-          106,
-          106,
+          175,
+          175,
+          ""
+        ],
+        [
+          "dragOverlay",
+          "function",
+          205,
+          205,
+          ""
+        ],
+        [
+          "cancelDrag",
+          "function",
+          213,
+          213,
           ""
         ],
         [
           "toItems",
           "function",
-          192,
-          192,
+          380,
+          380,
           ""
         ]
       ]
@@ -7846,8 +7916,109 @@
     },
     "Gerador/testdxfui.mjs": {
       "lang": "js",
-      "linhas": 73,
+      "linhas": 125,
       "simbolos": []
+    },
+    "Gerador/dxfedit.js": {
+      "lang": "js",
+      "linhas": 108,
+      "simbolos": [
+        [
+          "autoSelect",
+          "function",
+          10,
+          10,
+          ""
+        ],
+        [
+          "extendLine",
+          "function",
+          60,
+          60,
+          ""
+        ],
+        [
+          "rectBounds",
+          "function",
+          74,
+          74,
+          ""
+        ],
+        [
+          "viewTransform",
+          "function",
+          77,
+          77,
+          ""
+        ],
+        [
+          "segmentTouchesRect",
+          "function",
+          85,
+          85,
+          ""
+        ],
+        [
+          "selectRectSegments",
+          "function",
+          101,
+          101,
+          ""
+        ]
+      ]
+    },
+    "Gerador/testdxfedit.js": {
+      "lang": "js",
+      "linhas": 38,
+      "simbolos": []
+    },
+    "Gerador/TESTE-DXF-EDITOR-2.15.md": {
+      "lang": "md",
+      "linhas": 32,
+      "simbolos": [
+        [
+          "DXF 2.15.0 — editor interativo de contornos",
+          "h1",
+          1,
+          32,
+          ""
+        ],
+        [
+          "Objetivo",
+          "h2",
+          3,
+          32,
+          ""
+        ],
+        [
+          "Funcionalidade implementada",
+          "h2",
+          6,
+          32,
+          ""
+        ],
+        [
+          "Verificações",
+          "h2",
+          16,
+          32,
+          ""
+        ],
+        [
+          "Análise dos DXFs reais",
+          "h2",
+          21,
+          32,
+          ""
+        ],
+        [
+          "Limitações e segurança",
+          "h2",
+          26,
+          32,
+          ""
+        ]
+      ]
     }
   }
 }
