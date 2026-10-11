@@ -63,3 +63,10 @@ O leitor segue os mesmos critérios dos geradores; o que não foi confirmado na 
 - [ ] Comparar a seção selecionada do PDF, todas as cotas, e o perfil salvo em X (diâmetro), Z negativo; verificar cones invertidos e múltiplos lados.
 - [ ] Desenhos como Disco 7″ possuem R20, R3,50, M39 P2, M8 x50 e 61°: o importador PDF **não reconstrói esses elementos automaticamente**; não transferir a geometria simplificada como peça aprovada para usinagem.
 - [ ] Confirmar G71/G70, direção de corte, medidas de bruto, zona de fixação e trajetória a seco na máquina.
+
+## Copo 7″ / Baioneta — PDF (v2.12.0)
+- [ ] Separar SEÇÃO Y–Y, vista frontal, DETALHE Z e quadro de revisões antes de reconhecer cotas.
+- [ ] Conferir Ø externos/internos, profundidades, inclinação de 6°, R3, R6,50 e rosca M64 P4 no desenho original.
+- [ ] Confirmar se m10 identifica furo/rosca/elemento com outra função; não deduzir usinagem sem as vistas e cotas associadas.
+- [ ] Confirmar face livre Z0 e fixação real; não definida no PDF.
+- [ ] Exigir reconstrução CAD confiável e simulação antes de gerar qualquer programa para usinagem real.
