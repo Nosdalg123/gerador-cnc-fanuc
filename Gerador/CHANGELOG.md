@@ -8,6 +8,17 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.11.0 — 11/10/2026 — Testes com Disco de Pressão 7″, orientação de torno e leitura por vista
+- Avaliado PDF vetorial real de desenho mecânico com vista lateral, frontal, isométrica, vários comprimentos e diâmetros, M39 P2, M8×50, R3,50, R20 e 61°.
+- Classificador de texto distingue comprimentos, diâmetros, raios, ângulos, roscas e chamadas roscadas. Datas e notas não entram como cotas.
+- Detecção sugerida de vista lateral e frontal por contornos vetoriais da página; seleção manual também disponível. Os textos e linhas usados pertencem à vista selecionada.
+- O operador escolhe explicitamente tipo de vista e qual extremidade corresponde à face Z0 no torno; o botão Salvar permanece bloqueado enquanto a orientação não estiver definida.
+- Inversão troca a sequência dos elementos CNC e inverte início/fim dos cones. Checagem de perfil avisa quando o G71 tipo I rejeitaria um diâmetro que diminui em direção ao fundo.
+- Novo algoritmo conservador usa a silhueta vetorial longitudinal para projetar um perfil externo APROXIMADO, sem confundir círculos da vista frontal. Aproximações e raios não são equivalentes a CAD.
+- Se o PDF inclui raio, ângulo ou rosca que o painel simplificado não consegue guardar, bloqueia o salvamento direto e oferece transferência como rascunho para o editor completo, onde o usuário deve completar e conferir os detalhes antes de salvar.
+- Novo teste `testpdfdisco.js` com cotas e geometrias de regressão derivadas de um exemplo, sem publicar o PDF original.
+- Limites: não foi confirmada interpretação integral automática da peça complexa; detalhes internos e usinabilidade exigem revisão da ferramentaria; não foi feito teste de usinagem.
+
 ## 2.10.0 — 11/10/2026 — Escala proporcional, edição sobre cotas e seleção de vista no PDF
 - Projeção XZ usa **escala geométrica uniforme**: o mesmo fator é aplicado ao comprimento e aos diâmetros (proporção X:Ø = 1:1), ajustada ao tamanho do painel; não promete escala física 1:1 em monitor.
 - Cotas clicáveis na própria projeção, com edição de diâmetro, comprimento, cone e lado. É possível acrescentar/remover segmentos pelo painel, sem exibir uma lista técnica de partes.
