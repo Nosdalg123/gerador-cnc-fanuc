@@ -22,7 +22,7 @@
   ],
   "totais": {
     "arquivos": 31,
-    "simbolos": 887,
+    "simbolos": 979,
     "por_linguagem": {
       "md": 4,
       "py": 1,
@@ -865,353 +865,773 @@
       "simbolos": [
         [
           "$",
-          "arrow",
-          2,
-          2,
+          "method",
+          3,
+          3,
           ""
         ],
         [
           "$$",
-          "arrow",
-          3,
-          3,
+          "method",
+          4,
+          4,
           ""
         ],
         [
           "load",
           "function",
-          5,
-          5,
+          7,
+          7,
           ""
         ],
         [
           "save",
           "function",
-          7,
-          7,
+          8,
+          8,
           ""
         ],
         [
           "esc",
           "function",
-          8,
-          8,
+          9,
+          9,
           ""
         ],
         [
           "uid",
           "function",
-          9,
-          9,
+          10,
+          10,
           ""
         ],
         [
           "dataEfetiva",
           "function",
-          41,
-          41,
+          42,
+          42,
           ""
         ],
         [
           "persist",
           "function",
-          43,
-          43,
+          45,
+          45,
           ""
         ],
         [
           "showView",
           "function",
-          47,
-          47,
+          48,
+          67,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          68,
+          68,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          69,
+          69,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          70,
+          70,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          71,
+          71,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          72,
+          72,
+          ""
+        ],
+        [
+          "TEMAS",
+          "object",
+          73,
+          73,
           ""
         ],
         [
           "temaAtual",
           "function",
-          73,
-          73,
+          74,
+          78,
           ""
         ],
         [
           "temaRotulo",
           "function",
-          78,
-          78,
+          79,
+          79,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          80,
+          85,
+          ""
+        ],
+        [
+          "b.onclick",
+          "method",
+          90,
+          95,
           ""
         ],
         [
           "medeCabecalho",
           "function",
-          107,
-          107,
+          108,
+          108,
+          ""
+        ],
+        [
+          "DESENHOS",
+          "object",
+          114,
+          149,
+          ""
+        ],
+        [
+          "desenhoHtml",
+          "function",
+          149,
+          161,
           ""
         ],
         [
           "ger",
           "function",
-          163,
-          163,
+          164,
+          164,
           ""
         ],
         [
           "buildTipo",
           "function",
-          164,
-          164,
+          166,
+          173,
+          ""
+        ],
+        [
+          "CANTOS",
+          "object",
+          176,
+          176,
           ""
         ],
         [
           "trechosHtml",
           "function",
-          177,
-          177,
+          178,
+          196,
           ""
+        ],
+        [
+          "k",
+          "object",
+          184,
+          184,
+          "trechosHtml"
         ],
         [
           "trechoNovo",
           "function",
-          196,
-          196,
+          197,
+          200,
           ""
         ],
         [
           "bindTrechos",
           "function",
-          200,
-          200,
+          201,
+          218,
           ""
+        ],
+        [
+          "el.oninput",
+          "method",
+          205,
+          205,
+          "bindTrechos"
+        ],
+        [
+          "b.onclick",
+          "method",
+          208,
+          215,
+          "bindTrechos"
         ],
         [
           "campoHtml",
           "function",
-          220,
-          220,
+          221,
+          232,
+          ""
+        ],
+        [
+          "advAberto",
+          "object",
+          235,
+          235,
           ""
         ],
         [
           "advKey",
           "function",
-          235,
-          235,
+          236,
+          236,
+          ""
+        ],
+        [
+          "CURTO",
+          "object",
+          238,
+          238,
           ""
         ],
         [
           "advResumo",
           "function",
-          238,
-          238,
+          239,
+          251,
+          ""
+        ],
+        [
+          "advUi",
+          "function",
+          251,
+          258,
           ""
         ],
         [
           "buildCampos",
           "function",
-          258,
-          258,
+          260,
+          295,
           ""
+        ],
+        [
+          "b.onclick",
+          "method",
+          280,
+          280,
+          "buildCampos"
+        ],
+        [
+          "onchange",
+          "method",
+          285,
+          285,
+          "buildCampos"
+        ],
+        [
+          "onclick",
+          "method",
+          286,
+          286,
+          "buildCampos"
+        ],
+        [
+          "onclick",
+          "method",
+          287,
+          287,
+          "buildCampos"
+        ],
+        [
+          "i.oninput",
+          "method",
+          293,
+          293,
+          "buildCampos"
         ],
         [
           "desenhoAtual",
           "function",
-          301,
-          301,
+          298,
+          298,
           ""
         ],
         [
           "infoDesenho",
           "function",
-          302,
-          302,
+          299,
+          306,
           ""
+        ],
+        [
+          "n",
+          "object",
+          302,
+          302,
+          "infoDesenho"
         ],
         [
           "fillDesenhoSel",
           "function",
-          310,
-          310,
+          307,
+          313,
+          ""
+        ],
+        [
+          "CNCDesenhos.onMudou",
+          "method",
+          314,
+          314,
           ""
         ],
         [
           "vals",
           "function",
-          318,
-          318,
+          316,
+          332,
           ""
+        ],
+        [
+          "f",
+          "object",
+          317,
+          317,
+          "vals"
         ],
         [
           "aplicaQuando",
           "function",
-          337,
-          337,
+          334,
+          344,
           ""
         ],
         [
           "previewSvg",
           "function",
-          350,
-          350,
+          347,
+          347,
           ""
         ],
         [
           "toolSel",
           "function",
-          351,
-          351,
+          349,
+          353,
           ""
         ],
         [
           "renderToolSelects",
           "function",
-          357,
-          357,
+          354,
+          371,
           ""
+        ],
+        [
+          "s.onchange",
+          "method",
+          368,
+          368,
+          "renderToolSelects"
         ],
         [
           "toolById",
           "function",
+          372,
+          372,
+          ""
+        ],
+        [
+          "INC",
+          "object",
           375,
-          375,
+          380,
           ""
         ],
         [
           "overrides",
           "function",
-          384,
-          384,
+          381,
+          381,
           ""
         ],
         [
           "ovValido",
           "function",
-          385,
-          385,
+          382,
+          382,
           ""
         ],
         [
           "incResumo",
           "function",
-          388,
-          388,
+          385,
+          392,
           ""
         ],
         [
           "incUi",
           "function",
-          396,
-          396,
+          393,
+          399,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          400,
+          400,
           ""
         ],
         [
           "buildInc",
           "function",
-          404,
-          404,
+          401,
+          420,
           ""
+        ],
+        [
+          "i.oninput",
+          "method",
+          412,
+          417,
+          "buildInc"
         ],
         [
           "incNota",
           "function",
-          424,
-          424,
+          421,
+          425,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          426,
+          426,
           ""
         ],
         [
           "currentTools",
           "function",
-          432,
-          432,
+          429,
+          440,
           ""
         ],
         [
           "toolInfoHtml",
           "function",
-          446,
-          446,
+          443,
+          456,
           ""
+        ],
+        [
+          "det",
+          "object",
+          453,
+          453,
+          "toolInfoHtml"
         ],
         [
           "buildMaq",
           "function",
+          458,
+          463,
+          ""
+        ],
+        [
+          "i.oninput",
+          "method",
           461,
           461,
+          "buildMaq"
+        ],
+        [
+          "onclick",
+          "method",
+          464,
+          464,
           ""
         ],
         [
           "aplicaDicas",
           "function",
-          470,
-          470,
+          467,
+          467,
           ""
         ],
         [
           "buildCfg",
           "function",
-          471,
-          471,
+          468,
+          473,
+          ""
+        ],
+        [
+          "oninput",
+          "method",
+          474,
+          474,
+          ""
+        ],
+        [
+          "oninput",
+          "method",
+          475,
+          475,
+          ""
+        ],
+        [
+          "onchange",
+          "method",
+          476,
+          476,
+          ""
+        ],
+        [
+          "onchange",
+          "method",
+          477,
+          477,
+          ""
+        ],
+        [
+          "onchange",
+          "method",
+          480,
+          480,
+          ""
+        ],
+        [
+          "oninput",
+          "method",
+          481,
+          481,
+          ""
+        ],
+        [
+          "onchange",
+          "method",
+          482,
+          482,
           ""
         ],
         [
           "renderLadoSel",
           "function",
-          486,
-          486,
+          484,
+          493,
           ""
+        ],
+        [
+          "b.onclick",
+          "method",
+          492,
+          492,
+          "renderLadoSel"
         ],
         [
           "render",
           "function",
-          499,
-          499,
+          496,
+          545,
+          ""
+        ],
+        [
+          "b.onclick",
+          "method",
+          542,
+          542,
+          "render"
+        ],
+        [
+          "onclick",
+          "method",
+          547,
+          552,
           ""
         ],
         [
           "done",
-          "arrow",
-          552,
-          552,
-          ""
+          "method",
+          549,
+          549,
+          "onclick"
         ],
         [
           "download",
           "function",
-          556,
-          556,
+          553,
+          558,
           ""
         ],
         [
           "baixar",
           "function",
-          562,
-          562,
+          559,
+          559,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          560,
+          560,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          561,
+          564,
+          ""
+        ],
+        [
+          "TIPOS",
+          "object",
+          567,
+          567,
           ""
         ],
         [
           "renderTools",
           "function",
-          571,
-          571,
+          568,
+          593,
+          ""
+        ],
+        [
+          "b.onclick",
+          "method",
+          583,
+          591,
+          "renderTools"
+        ],
+        [
+          "TIPOS_DEF",
+          "object",
+          597,
+          605,
           ""
         ],
         [
           "buildTipoGrid",
           "function",
-          609,
-          609,
+          606,
+          622,
           ""
+        ],
+        [
+          "b.onclick",
+          "method",
+          611,
+          620,
+          "buildTipoGrid"
         ],
         [
           "syncTipo",
           "function",
-          627,
-          627,
+          624,
+          629,
+          ""
+        ],
+        [
+          "NUMS",
+          "object",
+          631,
+          631,
           ""
         ],
         [
           "openDlg",
           "function",
-          635,
-          635,
+          632,
+          642,
           ""
+        ],
+        [
+          "onclick",
+          "method",
+          643,
+          643,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          644,
+          644,
+          ""
+        ],
+        [
+          "frm.onsubmit",
+          "method",
+          645,
+          659,
+          ""
+        ],
+        [
+          "o",
+          "object",
+          649,
+          649,
+          "frm.onsubmit"
+        ],
+        [
+          "onclick",
+          "method",
+          661,
+          663,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          664,
+          664,
+          ""
+        ],
+        [
+          "onchange",
+          "method",
+          665,
+          686,
+          ""
+        ],
+        [
+          "rd.onload",
+          "method",
+          669,
+          684,
+          "onchange"
+        ],
+        [
+          "tools",
+          "method",
+          690,
+          690,
+          ""
+        ],
+        [
+          "maq",
+          "method",
+          690,
+          690,
+          "tools"
         ]
       ]
     },
@@ -2697,500 +3117,724 @@
       "simbolos": [
         [
           "$",
-          "arrow",
-          4,
-          4,
+          "method",
+          5,
+          5,
           ""
         ],
         [
           "$$",
-          "arrow",
-          5,
-          5,
+          "method",
+          6,
+          6,
           ""
         ],
         [
           "esc",
           "function",
-          6,
-          6,
+          7,
+          7,
           ""
         ],
         [
           "clone",
-          "arrow",
-          7,
-          7,
+          "method",
+          8,
+          8,
           ""
         ],
         [
           "uid",
           "function",
-          8,
-          8,
+          9,
+          9,
           ""
         ],
         [
           "load",
           "function",
-          9,
-          9,
+          10,
+          10,
           ""
         ],
         [
           "save",
           "function",
-          10,
-          10,
+          11,
+          11,
           ""
         ],
         [
           "campo",
-          "arrow",
-          13,
-          13,
+          "method",
+          14,
+          14,
+          ""
+        ],
+        [
+          "FM",
+          "object",
+          15,
+          15,
+          ""
+        ],
+        [
+          "LISTAS",
+          "object",
+          16,
+          16,
           ""
         ],
         [
           "tk",
           "function",
-          19,
-          19,
+          20,
+          20,
           ""
         ],
         [
           "dH",
           "function",
-          20,
-          20,
+          21,
+          21,
           ""
         ],
         [
           "dV",
           "function",
-          21,
-          21,
+          22,
+          22,
           ""
         ],
         [
           "ld",
-          "arrow",
-          22,
-          22,
+          "method",
+          23,
+          23,
           ""
         ],
         [
           "cav",
-          "arrow",
-          24,
-          24,
+          "method",
+          25,
+          25,
+          ""
+        ],
+        [
+          "DW",
+          "object",
+          26,
+          37,
           ""
         ],
         [
           "cil",
           "method",
-          26,
-          26,
-          ""
+          27,
+          27,
+          "DW"
         ],
         [
           "cone",
           "method",
-          27,
-          27,
-          ""
+          28,
+          28,
+          "DW"
         ],
         [
           "canal",
           "method",
-          28,
-          28,
-          ""
+          29,
+          29,
+          "DW"
         ],
         [
           "canalz",
           "method",
-          29,
-          29,
-          ""
+          30,
+          30,
+          "DW"
         ],
         [
           "rosca",
           "method",
-          30,
-          30,
-          ""
+          31,
+          31,
+          "DW"
         ],
         [
           "furo",
           "method",
-          31,
-          31,
-          ""
+          32,
+          32,
+          "DW"
         ],
         [
           "icil",
           "method",
-          32,
-          32,
-          ""
+          33,
+          33,
+          "DW"
         ],
         [
           "icone",
           "method",
-          33,
-          33,
-          ""
+          34,
+          34,
+          "DW"
         ],
         [
           "irosca",
           "method",
-          34,
-          34,
-          ""
+          35,
+          35,
+          "DW"
         ],
         [
           "icanal",
           "method",
-          35,
-          35,
+          36,
+          36,
+          "DW"
+        ],
+        [
+          "IC",
+          "object",
+          39,
+          53,
+          ""
+        ],
+        [
+          "EL",
+          "object",
+          55,
+          70,
+          ""
+        ],
+        [
+          "LET",
+          "object",
+          71,
+          71,
           ""
         ],
         [
           "rotulos",
-          "arrow",
-          71,
-          71,
+          "method",
+          72,
+          72,
           ""
         ],
         [
           "chaves",
-          "arrow",
-          72,
-          72,
+          "method",
+          73,
+          73,
           ""
         ],
         [
           "tipoEl",
-          "arrow",
-          73,
-          73,
+          "method",
+          74,
+          74,
           ""
         ],
         [
           "resumo",
           "function",
-          74,
-          74,
+          75,
+          88,
           ""
         ],
         [
           "rotCanto",
           "function",
-          88,
-          88,
+          89,
+          92,
           ""
         ],
         [
           "norm",
           "function",
-          94,
-          94,
+          95,
+          99,
           ""
         ],
         [
           "vazio",
           "function",
-          99,
-          99,
+          100,
+          100,
           ""
         ],
         [
           "seed",
           "function",
-          100,
-          100,
+          101,
+          113,
+          ""
+        ],
+        [
+          "d",
+          "object",
+          102,
+          102,
+          "seed"
+        ],
+        [
+          "ui",
+          "object",
+          120,
+          120,
           ""
         ],
         [
           "persistWork",
           "function",
-          120,
-          120,
+          121,
+          121,
           ""
         ],
         [
           "strip",
           "function",
-          121,
-          121,
+          122,
+          122,
           ""
         ],
         [
           "salvoDe",
           "function",
-          122,
-          122,
+          123,
+          123,
           ""
         ],
         [
           "sujo",
           "function",
-          123,
-          123,
+          124,
+          124,
           ""
         ],
         [
           "avisaMudou",
           "function",
-          124,
-          124,
+          125,
+          125,
+          ""
+        ],
+        [
+          "seedTool",
+          "method",
+          128,
+          128,
           ""
         ],
         [
           "dRefEfetivo",
           "function",
-          128,
-          128,
+          129,
+          141,
           ""
         ],
         [
           "buildF",
           "function",
-          141,
-          141,
+          142,
+          154,
           ""
+        ],
+        [
+          "f",
+          "object",
+          143,
+          143,
+          "buildF"
         ],
         [
           "rodar",
           "function",
-          154,
-          154,
+          155,
+          167,
           ""
         ],
         [
           "cantosDe",
           "function",
-          167,
-          167,
+          168,
+          173,
           ""
         ],
         [
           "lista_",
-          "arrow",
-          173,
-          173,
+          "method",
+          174,
+          174,
           ""
         ],
         [
           "seg",
           "function",
-          176,
-          176,
+          177,
+          180,
           ""
+        ],
+        [
+          "b.onclick",
+          "method",
+          179,
+          179,
+          "seg"
         ],
         [
           "pal",
           "function",
-          180,
-          180,
+          181,
+          187,
           ""
+        ],
+        [
+          "b.onclick",
+          "method",
+          186,
+          186,
+          "pal"
         ],
         [
           "cabecalho",
           "function",
-          187,
-          187,
+          188,
+          202,
           ""
         ],
         [
           "listas",
           "function",
-          202,
-          202,
+          203,
+          227,
           ""
+        ],
+        [
+          "row.onclick",
+          "method",
+          218,
+          225,
+          "listas"
         ],
         [
           "grafico",
           "function",
-          227,
-          227,
+          228,
+          235,
           ""
         ],
         [
           "tela",
           "function",
-          235,
-          235,
+          236,
+          243,
           ""
         ],
         [
           "mudou",
           "function",
-          243,
-          243,
+          244,
+          244,
           ""
         ],
         [
           "abrirId",
           "function",
-          246,
-          246,
+          247,
+          250,
           ""
         ],
         [
           "confirmaDescartar",
           "function",
-          250,
-          250,
+          251,
+          251,
+          ""
+        ],
+        [
+          "onchange",
+          "method",
+          252,
+          252,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          253,
+          253,
+          ""
+        ],
+        [
+          "oninput",
+          "method",
+          254,
+          254,
+          ""
+        ],
+        [
+          "oninput",
+          "method",
+          255,
+          255,
+          ""
+        ],
+        [
+          "oninput",
+          "method",
+          256,
+          256,
           ""
         ],
         [
           "salvar",
           "function",
-          256,
-          256,
+          257,
+          265,
           ""
+        ],
+        [
+          "onclick",
+          "method",
+          267,
+          270,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          271,
+          275,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          276,
+          279,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          280,
+          280,
+          ""
+        ],
+        [
+          "onchange",
+          "method",
+          281,
+          301,
+          ""
+        ],
+        [
+          "rd.onload",
+          "method",
+          284,
+          299,
+          "onchange"
         ],
         [
           "inicial",
           "function",
-          304,
-          304,
+          305,
+          316,
           ""
+        ],
+        [
+          "n",
+          "method",
+          306,
+          306,
+          "inicial"
         ],
         [
           "comItem",
           "function",
-          316,
-          316,
+          317,
+          321,
           ""
         ],
         [
           "semItem",
           "function",
-          321,
-          321,
+          322,
+          326,
           ""
         ],
         [
           "cursorZ",
           "function",
-          327,
-          327,
+          328,
+          336,
           ""
+        ],
+        [
+          "n",
+          "method",
+          331,
+          331,
+          "cursorZ"
         ],
         [
           "desenhoDlg",
           "function",
-          336,
-          336,
+          337,
+          346,
           ""
+        ],
+        [
+          "i.oninput",
+          "method",
+          345,
+          345,
+          "desenhoDlg"
         ],
         [
           "miniPv",
           "function",
-          346,
-          346,
+          347,
+          351,
           ""
         ],
         [
           "pickDlg",
           "function",
-          352,
-          352,
+          353,
+          379,
           ""
         ],
         [
           "marca",
           "function",
-          369,
-          369,
-          ""
+          370,
+          370,
+          "pickDlg"
+        ],
+        [
+          "m.onclick",
+          "method",
+          374,
+          374,
+          "pickDlg"
+        ],
+        [
+          "m.onkeydown",
+          "method",
+          375,
+          375,
+          "pickDlg"
+        ],
+        [
+          "r.onchange",
+          "method",
+          377,
+          377,
+          "pickDlg"
+        ],
+        [
+          "oninput",
+          "method",
+          378,
+          378,
+          "pickDlg"
         ],
         [
           "novosErros",
           "function",
-          380,
-          380,
+          381,
+          384,
           ""
         ],
         [
           "pickErro",
           "function",
-          384,
-          384,
+          385,
+          388,
           ""
         ],
         [
           "abre",
           "function",
-          388,
-          388,
+          389,
+          403,
+          ""
+        ],
+        [
+          "onclick",
+          "method",
+          404,
+          404,
+          ""
+        ],
+        [
+          "onsubmit",
+          "method",
+          405,
+          416,
+          ""
+        ],
+        [
+          "api",
+          "object",
+          419,
+          434,
           ""
         ],
         [
           "lista",
           "method",
-          419,
-          419,
-          ""
+          420,
+          420,
+          "api"
         ],
         [
           "obter",
           "method",
-          420,
-          420,
-          ""
+          421,
+          421,
+          "api"
         ],
         [
           "abrir",
           "method",
-          421,
-          421,
-          ""
+          422,
+          422,
+          "api"
         ],
         [
           "novo",
           "method",
-          422,
-          422,
-          ""
-        ],
-        [
-          "importarPDF",
-          "method",
           423,
           423,
-          ""
-        ],
-        [
-          "salvarPDF",
-          "method",
-          438,
-          438,
-          ""
+          "api"
         ],
         [
           "mostrar",
           "method",
-          443,
-          443,
-          ""
+          424,
+          424,
+          "api"
         ],
         [
           "sujoId",
           "method",
-          444,
-          444,
-          ""
+          425,
+          425,
+          "api"
         ],
         [
           "aoSair",
           "method",
-          446,
-          446,
-          ""
+          427,
+          432,
+          "api"
         ]
       ]
     },
