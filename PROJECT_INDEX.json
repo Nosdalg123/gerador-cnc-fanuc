@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-10-11 (atualização do índice da branch 2.10.0)",
+  "gerado_em": "2026-10-11: atualização dos módulos PDF da branch 2.11.0",
   "como_ler": "simbolos = [nome, tipo, linha_inicio, linha_fim, pai]; linhas comecam em 1. Leia so a faixa necessaria (Read com offset/limit).",
   "regerar": "python indexer.py",
   "ignorado": [
@@ -21,12 +21,12 @@
     "versoes"
   ],
   "totais": {
-    "arquivos": 31,
-    "simbolos": 979,
+    "arquivos": 36,
+    "simbolos": 995,
     "por_linguagem": {
-      "md": 4,
+      "md": 5,
       "py": 1,
-      "js": 24,
+      "js": 28,
       "html": 1,
       "css": 1
     }
@@ -7067,6 +7067,147 @@
       "lang": "js",
       "linhas": 33,
       "simbolos": []
+    },
+    "Gerador/pdfdimensions.js": {
+      "lang": "js",
+      "linhas": 39,
+      "simbolos": [
+        [
+          "parse",
+          "function",
+          9,
+          9,
+          ""
+        ],
+        [
+          "extract",
+          "function",
+          24,
+          24,
+          ""
+        ],
+        [
+          "summary",
+          "function",
+          31,
+          31,
+          ""
+        ]
+      ]
+    },
+    "Gerador/pdforientation.js": {
+      "lang": "js",
+      "linhas": 41,
+      "simbolos": [
+        [
+          "isValid",
+          "function",
+          9,
+          9,
+          ""
+        ],
+        [
+          "shouldReverse",
+          "function",
+          13,
+          13,
+          ""
+        ],
+        [
+          "flip",
+          "function",
+          17,
+          17,
+          ""
+        ],
+        [
+          "fromDrawing",
+          "function",
+          31,
+          31,
+          ""
+        ],
+        [
+          "orientation",
+          "function",
+          35,
+          35,
+          ""
+        ]
+      ]
+    },
+    "Gerador/testpdfdisco.js": {
+      "lang": "js",
+      "linhas": 50,
+      "simbolos": []
+    },
+    "Gerador/testpdforientcnc.js": {
+      "lang": "js",
+      "linhas": 28,
+      "simbolos": [
+        [
+          "tool",
+          "function",
+          7,
+          7,
+          ""
+        ],
+        [
+          "make",
+          "function",
+          10,
+          10,
+          ""
+        ]
+      ]
+    },
+    "Gerador/TESTE-DISCO7.md": {
+      "lang": "md",
+      "linhas": 41,
+      "simbolos": [
+        [
+          "Teste real — Disco 7″ / Empurrador P2 (v2.11.0)",
+          "h1",
+          1,
+          41,
+          ""
+        ],
+        [
+          "Vistas encontradas",
+          "h2",
+          5,
+          41,
+          ""
+        ],
+        [
+          "Cotas extraídas diretamente da primeira página",
+          "h2",
+          12,
+          41,
+          ""
+        ],
+        [
+          "Erro encontrado em 2.10.0 e corrigido",
+          "h2",
+          18,
+          41,
+          ""
+        ],
+        [
+          "Testes automatizados",
+          "h2",
+          30,
+          41,
+          ""
+        ],
+        [
+          "Pendentes",
+          "h2",
+          35,
+          41,
+          ""
+        ]
+      ]
     }
   }
 }
