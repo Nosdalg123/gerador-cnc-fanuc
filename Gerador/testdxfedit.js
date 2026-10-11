@@ -11,6 +11,9 @@ assert(result.externo.length>=3,'A proposta automática deve selecionar o contor
 assert(result.externo.includes('a:0')&&result.externo.includes('b:0')&&result.externo.includes('c:0'));
 assert(!result.externo.includes('other:0'),'A proposta externa não deve misturar o perfil interno.');
 assert(result.ambiguous,'Proposta nunca equivale a aprovação CNC');
+const hidden=new Set(['a:0']);
+const filtered=E.autoSelect(doc,rect,0,hidden);
+assert(!filtered.externo.includes('a:0'),'Linhas removidas não podem ser reintroduzidas pelo automático');
 const original=JSON.stringify(doc.geometry);
 const grown=E.extendLine(doc.geometry,'c:0','fim',5);
 assert(grown.ok);assert.equal(doc.geometry[2].b[0],65);
