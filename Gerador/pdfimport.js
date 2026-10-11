@@ -387,7 +387,11 @@ $('#pdfAplicar').onclick=function(){
  var r=root.CNCPDFPerfil.analyze(model,length),name=$('#pdfNome').value.trim();
  if(!r.ok||!reviewData()||!reviewData().ready||unresolved.length||viewKind!=='lateral'||!faceChoice||!$('#pdfConfirmado').checked||!name||!url){status('Confirme geometria válida, nome e cotas antes de salvar.',true);return}
  var max=Math.max(...r.items.filter(q=>q.tipo[0]!=='i').map(q=>Math.max(q.a,q.tipo==='cone'?q.b:q.a)));
- var api=root.CNCDesenhos,id=api&&api.salvarPDF&&api.salvarPDF({nome:name,lPeca:Number(length),dRef:Math.ceil(max+4),items:r.items});
+ var review=reviewData(),api=root.CNCDesenhos,
+ id=api&&api.salvarPDF&&api.salvarPDF({nome:name,lPeca:Number(length),dRef:Math.ceil(max+4),items:r.items,
+  orientacao:{face:faceChoice,vista:viewKind,eixo:profileAxis},
+  conferencias:review?{quantidade:review.summary.total,confirmadas:review.summary.verified,
+   referencias:review.slots.map(q=>({id:q.key,cota:q.value,origem:q.evidence||'conferência manual'}))}:null});
  if(!id){status('Não foi possível salvar o desenho. Confira se há alterações não salvas no editor manual.',true);return}
  savedId=id;$('#pdfAbrirGerador').hidden=false;setText('#pdfSaved','✓ '+name+' salvo na lista de desenhos do Gerador.');
  status('Desenho confirmado e salvo com o nome '+name+'.');renderPreview();
