@@ -25,11 +25,11 @@ function sectionSuggestion(doc){
  if(!b||b.width<15||b.height<15)return null;
  return {rect:{x1:b.x1-3,y1:b.y1-3,x2:b.x2+3,y2:b.y2+3},axis:front.y,front,origin:'circunferências concêntricas da vista frontal; conferir antes de aceitar'};
 }
-function segments(geometry,rect){
+function segments(geometry,rect,hidden){
  const src=rect?DX.cut(geometry,rect):geometry,all=[];
  src.forEach(e=>{
   const segs=DX.explode(e);
-  segs.forEach((v,j)=>all.push(Object.assign({},v,{uid:e.id+':'+j,parent:e.id})));
+  segs.forEach((v,j)=>{const id=e.id+':'+j;if(!hidden||!hidden.has(id))all.push(Object.assign({},v,{uid:id,parent:e.id}))});
  });
  return all;
 }
@@ -76,8 +76,8 @@ function connectivity(segs,tol=.16){
  groups.sort((a,b)=>b.length-a.length);
  return {components:groups.length,gaps,branches,closed:gaps.length===0&&branches.length===0&&groups.length===1,groups,chain:groups[0]||[]};
 }
-function analyze(doc,rect,axis,face,chosen){
- const all=segments(doc.geometry,rect);
+function analyze(doc,rect,axis,face,chosen,hidden){
+ const all=segments(doc.geometry,rect,hidden);
  const upper=Number.isFinite(axis)?all.filter(s=>above(s,axis)):[],candidate=upper.filter(s=>['line','arc'].includes(s.kind));
  const selected=candidate.filter(s=>chosen&&chosen.has(s.uid));
  const cn=connectivity(selected);
@@ -123,6 +123,7 @@ function svg(doc,rect,options){
   let source=DX.explode(e);if(!source.length&&e.type==='SPLINE'){let pts=DX.splinePoints(e,120);if(pts.length>1){out+='<path d="'+polyPath(pts,pos)+'" fill="none" stroke="#9a679c" stroke-dasharray="6 3" stroke-width="1.8"/>'}return}
   source.forEach((s,i)=>{
    let pts=DX.sample(s,28),id=e.id+':'+i,selected=options.selected&&options.selected.has(id);
+   if(options.hidden&&options.hidden.has(id))return;
    let emphasis=selected?'#ea6700':(options.candidate&&options.candidate.has(id)?'#087e96':(color[e.type]||'#53728c'));
    out+='<path data-cad-segment="'+esc(id)+'" d="'+polyPath(pts,pos)+'" fill="none" stroke="'+emphasis+'" stroke-width="'+(selected?4:options.candidate&&options.candidate.has(id)?2.4:1.25)+'" stroke-linejoin="round" stroke-linecap="round" style="cursor:pointer"><title>'+(s.kind==='arc'?'Raio real R'+fmt(s.r):'Linha CAD')+'</title></path>';
   });
@@ -130,6 +131,13 @@ function svg(doc,rect,options){
  if(Number.isFinite(options.axis)){
   let ya=pos([b.x1,options.axis])[1];out+='<path d="M10,'+ya.toFixed(2)+'H890" stroke="#d36a2b" stroke-width="1" stroke-dasharray="7 4"/>';
   out+='<text x="14" y="'+(ya-5).toFixed(2)+'" font-size="13" fill="#b75a2f">X0 · eixo</text>';
+ }
+ if(rect&&['esquerda','direita'].includes(options.face)){
+  const cadX=options.face==='esquerda'?rect.x1:rect.x2;
+  const screen=pos([cadX,Number.isFinite(options.axis)?options.axis:(rect.y1+rect.y2)/2]);
+  // A ponta exata ainda depende da confirmação da face e do perfil. Marcador de referência visual.
+  out+='<line x1="'+screen[0].toFixed(2)+'" y1="12" x2="'+screen[0].toFixed(2)+'" y2="'+(H-12)+'" stroke="#db4b16" stroke-width="2" stroke-dasharray="7 4"/>'+
+   '<text x="'+(screen[0]>W/2?W-140:35)+'" y="22" fill="#b33c0a" font-size="16" font-weight="bold">Z0 · face '+(options.face==='esquerda'?'esquerda':'direita')+'</text>';
  }
  if(options.dimensions)options.dimensions.slice(0,75).forEach(d=>{
   let p=pos(d.position);if(p[0]>=10&&p[0]<=W-15&&p[1]>=15&&p[1]<=H-15){
