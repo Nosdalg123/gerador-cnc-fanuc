@@ -8,6 +8,16 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.10.0 — 11/10/2026 — Escala proporcional, edição sobre cotas e seleção de vista no PDF
+- Projeção XZ usa **escala geométrica uniforme**: o mesmo fator é aplicado ao comprimento e aos diâmetros (proporção X:Ø = 1:1), ajustada ao tamanho do painel; não promete escala física 1:1 em monitor.
+- Cotas clicáveis na própria projeção, com edição de diâmetro, comprimento, cone e lado. É possível acrescentar/remover segmentos pelo painel, sem exibir uma lista técnica de partes.
+- Campo **Nome do desenho** ao lado de um botão grande **Salvar desenho confirmado**. O botão só habilita após conferir a vista e confirmar a geometria.
+- Usuário pode selecionar a vista correta por retângulo no PDF. Também aparecem atalhos quando uma legenda 'SEÇÃO/CORTE/VISTA' é detectada; a extração de cotas fica restrita à vista escolhida.
+- Reconhecimento vetorial conservador de seções simétricas com segmentos retilíneos, tanto no eixo horizontal quanto vertical; além da identificação por texto de anéis simples.
+- Perfis inferidos de linhas podem ter cotas aproximadas: exigem conferência e ajustes. Não se garante reconstrução universal de peças complexas, perfis com arcos, desenhos rasterizados, tolerâncias, detalhes escondidos ou cotas faltantes. Nunca se deve atribuir cotas a vistas diferentes sem seleção.
+- Salva no mesmo formato da lista do Gerador, mantendo as versões anteriores isoladas. Testes em `testpdfscale.js`.
+- **Atenção:** nada é executado na máquina. Simulador e revisão humana continuam obrigatórios.
+
 ## 2.9.0 — 11/10/2026 — Projeção CNC de PDF, confirmação e salvamento direto (branch isolada)
 - Novo painel lado a lado: original PDF à esquerda e geometria CNC reconstruída à direita, independente da imagem e com cotas projetadas (Ø externo, Ø interno, comprimento total e trechos).
 - Prévia SVG escalada somente para apresentação; os valores informados nas cotas, não os pixels, definem a geometria salva.
