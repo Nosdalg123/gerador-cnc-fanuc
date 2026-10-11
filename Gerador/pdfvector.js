@@ -118,5 +118,23 @@ function trace(lines,diam,length,region){
  if(horizontal)horizontal.axis='horizontal';
  return horizontal;
 }
-return {extract,trace,multiply,complexity};
+/* Mostra as curvas/linhas vetoriais efetivamente presentes no PDF sem
+   tentar adivinhar escala real ou gerar código CNC. */
+function svg(lines,region){
+ var found=(lines||[]).filter(function(q){
+  if(!region)return true;
+  var mx=(q.x1+q.x2)/2,my=(q.y1+q.y2)/2;
+  return mx>=region.x1&&mx<=region.x2&&my>=region.y1&&my<=region.y2;
+ }).filter(function(q){return Math.hypot(q.x2-q.x1,q.y2-q.y1)>1.4});
+ if(!found.length)return null;
+ var a=found.slice(0,5500),x1=Infinity,x2=-Infinity,y1=Infinity,y2=-Infinity;
+ a.forEach(function(q){x1=Math.min(x1,q.x1,q.x2);x2=Math.max(x2,q.x1,q.x2);y1=Math.min(y1,q.y1,q.y2);y2=Math.max(y2,q.y1,q.y2)});
+ if(!(x2>x1&&y2>y1))return null;
+ var W=900,H=455,k=Math.min((W-44)/(x2-x1),(H-58)/(y2-y1)),p=function(x,y){return [(22+(x-x1)*k).toFixed(2),(25+(y-y1)*k).toFixed(2)]};
+ var d=a.map(function(q){var v=p(q.x1,q.y1),w=p(q.x2,q.y2);return 'M'+v.join(',')+'L'+w.join(',')}).join(' ');
+ return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Linhas vetoriais extraídas do PDF sem escala CNC confirmada">'+
+ '<rect width="'+W+'" height="'+H+'" fill="#ffffff"/><path d="'+d+'" fill="none" stroke="#457295" stroke-width="1.15"/>'+
+ '<text x="18" y="448" font-size="13" fill="#b45309">Prévia vetorial PDF — sem cotas associadas e NÃO liberada para CNC'+(found.length>a.length?' · exibindo '+a.length+' de '+found.length+' linhas':'')+'</text></svg>';
+}
+return {extract,trace,multiply,complexity,svg};
 });
