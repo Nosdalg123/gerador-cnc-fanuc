@@ -8,6 +8,18 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.13.0 — 11/10/2026 — Importação DXF real, topologia e prévia PDF (branch isolada)
+- Criado **Importar CAD DXF** em Desenho da peça, independente da importação PDF e do editor manual.
+- DXF ASCII R2000 testado com arquivos verdadeiros Disco 7″ e Copo 7″: Model Space, LINE, ARC, CIRCLE, LWPOLYLINE (incluindo bulge), SPLINE NURBS, DIMENSION nativa, TEXT/MTEXT; separação de Paper Space.
+- Geometria original representada em SVG com **escala X/Y única**. Dois painéis: CAD original e perfil vetorial reconstruído. A escolha de face Z0 espelha a representação conforme a convenção do torno; não altera os raios nem as medidas.
+- Sugerir seção longitudinal usando centros dos círculos concêntricos da vista frontal, e permitir delimitar outra vista no CAD.
+- Dimensões DXF calculadas dos pontos originais, inclusive diâmetros e raios nativos; listar chamadas de rosca e tipos auxiliares/ignorados.
+- Marcação clicável de entidades para perfil externo/interno; detecção de segmentos desconectados, ramificações, faces e curvas sem mapeamento CNC completo. Sem fabricação de medidas por OCR.
+- Rascunhos CAD com nome e Z0 opcional em armazenamento local. Envio de trechos geométricos comprovados ao editor como rascunho **INCOMPLETO**, bloqueando o Gerador até revisão completa explicitamente confirmada; alterações posteriores reabrem a pendência.
+- PDF: se a identificação dimensionada falhar, exibir **prévia vetorial do próprio PDF** no painel da direita, devidamente marcada como não validada para CNC.
+- Teste `testdxf.js`, auditoria de arquivos reais em `TESTE-DXF-REAIS.md`; não substitui teste de interface no navegador nem validação de usinagem.
+- Limite assumido: não há conversão universal automática de arcos, SPLINE, roscas e cavidades em código Fanuc, nem suporte DWG binário; o usuário pode corrigir no editor sem perder fonte CAD.
+
 ## 2.12.0 — 11/10/2026 — Teste do Copo 7″: seleção de vista e cotas de detalhe (branch isolada)
 - Testado contra textos e posições reais do PDF **Copo 7″ / Empurrador P2**: seção Y–Y, vista frontal, Detalhe Z e quadro de revisões.
 - `pdfdimensions.js`: classifica **m10** minúsculo, M64 P4, 6°, R3/R6,50, distingue legendas de vistas e números sem Ø.
