@@ -57,3 +57,8 @@ O leitor segue os mesmos critérios dos geradores; o que não foi confirmado na 
 - Conferir manualmente **vista selecionada, origem Z0, Ø externo/interno, comprimento, degraus e orientação dos lados**. A projeção mantém proporção correta em X e Ø, mas isso não garante a interpretação da peça.
 - Cotas inferidas de linhas vetoriais são estimativas: substituir pelos valores explícitos do desenho antes de gerar código CNC. PDFs digitalizados ou com raios/chanfros não suportados requerem CAD ou digitação verificada.
 - Antes de levar à máquina: validar fixação, ferramentas, compensações e simulação, executar a seco conforme procedimentos da ferramentaria.
+
+## PDF do Disco 7″ — v2.11.0
+- Conferir o perfil final conforme a revisão do desenho, principalmente R3,50, R20, 61°, M39 P2 e M8×50. As linhas vetoriais são suficientes apenas para sugerir o contorno principal, não para certificar os detalhes.
+- Determinar explicitamente a face livre Z0, o trecho preso nas castanhas e o sentido da segunda operação, caso exista. Uma face com diâmetro decrescente pode não ser usinável por G71 tipo I.
+- Nunca gerar ou executar um programa CNC a partir de um rascunho parcial extraído do PDF sem completar essas características, simular o percurso e validar o setup na máquina.
