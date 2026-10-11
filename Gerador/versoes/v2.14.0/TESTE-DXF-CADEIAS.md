@@ -50,3 +50,15 @@ Foi realizada análise independente da topologia do semiperfil superior: o Copo 
 **Não há reconstrução automática integral comprovada do Disco nem do Copo.** A nova lógica identifica partes reais, oferece correção assistida e evita juntá-las indevidamente. Arc-to-corner, SPLINE, canais, cavidades, transições e roscas ainda exigem operações CNC específicas, editadas/validadas manualmente quando não modeladas com confiança. Nenhum programa foi validado em máquina real e não houve teste ponta a ponta no navegador nesta execução.
 
 O botão de confirmação do editor é responsabilidade do usuário e não substitui validação de usinagem.
+
+## Validação real da interface no Chromium
+O teste Playwright `testdxfui.mjs` usa um DXF sintético de torneamento, sem copiar os anexos industriais para o repositório. Ele carrega a aplicação como site, habilita o módulo de desenho num ambiente de teste isolado da tela de login e verifica:
+- DXF carregado com linhas e círculos;
+- original e projeção SVG efetivamente renderizados;
+- ausência de atributos SVG com `NaN`;
+- centro do eixo sugerido, cadeias clicáveis e rascunho salvo;
+- opção CNC desabilitada quando não há face Z0.
+
+Foram encontradas duas falhas reais no Chromium e corrigidas: dependência DXF inicializada com `root` fora de escopo e desenho de recorte calculado sem largura/altura. O workflow `.github/workflows/cnc-dxf-qa.yml` roda esse smoke test e as regressões do Gerador.
+
+Este smoke **não cobre a interação visual com os DXFs originais**, pois os anexos não são armazenados no GitHub. O ensaio real no Chrome/Edge usando Disco/Copo continua recomendado para validar todos os detalhes.

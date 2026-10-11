@@ -1,11 +1,11 @@
 /* Projeção geométrica DXF — mesmo fator de escala em Z e X.
    Não inventa trajetória/raio e não libera programação com contorno aberto. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory();
- else root.CNCDXFPerfil=factory();
-})(typeof self!=='undefined'?self:this,function(){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./dxfcore.js'));
+ else root.CNCDXFPerfil=factory(root.CNCDXF);
+})(typeof self!=='undefined'?self:this,function(DX){
 'use strict';
-const DX=typeof module==='object'&&module.exports?require('./dxfcore.js'):root.CNCDXF;
+if(!DX)throw new Error('Biblioteca DXF ausente: carregue dxfcore.js antes de dxfprofile.js.');
 function fmt(n){return Number(n).toLocaleString('pt-BR',{maximumFractionDigits:3})}
 function esc(n){return String(n).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
 function intersect(e,r){return DX.cut([e],r).length>0}
@@ -100,7 +100,11 @@ function analyze(doc,rect,axis,face,chosen){
 }
 function polyPath(pts,coord){if(!pts.length)return'';return pts.map((p,i)=>(i?'L':'M')+coord(p).map(v=>v.toFixed(2)).join(',')).join(' ')}
 function svg(doc,rect,options){
- options=options||{};let b=rect||DX.bounds(doc.geometry);
+ options=options||{};
+ let b=rect?{x1:Number(rect.x1),y1:Number(rect.y1),x2:Number(rect.x2),y2:Number(rect.y2),
+  width:Number(rect.x2)-Number(rect.x1),height:Number(rect.y2)-Number(rect.y1)}:DX.bounds(doc.geometry);
+ if(b&&(!Number.isFinite(b.width)||!Number.isFinite(b.height)||b.width<=0||b.height<=0))
+  return '<svg viewBox="0 0 400 200" role="img" aria-label="Vista CAD inválida"><text x="15" y="35">Delimite uma vista CAD válida.</text></svg>';
  if(!b)return '<svg viewBox="0 0 400 200"><text x="15" y="35">Sem geometria</text></svg>';
  let W=900,H=480,margin=30,scale=Math.min((W-2*margin)/Math.max(1,b.width),(H-2*margin)/Math.max(1,b.height));
  const pos=p=>{
