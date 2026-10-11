@@ -185,6 +185,17 @@ source.addEventListener('pointercancel',()=>{start=null});
 $('#dxfProjected').addEventListener('click',function(e){
  const target=e.target.closest('[data-cad-segment]');if(!target)return;
  const id=target.getAttribute('data-cad-segment');
+ const entity=rect&&doc?P.segments(doc.geometry,rect).find(t=>t.uid===id):null;
+ if(entity){
+  const info=P.classify(entity,axis,val('#dxfFace')||'esquerda');
+  const caption=info.kind==='cil'?'Cilindro · Ø'+fmt(info.a)+' · comprimento '+fmt(info.b)+' mm':
+   info.kind==='cone'?'Cone · Ø'+fmt(info.a)+' → Ø'+fmt(info.b)+' · comprimento '+fmt(info.c)+' mm':
+   info.kind==='raio'?'Arco CAD R'+fmt(info.r)+' mm · exige associação ao canto no CNC':
+   info.kind==='face'?'Face radial/degrau · diâmetros Ø'+fmt(info.di)+' → Ø'+fmt(info.df):
+   'Entidade não traduzível diretamente';
+  $('#dxfEntityInfo').textContent='Entidade '+id+': '+caption+'. '+(info.reason||'') ;
+ }
+
  let mode=document.querySelector('input[name=dxfAssign]:checked')?.value||'externo';
  if(mode==='remover'){selected.externo.delete(id);selected.interno.delete(id)}
  else{let other=mode==='externo'?'interno':'externo';selected[other].delete(id);if(selected[mode].has(id))selected[mode].delete(id);else selected[mode].add(id)}
