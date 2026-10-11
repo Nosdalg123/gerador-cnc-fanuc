@@ -166,6 +166,10 @@ function traceOutline(lines,diam,length,region){
   sum+=L;
  }
  if(items.length>12)return null;
+ // A soma das cotas arredondadas deve coincidir exatamente com o comprimento final.
+ var others=items.slice(0,-1).reduce(function(sum,q){return sum+q.b},0);
+ items[items.length-1].b=Math.round((length-others)*1000)/1000;
+ if(!(items[items.length-1].b>0))return null;
  return {ok:true,items:items,length:length,diameter:diam,axis:best.axis,
    confidence:'contorno-vetorial-aproximado',
    warning:'Contorno principal aproximado do PDF vetorial. Degraus, raios, furos, roscas, usinabilidade e fixação exigem revisão; não usar como código final.'};
