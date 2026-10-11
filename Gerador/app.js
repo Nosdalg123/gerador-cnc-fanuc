@@ -306,7 +306,7 @@
     var n = ['trechos1', 'trechos2', 'internos1', 'internos2'].reduce(function (s, k) { return s + (d.lados === '2' || k.slice(-1) === '1' ? d[k].length : 0); }, 0);
     el.textContent = (d.lados === '2' ? '2 lados' : '1 lado') + ' · comprimento final ' + CNC.fmt(Number(d.lPeca)) + ' mm · ' + n + (n === 1 ? ' elemento' : ' elementos') +
       (n === 0 ? ' · ⚠ desenho vazio: clique em Editar, adicione os elementos e salve' : '') +
-      (d.cadOrigem ? ' · DXF: '+esc(d.cadOrigem.arquivo)+' · Z0 '+esc(d.cadOrigem.faceZ0)+(d.cadOrigem.verificado?' · CAD conferido':' · rascunho') : '') +
+      (d.cadOrigem ? ' · DXF: '+esc(d.cadOrigem.arquivo)+' · Z0 '+esc(d.cadOrigem.faceZ0)+(d.cadOrigem.incompleto?' · ⛔ INCOMPLETO: confirmar no editor':d.cadOrigem.verificado?' · CAD conferido':' · rascunho') : '') +
       (d.pdfOrientacao ? ' · PDF: eixo ' + esc(d.pdfOrientacao.eixoPDF) + ', face Z0 ' + esc(d.pdfOrientacao.faceZ0PDF) + (d.pdfOrientacao.editadoDepoisDaImportacao ? ' · ⚠ orientação a rever após edição' : '') : '') +
       (CNCDesenhos.sujoId() === d.id ? ' · ⚠ há alterações deste desenho ainda não salvas no editor (o Gerador usa a versão salva)' : '');
   }
@@ -516,7 +516,10 @@
       var bl = $('.toolblock[data-slot="' + slot.id + '"]'); if (bl) bl.hidden = !!(slot.usado && !slot.usado(f)); // so as ferramentas que o processo usa
     });
 
-    var r = g.usaDesenho && !desenhoAtual() ? { erros: ['Escolha um desenho da peça (ou crie um na operação Desenho da peça).'], avisos: [] } : g.gerar(f, tl, { nome: state.nome, autor: state.autor, data: dataEfetiva(), maq: state.maq });
+    var draftCAD=g.usaDesenho&&desenhoAtual()&&desenhoAtual().cadOrigem&&desenhoAtual().cadOrigem.incompleto;
+    var r = draftCAD ? { erros: ['Desenho DXF é um RASCUNHO INCOMPLETO: abra Desenho da peça, corrija raios, roscas, furos e trechos omitidos e clique em Confirmar revisão completa do CAD antes de gerar código.'], avisos: [] }
+      : g.usaDesenho && !desenhoAtual() ? { erros: ['Escolha um desenho da peça (ou crie um na operação Desenho da peça).'], avisos: [] }
+      : g.gerar(f, tl, { nome: state.nome, autor: state.autor, data: dataEfetiva(), maq: state.maq });
     lastResult = r;
     renderLadoSel(r);
     var cur = r.lados ? r.lados[state.lado] : r;
