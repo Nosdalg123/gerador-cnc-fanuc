@@ -12,7 +12,7 @@ function extract(list,ops,viewport){
  if(!list||!ops||!viewport)return [];
  var matrix=[1,0,0,1,0,0],stack=[],out=[],lim=20000;
  function point(x,y){var p=transform(matrix,x,y);return viewport.convertToViewportPoint(p[0],p[1])}
- function add(p,q){if(out.length>=lim)return;out.push({x1:p[0],y1:p[1],x2:q[0],y2:q[1]})}
+ function add(p,q){if(out.length>=lim)return;out.push({x1:p[0],y1:p[1],x2:q[0],y2:q[1],path:i})}
  for(var i=0;i<list.fnArray.length;i++){
   var fn=list.fnArray[i],args=list.argsArray[i];
   if(fn===ops.save){stack.push(matrix.slice());continue}
@@ -99,6 +99,77 @@ function traceVertical(lines,diam,length,region){
  if(out.some(q=>!(q.b>0))||inn.some(q=>!(q.b>0)))return null;
  return {ok:true,items:out.concat(inn),confidence:'contorno-aproximado',warning:'Contorno inferido das linhas vetoriais: medidas sem cota explícita são aproximações e exigem revisão.',axis:'vertical',diameter:diam,length:length};
 }
+/* Contorno lateral: extrai envelope de UMA forma vetorial extensa.
+   Não usa linhas de cota, quadro da folha ou círculos da vista frontal.
+   Arcos são aproximações poligonais e precisam de revisão no editor completo. */
+function traceOutline(lines,diam,length,region){
+ if(!(diam>0&&length>0)||!Array.isArray(lines))return null;
+ var byPath={};lines.forEach(function(seg){
+  if(seg.path==null)return;
+  var group=byPath[seg.path]||(byPath[seg.path]=[]);
+  group.push(seg);
+ });
+ var groups=[];
+ Object.keys(byPath).forEach(function(id){
+  var segs=byPath[id];if(segs.length<90)return;
+  var xx=[],yy=[];segs.forEach(function(s){xx.push(s.x1,s.x2);yy.push(s.y1,s.y2)});
+  var minX=Math.min.apply(null,xx),maxX=Math.max.apply(null,xx),minY=Math.min.apply(null,yy),maxY=Math.max.apply(null,yy),w=maxX-minX,h=maxY-minY;
+  if(w<80||h<80)return;
+  if(region&&(minX<region.x1-2||maxX>region.x2+2||minY<region.y1-2||maxY>region.y2+2))return;
+  var delta=Math.abs(w/h-length/diam)/(length/diam);
+  if(delta<.16)groups.push({segs:segs,x0:minX,x1:maxX,y0:minY,y1:maxY,score:delta,axis:'horizontal'});
+  var inverse=Math.abs(h/w-length/diam)/(length/diam);
+  if(inverse<.16)groups.push({segs:segs,x0:minY,x1:maxY,y0:minX,y1:maxX,score:inverse,axis:'vertical'});
+ });
+ if(!groups.length)return null;
+ groups.sort(function(a,b){return a.score-b.score||b.segs.length-a.segs.length});
+ var best=groups[0],ss=best.segs.map(function(q){
+  return best.axis==='horizontal'?q:{x1:q.y1,y1:q.x1,x2:q.y2,y2:q.x2};
+ });
+ var w=best.x1-best.x0,h=best.y1-best.y0,scaleD=h/diam,points=[];
+ for(var i=0;i<=200;i++){
+  var x=best.x0+0.8+(w-1.6)*i/200,ys=[];
+  ss.forEach(function(l){
+   if(Math.abs(l.x2-l.x1)<1e-8)return;
+   if(x<Math.min(l.x1,l.x2)||x>Math.max(l.x1,l.x2))return;
+   var y=l.y1+(l.y2-l.y1)*(x-l.x1)/(l.x2-l.x1);
+   if(Number.isFinite(y))ys.push(y);
+  });
+  if(ys.length<2)continue;
+  var d=(Math.max.apply(null,ys)-Math.min.apply(null,ys))/scaleD;
+  if(d>0&&d<diam*1.03)points.push({z:(x-best.x0)/w*length,d:d});
+ }
+ if(points.length<80)return null;
+ function distance(p,a,b){
+  var dx=b.z-a.z,dy=b.d-a.d,den=Math.hypot(dx,dy)||1;
+  return Math.abs(dy*p.z-dx*p.d+b.z*a.d-b.d*a.z)/den;
+ }
+ function rdp(pts,eps){
+  if(pts.length<=2)return pts;
+  var far=0,idx=0;
+  for(var j=1;j<pts.length-1;j++){var dist=distance(pts[j],pts[0],pts[pts.length-1]);if(dist>far){far=dist;idx=j}}
+  if(far<=eps)return [pts[0],pts[pts.length-1]];
+  return rdp(pts.slice(0,idx+1),eps).slice(0,-1).concat(rdp(pts.slice(idx),eps));
+ }
+ // Extremos correspondem à face esquerda e direita da vista.
+ points[0].z=0;points[points.length-1].z=length;
+ var selected=[],eps=1.4;
+ for(var attempt=0;attempt<10;attempt++){selected=rdp(points,eps);if(selected.length<=13)break;eps*=1.4}
+ if(selected.length<2||selected.length>13)return null;
+ var items=[],sum=0;
+ for(var k=0;k<selected.length-1;k++){
+  var a=selected[k],b=selected[k+1],L=k===selected.length-2?length-sum:b.z-a.z;
+  if(L<.05)return null;
+  var da=Math.round(a.d*100)/100,db=Math.round(b.d*100)/100;
+  if(Math.abs(da-db)<1.2)items.push({tipo:'cil',side:'1',a:(da+db)/2,b:Math.round(L*1000)/1000,c:''});
+  else items.push({tipo:'cone',side:'1',a:da,b:Math.round(L*1000)/1000,c:db});
+  sum+=L;
+ }
+ if(items.length>12)return null;
+ return {ok:true,items:items,length:length,diameter:diam,axis:best.axis,
+   confidence:'contorno-vetorial-aproximado',
+   warning:'Contorno principal aproximado do PDF vetorial. Degraus, raios, furos, roscas, usinabilidade e fixação exigem revisão; não usar como código final.'};
+}
 function trace(lines,diam,length,region){
  var vertical=traceVertical(lines,diam,length,region);
  if(vertical)return vertical;
@@ -106,7 +177,7 @@ function trace(lines,diam,length,region){
  var r=region?{x1:region.y1,y1:region.x1,x2:region.y2,y2:region.x2}:null;
  var horizontal=traceVertical(flipped,diam,length,r);
  if(horizontal)horizontal.axis='horizontal';
- return horizontal;
+ return horizontal||traceOutline(lines,diam,length,region);
 }
-return {extract,trace,multiply};
+return {extract,trace,traceOutline,multiply};
 });
