@@ -2,6 +2,16 @@
 
 Abrir: dois cliques em `index.html` (Chrome ou Edge). O Gerador funciona localmente; a importação automática de texto do PDF precisa carregar a biblioteca PDF.js na primeira utilização.
 
+## Importação inteligente CAD — v2.16.0
+1. Clique em **Importar CAD DXF (geometria real)** e selecione o desenho. A seção sugerida abre com um contorno verde (externo), azul (interno quando reconhecido) e linhas de referência em âmbar.
+2. **Trocar vista** mostra as miniaturas da seção principal, vista frontal e folha completa. A vista frontal é apenas referência. Se necessário, **Selecionar outra região** abre a seleção com retângulo visível no desenho original.
+3. **Corrigir com um clique:** uma linha já escolhida é retirada do contorno; outra linha clicada é acrescentada ao externo. Se desejar classificá-la como interna, clique em **Adicionar interno** no painel contextual da linha.
+4. Consulte **Pontos a conferir**: os problemas aparecem resumidos e podem ser localizados no desenho. Para pequenas lacunas colineares com destino único, confirme a extensão sugerida em milímetros; não são criadas conexões ambíguas automaticamente.
+5. Use **Edição avançada** somente quando precisar apagar por quadro, estender uma linha por medida, restaurar geometria ou ajustar eixo e cadeias.
+6. Defina Z0 com um clique quando conhecer a fixação, ou mantenha pendente. **Salvar desenho (rascunho)** preserva trabalho sem liberar CNC.
+
+A detecção continua assistida e precisa de conferência de todas as cotas, raios, roscas, cavidades e programa Fanuc. Ver `IMPORTADOR-INTELIGENTE-2.16.md`.
+
 ## Editor DXF interativo — v2.15.0
 1. Clique **Importar CAD DXF (geometria real)** e selecione o arquivo. O sistema delimita uma vista principal sugerida e marca uma **proposta de contorno externo/interno**. Corrija-a antes de liberar CNC.
 2. **Delimitar outra vista**: pressione o botão, clique e arraste no desenho original. O retângulo azul acompanha o mouse; solte para aplicar. A caixa fica visível.
