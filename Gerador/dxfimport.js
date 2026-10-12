@@ -7,6 +7,24 @@ let doc=null,sourceDoc=null,rect=null,axis=NaN,suggest=null,active=false,start=n
  selected={externo:new Set(),interno:new Set()},chainInfo=null,hidden=new Set(),undo=[],pendingExtension=null,
  editCount=0,dragRect=null,projDrag=null,skipProjectedClick=false,activeView='lateral',views=[],contextId=null,focusIssue=null,quickRepairs=[],geometryAction=null,editSequence=0;
 const KEY='cnc_dxf_rascunhos_v1';
+/* Distribui controles existentes no painel fixo, sem duplicar ações nem IDs. */
+(function organizeCadSidebar(){
+ const host=$('#dxfSidebarSections');if(!host)return;
+ const groups=[
+  ['01 · Importar e visualizar',['.dxf-main-actions','#dxfViewPicker','.dxf-advanced-only.toolbar']],
+  ['02 · Construir perímetro',['#dxfPerimeterWizard']],
+  ['03 · Selecionar e editar',['.dxf-primary-tools','#dxfEditOptions','#dxfExtendControls','#dxfContext']],
+  ['04 · Referência e Z0',['.dxf-z0-actions','.dxf-setting-row']],
+  ['05 · Revisar desenho',['.dxf-problems','#dxfWarnings','.dxf-chain-box']]
+ ];
+ for(const [title,selectors] of groups){
+  const section=document.createElement('details');section.className='dxf-sidebar-section';section.open=true;
+  const summary=document.createElement('summary');summary.textContent=title;section.appendChild(summary);
+  for(const selector of selectors){const node=$('#dxfPanel .pdf-projection '+selector)||$('#dxfPanel '+selector);if(node)section.appendChild(node)}
+  host.appendChild(section);
+ }
+})();
+
 const val=id=>$(id).value;
 const fmt=n=>Number(n).toLocaleString('pt-BR',{maximumFractionDigits:3});
 const status=(s,bad)=>{$('#dxfStatus').textContent=s;$('#dxfStatus').style.color=bad?'#b23927':''};
@@ -492,7 +510,7 @@ function updateGeometryPreview(){
   (geometryAction==='trim'?'Cortar '+fmt(preview.cutMm)+' mm, mantendo a ponta '+(end==='ini'?'inicial':'final'):
   'Estender '+fmt(preview.mm)+' mm até '+preview.target):preview.reason;
  const svg=$('#dxfProjected svg');if(svg){
-  svg.querySelector('#dxfEditPreviewPath')?.remove();
+  svg.querySelector('#dxfEditPreviewPath')?.remove();svg.querySelector('#dxfEditDirectionArrow')?.remove();
   if(preview.ok){
    const entity=G.entityFor(doc.geometry,contextId),to=E.viewTransform(rect,val('#dxfFace'));
    if(entity&&to){
@@ -502,6 +520,9 @@ function updateGeometryPreview(){
     p.id='dxfEditPreviewPath';p.setAttribute('d','M'+v1.join(',')+'L'+v2.join(','));
     p.setAttribute('stroke','#db6e19');p.setAttribute('stroke-width','4');p.setAttribute('stroke-dasharray','5 3');
     p.setAttribute('fill','none');p.style.pointerEvents='none';svg.appendChild(p);
+    const tip=to(end==='ini'?entity.a:entity.b), other=to(end==='ini'?entity.b:entity.a);
+    const angle=Math.atan2(tip[1]-other[1],tip[0]-other[0])*180/Math.PI;
+    const arrow=document.createElementNS('http://www.w3.org/2000/svg','path');arrow.id='dxfEditDirectionArrow';arrow.setAttribute('d','M-11,-7 L0,0 L-11,7');arrow.setAttribute('stroke','#ed8b27');arrow.setAttribute('stroke-width','3');arrow.setAttribute('fill','none');arrow.setAttribute('transform','translate('+tip.join(',')+') rotate('+angle+')');svg.appendChild(arrow);
    }
   }
  }
@@ -514,6 +535,7 @@ $('#dxfExtendMeasureSelected').onclick=function(){if(contextId)contextEdit('exte
 $('#dxfConfirmGeometryEdit').onclick=applyCutOrBreak;
 $('#dxfCancelGeometryEdit').onclick=function(){geometryAction=null;$('#dxfEditOptions').hidden=true;renderProjection()};
 $('#dxfKeepEnd').onchange=updateGeometryPreview;
+$('#dxfReverseEnd').onclick=function(){const s=$('#dxfKeepEnd');s.value=s.value==='ini'?'fim':'ini';updateGeometryPreview()};
 function contextEdit(action){
  if(!contextId||!doc)return;
  if(action==='extend'){
