@@ -88,6 +88,7 @@ function proposal(graph,limit=.20){
  // De 0,20 até 12 mm: só oferecer extensão perfeitamente colinear, sujeita a confirmação.
  const choices=[];
  for(const gap of graph.gaps){
+  if(gap.aEdge.uid===gap.bEdge.uid)continue;
   for(const side of [0,1]){
    const moving=side?gap.bEdge:gap.aEdge,target=side?gap.a:gap.b;
    if(!moving||moving.segment.kind!=='line')continue;
@@ -107,7 +108,15 @@ function proposal(graph,limit=.20){
   }
  }
  // Evita opções ambíguas com múltiplos destinos diferentes para a mesma ponta.
- return choices.filter((c,i,all)=>all.filter(x=>x.uid===c.uid&&x.end===c.end).length===1);
+ const distinct=new Map();
+ for(const c of choices){
+  const key=c.uid+'|'+c.end, list=distinct.get(key)||[];
+  if(!list.some(x=>Math.abs(x.mm-c.mm)<.00001))list.push(c);
+  distinct.set(key,list);
+ }
+ return [...distinct.values()].map(list=>list.sort((a,b)=>a.mm-b.mm))
+  .filter(list=>list.length===1||list[1].mm-list[0].mm>.1)
+  .map(list=>list[0]);
 }
 function apply(geometry,repair){
  if(!repair||!good(repair.point))return {ok:false,reason:'Destino inválido'};
