@@ -226,11 +226,32 @@
       };
     });
   }
+
+  // Representação esquemática, sem sulcos reais e sem alterar a geometria CNC.
+  function roscasVisuais(w, lado) {
+    var out = [];
+    ['trechos' + lado, 'internos' + lado].forEach(function (nome) {
+      var interno = nome.indexOf('internos') === 0, z = 0;
+      (w[nome] || []).forEach(function (it) {
+        var t = it.tipo, l = 0;
+        if (t === 'cil' || t === 'icil' || t === 'rosca' || t === 'irosca') l = Number(it.b);
+        else if (t === 'cone' || t === 'icone') l = Number(it.c);
+        else if ((t === 'canal' || t === 'icanal') && it.seq) l = Number(it.c);
+        if ((t === 'rosca' || t === 'irosca') && l > 0 && Number(it.a) > 0 && Number(it.c) > 0) {
+          var raio = t === 'irosca' ? CNC.psRoscaD1(Number(it.a), Number(it.c)) / 2 : Number(it.a) / 2;
+          if (isFinite(raio) && raio > 0) out.push({ z0: -z, z1: -(z + l), r: raio, passo: Number(it.c), interno: interno, nome: 'M' + fmt(it.a) + '×' + fmt(it.c) });
+        }
+        if (isFinite(l) && l > 0) z += l;
+      });
+    });
+    return out;
+  }
+
   function grafico() {
     var o = rodar(work, ui.lado);
     $('#dsMsgs').innerHTML = o.erros.map(function (m) { return '<div class="msg err">' + esc(m) + '</div>'; }).join('') + o.avisos.map(function (m) { return '<div class="msg warn">' + esc(m) + '</div>'; }).join('');
     var tem = work.trechos1.length + work.trechos2.length + work.internos1.length + work.internos2.length;
-    if (o.cena) { $('#dsGraf').innerHTML = PV.previewSvg(o.cena, 640, 300, null, 'pp-pv'); $('#dsGraf').dataset.ok = '1'; }
+    if (o.cena) { $('#dsGraf').innerHTML = PV.previewSvg(o.cena, 640, 300, null, 'pp-pv', roscasVisuais(work, ui.lado)); $('#dsGraf').dataset.ok = '1'; }
     else if (!$('#dsGraf').dataset.ok) $('#dsGraf').innerHTML = '';
     $('#dsResumo').textContent = !tem ? 'Desenho vazio: escolha elementos na paleta.' : o.erros.length ? 'Corrija os itens em vermelho (o desenho mostra o último estado válido).' : 'Linha tracejada = bloco bruto de referência (Ø ' + fmt(dRefEfetivo(work)) + '); no Gerador vale o bruto que você digitar.';
   }
@@ -357,7 +378,7 @@
   function miniPv() {
     var o = rodar(comItem(work), ui.lado), er = o.erros[0], cena = o.cena;
     if (!cena) cena = rodar(semItem(work), ui.lado).cena;   // com erro: mostra a peca sem este elemento
-    $('#dlgPv').innerHTML = (cena ? PV.previewSvg(cena, 520, 170, null, 'pp-pv') : '') + (er ? '<div class="msg err" style="margin-top:6px">' + esc(er) + '</div>' : '');
+    $('#dlgPv').innerHTML = (cena ? PV.previewSvg(cena, 520, 170, null, 'pp-pv', roscasVisuais(comItem(work), ui.lado)) : '') + (er ? '<div class="msg err" style="margin-top:6px">' + esc(er) + '</div>' : '');
   }
   // chanfro/raio: o canto e escolhido no proprio desenho da peca (pontos numerados) ou na lista
   function pickDlg() {
