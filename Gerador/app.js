@@ -609,17 +609,19 @@
     { id: 'interna', nome: 'Interna', sub: 'mandrilar / barra', svg: '<rect class="wk" x="4" y="4" width="56" height="10"/><rect class="wk" x="4" y="32" width="56" height="8"/><path d="M62 22 H36 L29 15 L25 18 L32 28 H62 Z"/>' },
     { id: 'encaixe', nome: 'Encaixe / canal', sub: 'canal frontal ou radial', svg: '<path class="wk" d="M4 26 H26 V35 H38 V26 H60 V40 H4 Z"/><rect x="28" y="4" width="8" height="31"/>' },
     { id: 'furacao', nome: 'Furação', sub: 'broca no eixo', svg: '<rect class="wk" x="4" y="6" width="26" height="32"/><path d="M62 16 H36 L22 22 L36 28 H62 Z"/>' },
-    { id: 'rosca', nome: 'Rosca', sub: 'filetar', svg: '<path class="wk" d="M4 40 V32 L10 28 L16 32 L22 28 L28 32 L34 28 L40 32 L46 28 L52 32 L58 28 V40 Z"/><rect x="30" y="4" width="30" height="9"/><path d="M37 13 H49 L43 26 Z"/>' },
+    { id: 'rosca', lado: 'externa', nome: 'Rosca externa', sub: 'porta-pastilha de roscar externo: inserto triangular apontado para o perfil externo', svg: '<path class="wk" d="M3 34H61V43H3Z"/><path d="M36 3H60V22H48L40 29H27V23H36Z"/><path d="M37 3V21L28 28"/><polygon class="tip" points="26,22 39,22 32,34"/><circle class="tip-hole" cx="32.3" cy="25.9" r="2"/><path d="M8 34v-6m7 6v-6m7 6v-6" stroke-dasharray="2 2"/>' },
+    { id: 'rosca', lado: 'interna', nome: 'Rosca interna', sub: 'barra de roscar interna com haste longa, pescoço reduzido e pastilha triangular na ponta', svg: '<path class="wk" d="M22 9H61V33H22Z"/><path d="M61 12H25Q20 12 17 16L12 20L17 25Q20 29 25 29H61"/><path d="M24 17H61M24 25H61"/><path stroke-dasharray="4 3" d="M19 21H61"/><polygon class="tip" points="5,21 14,16 15,27"/><circle class="tip-hole" cx="10.5" cy="21.3" r="1.8"/>' },
     { id: 'outra', nome: 'Outra', sub: 'qualquer outra', svg: '<circle cx="32" cy="22" r="15"/><path d="M27 18 C27 11 38 11 38 18 C38 23 32 23 32 28"/><path d="M32 33 V34"/>' }
   ];
   function buildTipoGrid() {
     $('#tipoGrid').innerHTML = TIPOS_DEF.map(function (d) {
-      return '<button type="button" class="tipo-card" role="radio" aria-checked="false" data-tipo="' + d.id + '" title="' + esc(d.sub) + '"><svg viewBox="0 0 64 44" aria-hidden="true">' + d.svg + '</svg><span>' + esc(d.nome) + '</span></button>';
+      return '<button type="button" class="tipo-card" role="radio" aria-checked="false" data-tipo="' + d.id + '" data-rosca-lado="' + (d.lado || '') + '" title="' + esc(d.sub) + '"><svg viewBox="0 0 64 44" aria-hidden="true">' + d.svg + '</svg><span>' + esc(d.nome) + '</span></button>';
     }).join('');
     $$('#tipoGrid .tipo-card').forEach(function (b) {
       b.onclick = function () {
         var antes = frm.elements.tipo.value;
         frm.elements.tipo.value = b.dataset.tipo;
+        frm.elements.roscaLado.value = b.dataset.tipo === 'rosca' ? b.dataset.roscaLado : '';
         if (!editingId && antes !== b.dataset.tipo) { // ferramenta nova: broca = RPM fixo e M3; os demais tipos = Vc constante e M4
           if (b.dataset.tipo === 'furacao') { frm.elements.modo.value = 'G97'; frm.elements.sentido.value = '3'; }
           else if (b.dataset.tipo === 'rosca') { frm.elements.modo.value = 'G97'; frm.elements.sentido.value = '4'; }
@@ -632,7 +634,9 @@
   // mostra so os campos que fazem sentido para o tipo escolhido (ex.: Ø da broca so em furacao)
   function syncTipo() {
     var tp = frm.elements.tipo.value || 'externa', cap = tp.charAt(0).toUpperCase() + tp.slice(1);
-    $$('#tipoGrid .tipo-card').forEach(function (b) { b.setAttribute('aria-checked', b.dataset.tipo === tp); });
+    $('#tipoGrid .tipo-card').forEach(function (b) {
+      b.setAttribute('aria-checked', String(b.dataset.tipo === tp && (tp !== 'rosca' || b.dataset.roscaLado === (frm.elements.roscaLado.value || 'externa'))));
+    });
     $$('[data-tipos]', frm).forEach(function (el) { el.hidden = el.dataset.tipos.split(' ').indexOf(tp) < 0; });
     $$('label[data-lbl-padrao]', frm).forEach(function (l) { l.textContent = l.dataset['lbl' + cap] || l.dataset.lblPadrao; });
   }
@@ -646,6 +650,7 @@
       if (!el.name) return;
       el.value = d[el.name] == null ? '' : d[el.name];
     });
+    if (frm.elements.tipo.value === 'rosca' && !frm.elements.roscaLado.value) frm.elements.roscaLado.value = 'externa';
     syncTipo();
     dlg.showModal();
   }

@@ -15,6 +15,7 @@ jobs:
       - name: Testes de geometria e gerador
         working-directory: Gerador
         run: |
+          node testroscasferr.js
           node testdialogos.js
           node test.js
           node testdxf.js
