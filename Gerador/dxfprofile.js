@@ -102,20 +102,24 @@ function polyPath(pts,coord){if(!pts.length)return'';return pts.map((p,i)=>(i?'L
 function upperChunks(points,axis){
  if(!Number.isFinite(axis))return [points];
  const parts=[];let current=[];
- const put=p=>{if(!current.length||Math.hypot(p[0]-current[current.length-1][0],p[1]-current[current.length-1][1])>1e-8)current.push(p)};
+ const append=p=>{if(!current.length||Math.hypot(p[0]-current[current.length-1][0],p[1]-current[current.length-1][1])>1e-8)current.push(p)};
+ const finish=()=>{if(current.length>1)parts.push(current);current=[]};
  for(let i=0;i<points.length;i++){
-  const p=points[i],above=p[1]>=axis-1e-7,prev=points[i-1];
-  if(i&&((prev[1]>=axis)!==above)){
-   const t=(axis-prev[1])/(p[1]-prev[1]),cross=[prev[0]+t*(p[0]-prev[0]),axis];
-   put(cross);
-   if(current.length>1)parts.push(current);
-   current=[];put(cross);
+  const p=points[i];
+  if(i===0){if(p[1]>=axis-1e-8)append(p);continue}
+  const prior=points[i-1],up=prior[1]>=axis-1e-8,now=p[1]>=axis-1e-8;
+  if(up&&now){append(p);continue}
+  if(up&&!now){
+   const t=(axis-prior[1])/(p[1]-prior[1]);
+   append([prior[0]+t*(p[0]-prior[0]),axis]);finish();continue;
   }
-  if(above)put(p);
-  else if(current.length>1){parts.push(current);current=[]}
+  if(!up&&now){
+   const t=(axis-prior[1])/(p[1]-prior[1]);
+   append([prior[0]+t*(p[0]-prior[0]),axis]);append(p);continue;
+  }
+  finish();
  }
- if(current.length>1)parts.push(current);
- return parts;
+ finish();return parts;
 }
 function svg(doc,rect,options){
  options=options||{};
@@ -178,6 +182,7 @@ function svg(doc,rect,options){
    '<text x="'+(screen[0]>W/2?W-140:35)+'" y="22" fill="#b33c0a" font-size="16" font-weight="bold">Z0 · face '+(options.face==='esquerda'?'esquerda':'direita')+'</text>';
  }
  if(options.dimensions)options.dimensions.slice(0,75).forEach(d=>{
+  if(options.upperOnly&&Number.isFinite(options.axis)&&d.position[1]<options.axis-.001)return;
   let p=pos(d.position);if(p[0]>=10&&p[0]<=W-15&&p[1]>=15&&p[1]<=H-15){
     out+='<text x="'+p[0].toFixed(2)+'" y="'+p[1].toFixed(2)+'" font-size="11" fill="#6d4983">'+
     (d.diameter||d.kind===5?'Ø':d.kind===4?'R':'')+(d.measure===null?esc(d.text):fmt(d.measure))+'</text>';
