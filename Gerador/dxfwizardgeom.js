@@ -55,9 +55,11 @@ function analyze(segments,selection,tolerance=.16){
   if(t>.0001&&t<.9999&&u>.0001&&u<.9999)
    crossings.push({point:[p[0]+t*a[0],p[1]+t*a[1]],uids:[x.uid,y.uid]});
  }
+ const groupOf=new Map();groups.forEach((group,index)=>group.forEach(id=>groupOf.set(id,index)));
  const gaps=[];
  for(let i=0;i<tips.length;i++)for(let j=i+1;j<tips.length;j++){
   const a=tips[i],b=tips[j],d=dist(a.p,b.p);
+  if(groupOf.get(a.index)===groupOf.get(b.index))continue;
   if(d>tolerance&&d<=12)gaps.push({a:a.p,b:b.p,mm:d,
     aEdge:edges[a.edges[0]],bEdge:edges[b.edges[0]],an:a.index,bn:b.index});
  }
@@ -89,9 +91,10 @@ function proposal(graph,limit=.20){
  const choices=[];
  for(const gap of graph.gaps){
   if(gap.aEdge.uid===gap.bEdge.uid)continue;
+  const perGap=[];
   for(const side of [0,1]){
    const moving=side?gap.bEdge:gap.aEdge,target=side?gap.a:gap.b;
-   if(!moving||moving.segment.kind!=='line')continue;
+   if(!moving||moving.segment.kind!=='line'||moving.segment.type!=='LINE')continue;
    const seg=moving.segment,a=seg.start,b=seg.end,len=dist(a,b);
    if(len<.001)continue;
    const moveA=dist(a,side?gap.b:gap.a)<dist(b,side?gap.b:gap.a);
@@ -101,11 +104,13 @@ function proposal(graph,limit=.20){
     normal=Math.abs(delta[0]*dir[1]-delta[1]*dir[0]);
    const snap=gap.mm<=limit;
    if((snap||along>.0001&&normal<=.04)&&gap.mm<=12){
-    choices.push({uid:moving.uid,end:moveA?'ini':'fim',point:target.slice(),
+    perGap.push({uid:moving.uid,end:moveA?'ini':'fim',point:target.slice(),
      before:end.slice(),mm:gap.mm,kind:snap?'snap':'extend',safe:snap,
      label:(snap?'Coincidir pontas':'Estender até a ponta')+' · '+gap.mm.toFixed(3)+' mm'});
    }
   }
+  // Uma única edição por folga: não deslocar simultaneamente ambas as extremidades.
+  if(perGap.length)choices.push(perGap[0]);
  }
  // Evita opções ambíguas com múltiplos destinos diferentes para a mesma ponta.
  const distinct=new Map();
