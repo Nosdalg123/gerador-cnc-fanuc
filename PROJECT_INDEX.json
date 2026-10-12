@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-10-11: v2.17.0 semiperfil superior e edição por interseções",
+  "gerado_em": "2026-10-11: v2.17.0 validated, repeated imports and split draft round trip",
   "como_ler": "simbolos = [nome, tipo, linha_inicio, linha_fim, pai]; linhas comecam em 1. Leia so a faixa necessaria (Read com offset/limit).",
   "regerar": "python indexer.py",
   "ignorado": [
@@ -7380,7 +7380,7 @@
     },
     "Gerador/dxfimport.js": {
       "lang": "js",
-      "linhas": 686,
+      "linhas": 694,
       "simbolos": [
         [
           "resetConfirm",
