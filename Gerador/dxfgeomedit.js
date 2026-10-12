@@ -76,7 +76,7 @@ function splitAtIntersections(geometry,uid,axis,rect,hidden){
  const e=entityFor(geometry,uid);
  if(!e)return {ok:false,reason:'Quebrar só funciona em linhas LINE.'};
  const length=dist(e.a,e.b);
- const others=(geometry||[]).filter(x=>x.id!==e.id&&(!rect||DX.cut([x],rect).length));
+ const others=(geometry||[]).filter(x=>x.id!==e.id&&(!rect||DX.cut([x],rect).length)&&(!hidden||DX.explode(x).some((t,i)=>!hidden.has(x.id+':'+i))));
  const hits=hitsOnLine(e,others,axis,rect).filter(h=>h.distance>.001&&h.distance<length-.001).sort((a,b)=>a.distance-b.distance);
  const knots=[0,...hits.map(h=>h.distance).filter((x,i,arr)=>!i||x-arr[i-1]>.001),length];
  if(knots.length<=2)return {ok:false,reason:'Não encontrei cruzamento dentro da linha. Nenhuma alteração feita.'};
@@ -85,17 +85,17 @@ function splitAtIntersections(geometry,uid,axis,rect,hidden){
   a:add(e.a,unit,knots[i]),b:add(e.a,unit,v)
  })).filter(x=>dist(x.a,x.b)>.0001)};
 }
-function trimAtIntersection(geometry,uid,keep,axis,rect){
+function trimAtIntersection(geometry,uid,keep,axis,rect,hidden){
  const e=entityFor(geometry,uid);
  if(!e)return {ok:false,reason:'Cortar funciona em linhas LINE; arcos são mantidos nativos.'};
  const length=dist(e.a,e.b);
- const others=(geometry||[]).filter(q=>q.id!==e.id&&(!rect||DX.cut([q],rect).length));
+ const others=(geometry||[]).filter(q=>q.id!==e.id&&(!rect||DX.cut([q],rect).length)&&(!hidden||DX.explode(q).some((t,i)=>!hidden.has(q.id+':'+i))));
  const hits=hitsOnLine(e,others,axis,rect).filter(x=>x.distance>.0001&&x.distance<length-.0001);
  if(!hits.length)return {ok:false,reason:'Não há interseção dentro da linha para cortar. Use Quebrar ou estender.'};
  if(keep!=='ini'&&keep!=='fim')return {ok:false,reason:'Escolha qual extremidade preservar.'};
  hits.sort((a,b)=>keep==='ini'?a.distance-b.distance:b.distance-a.distance);
  const hit=hits[0],newA=keep==='fim'?hit.point:e.a,newB=keep==='ini'?hit.point:e.b;
- return {ok:true,point:hit.point,newA,newB,target:hit.target,removed:mm=>mm,cutMm:keep==='ini'?length-hit.distance:hit.distance};
+ return {ok:true,point:hit.point,newA,newB,target:hit.target,cutMm:keep==='ini'?length-hit.distance:hit.distance};
 }
 function applySplit(geometry,uid,sections,idPrefix){
  const original=entityFor(geometry,uid);
