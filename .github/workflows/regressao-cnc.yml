@@ -28,3 +28,10 @@ jobs:
           node testpdf.js
           node testpdfscale.js
           node testprog.js
+      - name: Instalar Chromium para teste da interface DXF
+        run: |
+          npm install --prefix Gerador --no-save playwright@1.56.1
+          npx --prefix Gerador playwright install --with-deps chromium
+      - name: Testar as 3 etapas no navegador
+        working-directory: Gerador
+        run: node testdxfwizardui.mjs
