@@ -99,6 +99,24 @@ function analyze(doc,rect,axis,face,chosen,hidden){
    canExport:alerts.length===0&&selected.length>0&&classified.every(q=>q.kind==='cil'||q.kind==='cone')};
 }
 function polyPath(pts,coord){if(!pts.length)return'';return pts.map((p,i)=>(i?'L':'M')+coord(p).map(v=>v.toFixed(2)).join(',')).join(' ')}
+function upperChunks(points,axis){
+ if(!Number.isFinite(axis))return [points];
+ const parts=[];let current=[];
+ const put=p=>{if(!current.length||Math.hypot(p[0]-current[current.length-1][0],p[1]-current[current.length-1][1])>1e-8)current.push(p)};
+ for(let i=0;i<points.length;i++){
+  const p=points[i],above=p[1]>=axis-1e-7,prev=points[i-1];
+  if(i&&((prev[1]>=axis)!==above)){
+   const t=(axis-prev[1])/(p[1]-prev[1]),cross=[prev[0]+t*(p[0]-prev[0]),axis];
+   put(cross);
+   if(current.length>1)parts.push(current);
+   current=[];put(cross);
+  }
+  if(above)put(p);
+  else if(current.length>1){parts.push(current);current=[]}
+ }
+ if(current.length>1)parts.push(current);
+ return parts;
+}
 function svg(doc,rect,options){
  options=options||{};
  let b=rect?{x1:Number(rect.x1),y1:Number(rect.y1),x2:Number(rect.x2),y2:Number(rect.y2),
@@ -119,13 +137,33 @@ function svg(doc,rect,options){
  const color={LINE:'#375777',ARC:'#2a78b4',CIRCLE:'#8ea9b5',LWPOLYLINE:'#375777',SPLINE:'#9a679c',ELLIPSE:'#9a679c'};
  let eList=rect?DX.cut(doc.geometry,rect):doc.geometry;
  eList.forEach(e=>{
-  if(e.type==='CIRCLE'){let p=pos(e.c);out+='<circle cx="'+p[0].toFixed(2)+'" cy="'+p[1].toFixed(2)+'" r="'+(e.r*scale).toFixed(2)+'" fill="none" stroke="'+color.CIRCLE+'" stroke-width="1.15"/>';return}
-  let source=DX.explode(e);if(!source.length&&e.type==='SPLINE'){let pts=DX.splinePoints(e,120);if(pts.length>1){out+='<path d="'+polyPath(pts,pos)+'" fill="none" stroke="#9a679c" stroke-dasharray="6 3" stroke-width="1.8"/>'}return}
-  source.forEach((s,i)=>{
-   let pts=DX.sample(s,28),id=e.id+':'+i,selected=options.selected&&options.selected.has(id);
+  if(e.type==='CIRCLE'){
+   if(options.upperOnly)return;
+   let p=pos(e.c);out+='<circle cx="'+p[0].toFixed(2)+'" cy="'+p[1].toFixed(2)+'" r="'+(e.r*scale).toFixed(2)+'" fill="none" stroke="'+color.CIRCLE+'" stroke-width="1.15"/>';return
+  }
+  let source=DX.explode(e);
+  if(!source.length&&e.type==='SPLINE'){
+   const pts=DX.splinePoints(e,120),pieces=options.upperOnly?upperChunks(pts,options.axis):[pts];
+   for(const piece of pieces)if(piece.length>1)out+='<path d="'+polyPath(piece,pos)+'" fill="none" stroke="#a88db8" stroke-dasharray="5 4" stroke-width="1.5"/>';
+   return;
+  }
+  source.forEach((part,i)=>{
+   const pts=DX.sample(part,Math.max(40,Math.ceil((part.r||1)*2))),id=e.id+':'+i,
+    isInternal=!!(options.internal&&options.internal.has(id)),isExternal=!!(options.external&&options.external.has(id)),
+    selected=!!(isInternal||isExternal||(options.selected&&options.selected.has(id)));
    if(options.hidden&&options.hidden.has(id))return;
-   let emphasis=options.internal&&options.internal.has(id)?'#3375bd':options.external&&options.external.has(id)?'#21936a':(selected?'#21936a':options.candidate&&options.candidate.has(id)?'#c28a21':(color[e.type]||'#53728c'));
-   out+='<path data-cad-segment="'+esc(id)+'" d="'+polyPath(pts,pos)+'" fill="none" stroke="'+emphasis+'" stroke-width="'+(selected?4:options.candidate&&options.candidate.has(id)?2.4:1.25)+'" stroke-linejoin="round" stroke-linecap="round" style="cursor:pointer"><title>'+(s.kind==='arc'?'Raio real R'+fmt(s.r):'Linha CAD')+'</title></path>';
+   const chunks=options.upperOnly?upperChunks(pts,options.axis):[pts];
+   if(!chunks.length)return;
+   const emphasis=isInternal?'#3375bd':isExternal?'#21936a':selected?'#21936a':(options.candidate&&options.candidate.has(id)?'#c28a21':(color[e.type]||'#53728c'));
+   const d=chunks.map(q=>polyPath(q,pos)).join(' ');
+   const focused=options.focus===id;
+   out+='<path data-cad-segment="'+esc(id)+'" data-selected-focus="'+(focused?'true':'false')+'" d="'+d+'" fill="none" stroke="'+emphasis+'" stroke-width="'+(focused?6:selected?4:options.candidate&&options.candidate.has(id)?2.6:1.8)+'" stroke-linejoin="round" stroke-linecap="round" style="cursor:pointer"><title>'+(part.kind==='arc'?'Raio real R'+fmt(part.r):'Linha CAD')+'</title></path>';
+   // Segundo traço transparente largo torna o clique sobre linhas finas confiável.
+   if(options.upperOnly)out+='<path data-cad-hit="'+esc(id)+'" d="'+d+'" fill="none" stroke="transparent" stroke-width="13" pointer-events="stroke" style="cursor:pointer"/>';
+   if(options.upperOnly&&Number.isFinite(options.axis)&&selected){
+    const mirrored=chunks.map(chunk=>chunk.map(p=>[p[0],2*options.axis-p[1]]));
+    out+='<path data-construction="true" d="'+mirrored.map(q=>polyPath(q,pos)).join(' ')+'" fill="none" stroke="'+(isInternal?'#729ac6':'#7896a0')+'" stroke-width="1.5" stroke-dasharray="6 5" opacity=".48" pointer-events="none"/>';
+   }
   });
  });
  if(Number.isFinite(options.axis)){
