@@ -319,17 +319,21 @@
      <button class="btn" type="button" id="wSuggest">Sugerir contorno (revisar)</button>
      <button class="btn primary" type="button" id="wPick">Marcar perímetro</button>
      <button class="btn" type="button" id="wExtendMode">Estender uma linha</button>
+     <button class="btn" type="button" id="wTrimMode">Cortar uma linha</button>
+     <button class="btn" type="button" id="wBreak">Quebrar nas conexões</button>
      <button class="btn" type="button" id="wClear">Limpar marcação</button>
      <button class="btn" type="button" id="wUndo">Desfazer</button>
     </div>
     <div id="wSelected" class="note">Nenhum segmento marcado.</div>
     <div class="w-extend" id="wExtendControls" hidden>
-     <strong>Estender linha selecionada</strong>
+     <strong id="wEditTitle">Estender linha selecionada</strong>
      <div id="wExtTarget" class="note">Clique numa linha reta.</div>
      <label class="field">Sentido <select id="wExtEnd"><option value="ini">Ponta inicial</option><option value="fim">Ponta final</option></select></label>
      <button class="btn" type="button" id="wFlip">↔ Inverter sentido</button>
-     <label class="field">Comprimento em mm <input id="wExtMm" type="number" step="any" min=".001" value="1"></label>
+     <label class="field" id="wExtAmount">Comprimento em mm <input id="wExtMm" type="number" step="any" min=".001" value="1"></label>
      <button class="btn primary" type="button" id="wApplyExtend">Aplicar extensão</button>
+     <button class="btn" type="button" id="wExtendUntil">Estender até próxima linha</button>
+     <button class="btn primary" type="button" id="wApplyTrim" hidden>Cortar e preservar a ponta escolhida</button>
      <button class="btn" type="button" id="wCancelExtend">Cancelar extensão</button>
     </div>
     <button class="btn primary" type="button" id="wBuild">Construir e isolar perímetro</button>
@@ -354,6 +358,7 @@
   </aside>
   <div class="w-main card">
    <div class="w-canvas-head"><strong id="wCanvasTitle">CAD original</strong><span id="wCanvasHint">Vista do DXF em escala uniforme</span></div>
+   <label class="toolbar">Ampliar desenho <input id="wZoom" type="range" min="100" max="400" step="25" value="100"><output id="wZoomValue" for="wZoom">100%</output></label>
    <div id="wCanvas" class="dxf-graphics" aria-label="Desenho vetorial para seleção assistida"></div>
    <div class="w-legend"> <span class="w-color" style="background:#149a6f"></span> Perfil selecionado
    <span class="w-color" style="background:#e06a24"></span> Trecho em foco

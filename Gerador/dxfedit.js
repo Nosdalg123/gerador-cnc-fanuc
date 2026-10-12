@@ -12,7 +12,7 @@ function autoSelect(doc,rect,axis,hidden){
  if(!doc||!rect||!Number.isFinite(axis))return none;
  const width=rect.x2-rect.x1,all=P.segments(doc.geometry,rect,hidden);
  const hints=P.sectionSuggestion(doc),r=hints&&hints.front?hints.front.max:null;
- const pieces=all.filter(s=>{
+ const pieces=all.map(s=>P.upperSegment(s,axis)).filter(Boolean).filter(s=>{
   if(!P.above(s,axis,.16))return false;
   const pts=DX.sample(s,12);
   if(!pts.length)return false;
@@ -103,5 +103,21 @@ function selectRectSegments(segments,rect,view,face){
  if(!xy)return [];
  return (segments||[]).filter(s=>segmentTouchesRect(s,rect,xy)).map(s=>s.uid);
 }
-return {autoSelect,extendLine,rectBounds,viewTransform,selectRectSegments};
+// Áreas largas de clique podem se sobrepor perto de um raio pequeno.
+// Escolhe o traço geometricamente mais próximo, sem depender da ordem do SVG.
+function nearestSegment(segments,point,view,face,preferred){
+ const to=viewTransform(view,face);if(!to)return null;
+ let best=null,min=9;
+ for(const s of segments){
+  const pts=DX.sample(s,120).map(to);let distance=Infinity;
+  for(let i=1;i<pts.length;i++){
+   const a=pts[i-1],b=pts[i],dx=b[0]-a[0],dy=b[1]-a[1],len=dx*dx+dy*dy;
+   const t=len?Math.max(0,Math.min(1,((point[0]-a[0])*dx+(point[1]-a[1])*dy)/len)):0;
+   distance=Math.min(distance,Math.hypot(point[0]-a[0]-t*dx,point[1]-a[1]-t*dy));
+  }
+  if(distance<min-.05||Math.abs(distance-min)<=.05&&s.uid===preferred){best=s;min=distance}
+ }
+ return best;
+}
+return {autoSelect,extendLine,rectBounds,viewTransform,selectRectSegments,nearestSegment};
 });

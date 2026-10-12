@@ -9,7 +9,8 @@ const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const good=p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite);
 function collect(doc,rect,axis){
  if(!doc||!rect)return [];
- return P.segments(doc.geometry,rect).filter(s=>s.kind==='line'||s.kind==='arc').map(s=>{
+ return P.segments(doc.geometry,rect).filter(s=>s.kind==='line'||s.kind==='arc')
+ .map(s=>P.upperSegment(s,axis)).filter(Boolean).map(s=>{
   const pts=DX.sample(s,Math.max(64,Math.ceil((s.r||1)*4)));
   return {...s,points:pts,start:pts[0],end:pts[pts.length-1]};
  }).filter(s=>good(s.start)&&good(s.end)&&
@@ -98,6 +99,7 @@ function proposal(graph,limit=.20){
    const seg=moving.segment,a=seg.start,b=seg.end,len=dist(a,b);
    if(len<.001)continue;
    const moveA=dist(a,side?gap.b:gap.a)<dist(b,side?gap.b:gap.a);
+   if(seg.clippedEnd===(moveA?'ini':'fim'))continue;
    const end=moveA?a:b,from=moveA?b:a;
    const dir=[(end[0]-from[0])/len,(end[1]-from[1])/len];
    const delta=[target[0]-end[0],target[1]-end[1]],along=delta[0]*dir[0]+delta[1]*dir[1],

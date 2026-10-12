@@ -8,6 +8,7 @@ let doc=null,sourceDoc=null,rect=null,axis=NaN,suggest=null,active=false,start=n
  editCount=0,dragRect=null,projDrag=null,skipProjectedClick=false,activeView='lateral',views=[],contextId=null,focusIssue=null,quickRepairs=[],geometryAction=null,editSequence=0;
 
 let perimeterMode=false,perimeterPicked=new Set(),preferredExtendEnd='fim';
+let preciseClick=null;
 function perimeterStatus(message){$('#dxfPerimeterStatus').textContent=message}
 function stopPerimeterMode(){perimeterMode=false;$('#dxfPerimeterBuild').disabled=true;$('#dxfPerimeterCancel').disabled=true;$('#dxfPerimeterStart').disabled=false}
 $('#dxfPerimeterStart').onclick=function(){
@@ -19,7 +20,8 @@ $('#dxfPerimeterStart').onclick=function(){
 $('#dxfPerimeterCancel').onclick=function(){perimeterPicked.clear();stopPerimeterMode();perimeterStatus('Marcação cancelada. Desenho mantido.');renderProjection()};
 $('#dxfPerimeterBuild').onclick=function(){
  if(!doc||!rect)return;
- const all=P.segments(doc.geometry,rect,hidden),chosen=all.filter(s=>perimeterPicked.has(s.uid));
+ const all=P.segments(doc.geometry,rect,hidden),chosen=all.filter(s=>perimeterPicked.has(s.uid))
+  .map(s=>P.upperSegment(s,axis)).filter(Boolean);
  if(chosen.length<2){perimeterStatus('Marque pelo menos dois trechos conectados.');return}
  // O caminho precisa ser contínuo, sem bifurcações e sem intervalos acima da tolerância.
  const tolerance=.15,vertices=[],edges=[];
@@ -236,6 +238,9 @@ function refreshDrafts(){
  if(!ls.length){let o=document.createElement('option');o.value='';o.textContent='(nenhum rascunho)';s.appendChild(o)}
 }
 function viewPoint(evt,svg){
+ const matrix=svg.getScreenCTM();
+ if(matrix){const p=svg.createSVGPoint();p.x=evt.clientX;p.y=evt.clientY;
+  const q=p.matrixTransform(matrix.inverse());return {x:q.x,y:q.y};}
  const bounds=svg.getBoundingClientRect();
  const vb=svg.viewBox.baseVal;
  return {x:vb.x+(evt.clientX-bounds.left)*vb.width/Math.max(1,bounds.width),y:vb.y+(evt.clientY-bounds.top)*vb.height/Math.max(1,bounds.height)};
@@ -480,6 +485,8 @@ projected.addEventListener('pointermove',function(e){
  if(svg)dragOverlay(svg,projDrag,viewPoint(e,svg));
 });
 projected.addEventListener('pointerup',function(e){
+ const clickSvg=projected.querySelector('svg');
+ if(clickSvg)preciseClick={point:viewPoint(e,clickSvg),x:e.clientX,y:e.clientY,time:e.timeStamp};
  if(!projDrag)return;
  const svg=projected.querySelector('svg');if(!svg)return;
  const box=E.rectBounds([projDrag.x,projDrag.y],[viewPoint(e,svg).x,viewPoint(e,svg).y]);
@@ -500,10 +507,15 @@ projected.addEventListener('pointercancel',()=>{projDrag=null;cancelDrag(project
 projected.addEventListener('click',function(e){
  if(skipProjectedClick){skipProjectedClick=false;return}
  const target=e.target.closest('[data-cad-segment],[data-cad-hit]');if(!target||!doc)return;
- const id=target.getAttribute('data-cad-segment')||target.getAttribute('data-cad-hit'),currentMode=mode();
+ const targetId=target.getAttribute('data-cad-segment')||target.getAttribute('data-cad-hit'),currentMode=mode();
+ const clickSvg=projected.querySelector('svg'),point=e.isTrusted&&preciseClick&&e.timeStamp-preciseClick.time<1000&&
+  Math.hypot(e.clientX-preciseClick.x,e.clientY-preciseClick.y)<2?preciseClick.point:viewPoint(e,clickSvg),
+  parts=P.segments(doc.geometry,rect,hidden).map(s=>P.upperSegment(s,axis)).filter(Boolean),
+  nearest=E.nearestSegment(parts,[point.x,point.y],rect,val('#dxfFace'),targetId),id=nearest?nearest.uid:targetId;
+ preciseClick=null;
  const clickedLine=G.entityFor(doc.geometry,id),svgForEnd=projected.querySelector('svg');
  if(clickedLine&&svgForEnd&&rect){
-  const to=E.viewTransform(rect,val('#dxfFace')),pt=viewPoint(e,svgForEnd),pa=to(clickedLine.a),pb=to(clickedLine.b);
+  const to=E.viewTransform(rect,val('#dxfFace')),pt=point,pa=to(clickedLine.a),pb=to(clickedLine.b);
   preferredExtendEnd=Math.hypot(pt.x-pa[0],pt.y-pa[1])<Math.hypot(pt.x-pb[0],pt.y-pb[1])?'ini':'fim';
  }
  contextId=id;$('#dxfContext').hidden=false;$('#dxfContextTitle').textContent='Trecho '+id+' selecionado · escolha uma correção';

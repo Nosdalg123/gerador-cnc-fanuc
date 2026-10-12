@@ -8,6 +8,13 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.22.1 — 12/10/2026 — DXFs reais e correção da seleção
+- ARC nativo fornece extremos válidos ao construtor de perímetro anterior. LINE/ARC que atravessam o eixo permanecem selecionáveis como semiperfil superior, com recorte analítico e fonte intacta.
+- Seleção usa a posição fracionária do ponteiro e distância ao traço para evitar que áreas sensíveis de linhas auxiliares interceptem raios pequenos.
+- Etapa 2 recebeu Cortar, Quebrar nas conexões, Estender até próxima linha e zoom de 100 a 400%. Os controles fecham ao aplicar, cancelar ou trocar etapa.
+- Testes locais com Disco/Copo reais aprovados em Chromium, incluindo cortar/quebrar/desfazer, salvar/reabrir rascunho e preservação dos arcos. `testdxfrealui.mjs` recebe arquivos locais sem colocar os desenhos no GitHub.
+- Quatro caminhos da v2.22.0 preservados. Perfil conectado continua rascunho; não libera CNC nem garante automaticamente a completude da peça. Ver `REVISAO-2.22.1-DXF-REAL.md`.
+
 ## 2.17.0 — 11/10/2026 — Semiperfil superior, edição por interseção e seleção explícita (branch isolada)
 - O painel de torneamento apresenta **só a metade superior** editável do CAD, com a metade inferior projetada como **construção tracejada não interativa** a partir das entidades selecionadas.
 - Clique sobre uma entidade **seleciona e realça**, sem excluir/desmarcar involuntariamente. Área sensível de clique ampliada; **Excluir selecionada** só atua após seleção.

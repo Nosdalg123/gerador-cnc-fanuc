@@ -2,12 +2,12 @@
 (function(root){
 'use strict';
 const $=id=>document.querySelector(id),DX=root.CNCDXF,P=root.CNCDXFPerfil,
- A=root.CNCDXFAssistente,E=root.CNCDXFEdicao,G=root.CNCDXFWizardGeom;
+ A=root.CNCDXFAssistente,E=root.CNCDXFEdicao,G=root.CNCDXFWizardGeom,F=root.CNCDXFGeomEdit;
 const KEY='cnc_dxf_assistente_221',clone=o=>JSON.parse(JSON.stringify(o));
 const fmt=n=>Number(n).toLocaleString('pt-BR',{maximumFractionDigits:3});
 let original=null,doc=null,region=null,axis=NaN,face='',name='',fileName='',step=1,selectingRegion=false,
  dragStart=null,viewName='',chosen=new Set(),focused=null,tool='pick',built=false,
- activeRepair=null,undo=[],log=[],repairMarks=[],editCount=0,zoom=1;
+ activeRepair=null,undo=[],log=[],repairMarks=[],editCount=0,zoom=1,preciseClick=null;
 const status=(msg,bad)=>{$('#wStatus').textContent=msg;$('#wStatus').style.color=bad?'#b33d30':''};
 const validRect=r=>r&&r.x2-r.x1>1&&r.y2-r.y1>1;
 const allSegments=()=>G.collect(doc,region,axis);
@@ -18,7 +18,7 @@ function setStep(n){
  if(n>1&&(!validRect(region)||!Number.isFinite(axis))){
   status('Escolha uma seção longitudinal e informe o eixo central Y antes de editar.',true);return;
  }
- step=n;render();
+ step=n;tool='pick';focused=null;activeRepair=null;render();
 }
 function capture(){
  undo.push({doc:clone(doc),chosen:[...chosen],built,editCount,log:log.slice(),repairMarks:clone(repairMarks)});
@@ -28,6 +28,9 @@ function clearWork(){
  chosen.clear();built=false;focused=null;activeRepair=null;tool='pick';undo=[];log=[];repairMarks=[];editCount=0;
 }
 function svgPointer(evt,svg){
+ const matrix=svg.getScreenCTM();
+ if(matrix){const p=svg.createSVGPoint();p.x=evt.clientX;p.y=evt.clientY;
+  const q=p.matrixTransform(matrix.inverse());return [q.x,q.y];}
  const r=svg.getBoundingClientRect(),v=svg.viewBox.baseVal;
  return [v.x+(evt.clientX-r.left)*v.width/Math.max(1,r.width),
          v.y+(evt.clientY-r.top)*v.height/Math.max(1,r.height)];
@@ -147,12 +150,17 @@ function renderCanvas(){
  }
 }
 function syncExtend(){
- const el=$('#wExtendControls'),show=step===2&&tool==='extend';
+ const el=$('#wExtendControls'),show=step===2&&['extend','trim'].includes(tool);
  el.hidden=!show;if(!show)return;
  const s=allSegments().find(x=>x.uid===focused);
  $('#wExtTarget').textContent=s&&s.kind==='line'?'Linha '+focused+' · selecione a ponta pela seta ou inverta.':
   'Clique na linha reta que deseja estender. Arcos permanecem nativos.';
- $('#wApplyExtend').disabled=!(s&&s.kind==='line');
+ const line=!!(s&&F.entityFor(doc.geometry,focused)),trim=tool==='trim';
+ $('#wEditTitle').textContent=trim?'Cortar linha selecionada':'Estender linha selecionada';
+ for(const id of ['wExtAmount','wApplyExtend','wExtendUntil'])$('#'+id).hidden=trim;
+ $('#wApplyTrim').hidden=!trim;
+ $('#wCancelExtend').textContent=trim?'Cancelar corte':'Cancelar extensão';
+ $('#wApplyExtend').disabled=!line;$('#wExtendUntil').disabled=!line;$('#wApplyTrim').disabled=!line;
 }
 function renderSummary(){
  const host=$('#wSummary');host.replaceChildren();
@@ -178,6 +186,8 @@ function render(){
  $('#wSelected').textContent=chosen.size+' segmento(s) marcado(s)'+(built?' · contorno isolado':'');
  $('#wPick').setAttribute('aria-pressed',String(tool==='pick'));
  $('#wExtendMode').setAttribute('aria-pressed',String(tool==='extend'));
+ $('#wTrimMode').setAttribute('aria-pressed',String(tool==='trim'));
+ $('#wBreak').disabled=!(focused&&F.entityFor(doc.geometry,focused));
  $('#wBuild').disabled=chosen.size<2;
  $('#wAutoSafe').disabled=!G.proposal(graph()).some(x=>x.safe);
  syncExtend();renderCanvas();
@@ -202,6 +212,7 @@ $('#wFile').onchange=async function(){
   const text=new TextDecoder('windows-1252').decode(await file.arrayBuffer());
   original=DX.read(text);doc=clone(original);fileName=file.name;name=file.name.replace(/\.dxf$/i,'');
   $('#wName').value=name;region=null;axis=NaN;face='';zoom=1;clearWork();
+  $('#wZoom').value='100';$('#wZoomValue').value='100%';
   const views=A.views(original),best=views.find(v=>v.profile);
   if(best){region=clone(best.rect);axis=best.axis;viewName=best.id}
   else{const b=DX.bounds(original.geometry);region={x1:b.x1,y1:b.y1,x2:b.x2,y2:b.y2};viewName='completo'}
@@ -227,17 +238,55 @@ $('#wFace').onchange=function(){face=this.value;resetReview();render()};
 $('#wLength').onchange=function(){resetReview();render()};
 $('#wPick').onclick=()=>{tool='pick';focused=null;activeRepair=null;render()};
 $('#wExtendMode').onclick=()=>{tool='extend';focused=null;activeRepair=null;render()};
+ $('#wTrimMode').onclick=()=>{tool='trim';activeRepair=null;render()};
 $('#wCancelExtend').onclick=()=>{tool='pick';focused=null;render()};
 $('#wFlip').onclick=()=>{$('#wExtEnd').value=$('#wExtEnd').value==='ini'?'fim':'ini'};
 $('#wApplyExtend').onclick=()=>{
  const s=allSegments().find(x=>x.uid===focused),mm=Number($('#wExtMm').value);
  if(!s||s.kind!=='line'||!Number.isFinite(mm)||mm<=0||mm>10000){status('Selecione LINE e um comprimento positivo em mm.',true);return}
+ if(s.clippedEnd===$('#wExtEnd').value){status('Esta ponta é um recorte visual no eixo. Escolha a outra ponta ou quebre a linha antes de editar.',true);return}
  if(!root.confirm('Estender '+fmt(mm)+' mm? Confira direção e distância na geometria cotada.'))return;
  capture();const result=E.extendLine(doc.geometry,focused,$('#wExtEnd').value,mm);
  if(!result.ok){undo.pop();status(result.reason,true);return}
  editCount++;built=false;log.push('Linha '+focused+' estendida em '+fmt(mm)+' mm');
  tool='pick';render();status(log[log.length-1]+'. A geometria CAD fonte não foi modificada.');
 };
+ $('#wExtendUntil').onclick=()=>{
+  const s=allSegments().find(x=>x.uid===focused),end=$('#wExtEnd').value;
+  if(!s)return;
+  if(s.clippedEnd===end){status('Ponta recortada no eixo: escolha a outra ponta ou quebre a linha.',true);return}
+  const ext=F.nearestForward(doc.geometry,focused,end,axis,region);
+  if(!ext.ok){status(ext.reason,true);return}
+  if(!root.confirm('Estender '+fmt(ext.mm)+' mm até '+ext.target+'?'))return;
+  capture();const result=E.extendLine(doc.geometry,focused,end,ext.mm);
+  if(!result.ok){undo.pop();status(result.reason,true);return}
+  editCount++;built=false;log.push('Linha '+focused+' estendida até '+ext.target+' em '+fmt(ext.mm)+' mm');
+  tool='pick';render();status(log[log.length-1]);
+ };
+ $('#wApplyTrim').onclick=()=>{
+  const end=$('#wExtEnd').value,s=allSegments().find(x=>x.uid===focused);
+  if(!s)return;
+  if(s.clippedEnd===end){status('Escolha a ponta CAD que permanece acima do eixo para preservar.',true);return}
+  const cut=F.trimAtIntersection(doc.geometry,focused,end,axis,region);
+  if(!cut.ok){status(cut.reason,true);return}
+  capture();const e=F.entityFor(doc.geometry,focused);e.a=cut.newA;e.b=cut.newB;
+  editCount++;built=false;log.push('Linha '+focused+' cortada na conexão com '+cut.target);
+  tool='pick';render();status(log[log.length-1]+'. Desfazer recupera a linha.');
+ };
+ $('#wBreak').onclick=()=>{
+  if(!focused)return;
+  const cut=F.splitAtIntersections(doc.geometry,focused,axis,region);
+  if(!cut.ok){status(cut.reason,true);return}
+  capture();const id=focused,wasSelected=chosen.has(id);
+  const result=F.applySplit(doc.geometry,id,cut.sections,'W_EDIT_'+(editCount+1));
+  if(!result.ok){undo.pop();status('Não foi possível dividir a linha.',true);return}
+  chosen.delete(id);
+  const valid=new Set(allSegments().map(s=>s.uid));
+  if(wasSelected)for(const uid of result.added)if(valid.has(uid))chosen.add(uid);
+  editCount++;built=false;focused=null;tool='pick';
+  log.push('Linha '+id+' dividida em '+result.added.length+' trechos');render();
+  status(log[log.length-1]+'. Clique nos trechos que deseja desmarcar.');
+ };
 $('#wClear').onclick=()=>{if(!chosen.size)return;capture();chosen.clear();built=false;focused=null;render()};
 $('#wUndo').onclick=()=>{const u=undo.pop();if(!u)return;doc=u.doc;chosen=new Set(u.chosen);built=u.built;editCount=u.editCount;log=u.log;repairMarks=u.repairMarks||[];tool='pick';focused=null;activeRepair=null;render();status('Operação desfeita.')};
 $('#wSuggest').onclick=()=>{
@@ -256,6 +305,7 @@ $('#wBuild').onclick=()=>{
  status('Perímetro isolado em '+g.ordered.length+' trechos (incluindo arcos). É um rascunho geométrico, NÃO um perfil CNC liberado.');
 };
 $('#wRefs').onchange=renderCanvas;
+$('#wZoom').oninput=function(){zoom=Number(this.value)/100;$('#wZoomValue').value=this.value+'%';renderCanvas()};
 $('#wAutoSafe').onclick=()=>{
  const ops=G.proposal(graph()).filter(x=>x.safe);
  if(!ops.length){status('Não há folgas curtas inequívocas para corrigir automaticamente.');return}
@@ -272,6 +322,7 @@ $('#wCanvas').addEventListener('pointerdown',e=>{
  dragStart=svgPointer(e,svg);$('#wCanvas').setPointerCapture(e.pointerId);e.preventDefault();
 });
 $('#wCanvas').addEventListener('pointerup',e=>{
+ if(step===2){const svg=$('#wCanvas svg');if(svg)preciseClick={point:svgPointer(e,svg),x:e.clientX,y:e.clientY,time:e.timeStamp};}
  if(!dragStart||step!==1)return;
  const svg=$('#wCanvas svg'),stop=svgPointer(e,svg),start=dragStart;dragStart=null;selectingRegion=false;
  const bounds=DX.bounds(original.geometry),a=cadFromScreen(start,bounds),b=cadFromScreen(stop,bounds),
@@ -284,14 +335,18 @@ $('#wCanvas').addEventListener('click',e=>{
  if(step!==2||!doc)return;
  const path=e.target.closest('[data-cad-segment],[data-cad-hit]');
  if(!path)return;
- const uid=path.getAttribute('data-cad-segment')||path.getAttribute('data-cad-hit'),
-  segment=allSegments().find(s=>s.uid===uid);
+ const targetId=path.getAttribute('data-cad-segment')||path.getAttribute('data-cad-hit'),
+  parts=allSegments(),svg=$('#wCanvas svg'),point=e.isTrusted&&preciseClick&&e.timeStamp-preciseClick.time<1000&&
+   Math.hypot(e.clientX-preciseClick.x,e.clientY-preciseClick.y)<2?preciseClick.point:svgPointer(e,svg),
+  segment=E.nearestSegment(parts,point,region,face,targetId)||parts.find(s=>s.uid===targetId),
+  uid=segment&&segment.uid;
+ preciseClick=null;
  if(!segment){status('Elemento fora do semiperfil superior ou sem extremidades válidas. Mude a vista/eixo.',true);return}
  activeRepair=null;
- if(tool==='extend'){
+ if(['extend','trim'].includes(tool)){
   if(segment.kind!=='line'){status('Extender modifica somente LINE. Arcos devem permanecer nativos.',true);return}
   focused=uid;
-  const svg=$('#wCanvas svg'),p=svgPointer(e,svg),to=E.viewTransform(region,face),
+  const p=point,to=E.viewTransform(region,face),
    a=to(segment.start),b=to(segment.end);
   $('#wExtEnd').value=GDist(a,p)<=GDist(b,p)?'ini':'fim';
  }else{

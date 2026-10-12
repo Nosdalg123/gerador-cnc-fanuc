@@ -29,9 +29,44 @@ function segments(geometry,rect,hidden){
  const src=rect?DX.cut(geometry,rect):geometry,all=[];
  src.forEach(e=>{
   const segs=DX.explode(e);
-  segs.forEach((v,j)=>{const id=e.id+':'+j;if(!hidden||!hidden.has(id))all.push(Object.assign({},v,{uid:id,parent:e.id}))});
+  segs.forEach((v,j)=>{const id=e.id+':'+j;if(!hidden||!hidden.has(id)){
+   const ends=DX.sample(v,1);
+   all.push(Object.assign({},v,{a:ends[0],b:ends[ends.length-1],uid:id,parent:e.id}));
+  }});
  });
  return all;
+}
+// Recorte analítico de LINE no eixo: a entidade CAD fonte não é alterada.
+function upperSegment(s,axis){
+ if(!Number.isFinite(axis))return s;
+ if(s.kind==='arc'){
+  const start=Math.atan2(s.a[1]-s.c[1],s.a[0]-s.c[0]),
+   end=Math.atan2(s.b[1]-s.c[1],s.b[0]-s.c[0]),sign=s.sweep===undefined||s.sweep>0?1:-1;
+  let span=sign*(end-start);while(span<0)span+=2*Math.PI;
+  const ratio=(axis-s.c[1])/s.r,cuts=[0,span];
+  if(Math.abs(ratio)<=1){
+   const theta=Math.asin(ratio);
+   for(const t of [theta,Math.PI-theta]){
+    let along=sign*(t-start);while(along<0)along+=2*Math.PI;
+    while(along>=2*Math.PI)along-=2*Math.PI;
+    if(along>1e-9&&along<span-1e-9)cuts.push(along);
+   }
+  }
+  cuts.sort((a,b)=>a-b);
+  const upper=[];
+  for(let i=1;i<cuts.length;i++)if(s.c[1]+s.r*Math.sin(start+sign*(cuts[i-1]+cuts[i])/2)>=axis-1e-9)
+   upper.push([cuts[i-1],cuts[i]]);
+  if(upper.length!==1)return null;
+  const [lo,hi]=upper[0];if(lo===0&&hi===span)return s;
+  const point=t=>[s.c[0]+s.r*Math.cos(start+sign*t),s.c[1]+s.r*Math.sin(start+sign*t)];
+  return {...s,a:point(lo),b:point(hi),clippedEnd:lo>0?'ini':'fim'};
+ }
+ if(s.kind!=='line')return above(s,axis)?s:null;
+ const a=s.a,b=s.b;if(!a||!b)return null;
+ if(a[1]>=axis&&b[1]>=axis)return s;
+ if(a[1]<axis&&b[1]<axis)return null;
+ const t=(axis-a[1])/(b[1]-a[1]),point=[a[0]+t*(b[0]-a[0]),axis];
+ return {...s,a:a[1]<axis?point:a,b:b[1]<axis?point:b,clippedEnd:a[1]<axis?'ini':'fim'};
 }
 function above(seg,axis,tol=.15){
  const pts=DX.sample(seg,20);return pts.length&&pts.every(p=>p[1]>=axis-tol);
@@ -156,7 +191,8 @@ function svg(doc,rect,options){
     isInternal=!!(options.internal&&options.internal.has(id)),isExternal=!!(options.external&&options.external.has(id)),
     selected=!!(isInternal||isExternal||(options.selected&&options.selected.has(id)));
    if(options.hidden&&options.hidden.has(id))return;
-   const chunks=options.upperOnly?upperChunks(pts,options.axis):[pts];
+   const clipped=options.upperOnly?upperSegment({...part,a:pts[0],b:pts[pts.length-1]},options.axis):null;
+   const chunks=options.upperOnly?(clipped?[DX.sample(clipped,Math.max(40,Math.ceil((part.r||1)*2)))]:upperChunks(pts,options.axis)):[pts];
    if(!chunks.length)return;
    const emphasis=isInternal?'#3375bd':isExternal?'#21936a':selected?'#21936a':(options.candidate&&options.candidate.has(id)?'#c28a21':(color[e.type]||'#53728c'));
    const d=chunks.map(q=>polyPath(q,pos)).join(' ');
@@ -190,5 +226,5 @@ function svg(doc,rect,options){
  });
  out+='</svg>';return out;
 }
-return {sectionSuggestion,segments,above,classify,connectivity,analyze,svg};
+return {sectionSuggestion,segments,upperSegment,above,classify,connectivity,analyze,svg};
 });

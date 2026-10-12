@@ -57,3 +57,24 @@ for(const gap of [3.5,9.849]){
  assert.equal(g.span,107,'Extensão axial precisa permanecer nativa (107, não 110)');
 }
 console.log('PASSOU: ARC nativo, grafo, folgas 0.18/3.500/9.849, cruzamentos, sobreposições e cota axial.');
+{
+ const a=model([line('vertical',[10,-15],[10,15]),line('horizontal',[10,15],[40,15])]);
+ assert(W.analyze(a.parts,a.selection).ok,'LINE atravessando o eixo deve ser recortada na metade superior');
+ const s=a.parts.find(x=>x.uid==='vertical:0');
+ assert.deepEqual(s.start,[10,0]);assert.equal(s.clippedEnd,'ini');
+ assert.deepEqual(a.doc.geometry[0].a,[10,-15],'Recorte não altera CAD');
+}
+{
+ const P=require('./dxfprofile.js'),E=require('./dxfedit.js');
+ const native=arc('curva',[0,0],10,270,90),doc=documentOf([native]);
+ const parts=W.collect(doc,{x1:-20,y1:-20,x2:20,y2:20},0);
+ assert.equal(parts.length,1,'Arco atravessando eixo deve permanecer selecionável');
+ assert(Math.abs(parts[0].start[0]-10)<1e-8&&Math.abs(parts[0].start[1])<1e-8);
+ assert.equal(parts[0].r,10,'Raio deve ser preservado');
+ assert(P.segments(doc.geometry)[0].a,'ARC nativo precisa fornecer extremo ao construtor anterior');
+ const near=model([line('reta',[0,10],[10,10]),arc('raio',[10,15],5,270,0),line('aux',[12,0],[12,20])]);
+ const to=E.viewTransform(rect,''),target=[10+5/Math.sqrt(2),15-5/Math.sqrt(2)];
+ assert.equal(E.nearestSegment(near.parts,to(target),rect,'','aux:0').uid,'raio:0',
+  'Área sensível da linha vizinha não pode interceptar o clique sobre arco');
+}
+console.log('PASSOU: semiperfil LINE/ARC analítico, fonte imutável e clique no traço mais próximo.');
