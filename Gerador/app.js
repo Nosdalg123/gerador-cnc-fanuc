@@ -576,18 +576,18 @@
   var TIPOS = { externa: 'Externa', faceamento: 'Faceamento', interna: 'Interna', encaixe: 'Encaixe/canal', furacao: 'Furação', rosca: 'Rosca', outra: 'Outra' };
   function renderTools() {
     var rows = tools.slice().sort(function (a, b) { return CNC.tcode(a.t).localeCompare(CNC.tcode(b.t)) || a.nome.localeCompare(b.nome); });
-    $('#tbFerr').innerHTML = rows.length ? '<tr><th>T</th><th>Nome</th><th>Tipo</th><th>Pastilha</th><th>Vc · RPM</th><th>Avanço</th><th>Incrementos (desbaste / acabamento)</th><th>Giro</th><th></th></tr>' +
+    $('#tbFerr').innerHTML = rows.length ? '<thead><tr><th scope="col">T</th><th scope="col">Nome</th><th scope="col">Tipo</th><th scope="col">Pastilha</th><th scope="col">Vc · RPM</th><th scope="col">Avanço</th><th scope="col">Incrementos (desbaste / acabamento)</th><th scope="col">Giro</th><th scope="col">Ações</th></tr></thead><tbody>' +
       rows.map(function (t) {
         var pas = (t.pastilha || '—') + (t.raio !== '' && t.raio != null ? ' · r' + CNC.fmt(t.raio) : '') + (t.tipo === 'encaixe' && t.largura ? ' · canal ' + CNC.fmt(t.largura) : (t.angulo ? ' · ' + CNC.fmt(t.angulo) + '°' : '')) + (t.apSuporte ? ' · κ' + CNC.fmt(t.apSuporte) + '°' : '');
         var inc = t.tipo === 'encaixe' ? 'camada ' + CNC.fmt(t.incCanal)
           : '<div>Faceamento: <b>' + CNC.fmt(t.incFace || 0) + '</b> / acab. <b>' + CNC.fmt(t.acabFace || 0) + '</b></div><div>Cilindragem: <b>' + CNC.fmt(t.incTorn || 0) + '</b> / acab. <b>' + CNC.fmt(t.acabTorn || 0) + '</b></div>';
-        return '<tr><td class="mono">' + CNC.tcode(t.t) + '</td><td>' + esc(t.nome) + (t.obs ? '<div class="note">' + esc(t.obs) + '</div>' : '') + '</td><td>' + esc(TIPOS[t.tipo] || t.tipo) + '</td>' +
-          '<td>' + esc(pas) + '</td>' +
-          '<td>' + (t.modo === 'G97' ? 'fixo ' + CNC.fmt(t.rpm) : CNC.fmt(t.vc) + ' · ' + CNC.fmt(t.rpm)) + '</td>' +
-          '<td>' + CNC.fmt(t.avDesb) + (Number(t.avAcab) ? ' / ' + CNC.fmt(t.avAcab) : '') + '</td>' +
-          '<td>' + inc + '</td><td>M' + t.sentido + '</td>' +
-          '<td style="white-space:nowrap"><button class="btn sm" data-a="ed" data-id="' + t.id + '">Editar</button> <button class="btn sm" data-a="dup" data-id="' + t.id + '">Duplicar</button> <button class="btn sm danger" data-a="del" data-id="' + t.id + '">Excluir</button></td></tr>';
-      }).join('') : '<tr><td class="empty">Nenhuma ferramenta cadastrada.</td></tr>';
+        return '<tr><td class="mono ferr-code" data-label="Ferramenta">' + CNC.tcode(t.t) + '</td><td class="ferr-name" data-label="Nome">' + esc(t.nome) + (t.obs ? '<div class="note">' + esc(t.obs) + '</div>' : '') + '</td><td data-label="Tipo">' + esc(TIPOS[t.tipo] || t.tipo) + '</td>' +
+          '<td data-label="Pastilha">' + esc(pas) + '</td>' +
+          '<td data-label="Vc · RPM">' + (t.modo === 'G97' ? 'fixo ' + CNC.fmt(t.rpm) : CNC.fmt(t.vc) + ' · ' + CNC.fmt(t.rpm)) + '</td>' +
+          '<td data-label="Avanço">' + CNC.fmt(t.avDesb) + (Number(t.avAcab) ? ' / ' + CNC.fmt(t.avAcab) : '') + '</td>' +
+          '<td class="ferr-inc" data-label="Incrementos (desbaste / acabamento)">' + inc + '</td><td data-label="Giro">M' + t.sentido + '</td>' +
+          '<td class="ferr-actions" data-label="Ações"><button class="btn sm" data-a="ed" data-id="' + t.id + '">Editar</button> <button class="btn sm" data-a="dup" data-id="' + t.id + '">Duplicar</button> <button class="btn sm danger" data-a="del" data-id="' + t.id + '">Excluir</button></td></tr>';
+      }).join('') + '</tbody>' : '<tbody><tr><td class="empty">Nenhuma ferramenta cadastrada.</td></tr></tbody>';
     $$('#tbFerr button').forEach(function (b) {
       b.onclick = function () {
         var t = toolById(b.dataset.id);

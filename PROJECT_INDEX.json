@@ -1,21 +1,21 @@
 {
-  "gerado_em": "2026-10-12 13:40",
+  "gerado_em": "2026-10-12 14:33",
   "como_ler": "simbolos = [nome, tipo, linha_inicio, linha_fim, pai]; linhas comecam em 1. Leia so a faixa necessaria (Read com offset/limit).",
   "regerar": "python indexer.py",
   "ignorado": [".cache", ".claude", ".git", ".idea", ".mypy_cache", ".pytest_cache", ".venv", ".vscode", "Manuais da maquina", "__pycache__", "build", "dist", "env", "node_modules", "venv", "versoes"],
-  "totais": {"arquivos": 81, "simbolos": 1535, "por_linguagem": {"md": 18, "py": 1, "js": 59, "html": 1, "css": 2}},
+  "totais": {"arquivos": 82, "simbolos": 1539, "por_linguagem": {"md": 18, "py": 1, "js": 60, "html": 1, "css": 2}},
   "arquivos": {
-    "CLAUDE.md": {"lang": "md", "linhas": 56, "simbolos": [
-      ["Gerador CNC parametrizado (Fanuc) — Torno ML-600L — Alumasa", "h1", 1, 39, ""],
+    "CLAUDE.md": {"lang": "md", "linhas": 57, "simbolos": [
+      ["Gerador CNC parametrizado (Fanuc) — Torno ML-600L — Alumasa", "h1", 1, 40, ""],
       ["O que é", "h2", 5, 7, ""],
-      ["Estado atual", "h2", 8, 22, ""],
-      ["Estrutura (pasta `Gerador/`)", "h2", 23, 26, ""],
-      ["Como rodar", "h2", 27, 31, ""],
-      ["Regras de trabalho (decididas pelo usuário)", "h2", 32, 38, ""],
-      ["Formato das respostas e padrão CNC (instruções do usuário, valem em toda sessão)", "h2", 39, 39, ""],
-      ["Output Guidelines", "h1", 40, 56, ""],
-      ["Pendências", "h2", 46, 50, ""],
-      ["Índice do código (economia de tokens)", "h2", 51, 56, ""]
+      ["Estado atual", "h2", 8, 23, ""],
+      ["Estrutura (pasta `Gerador/`)", "h2", 24, 27, ""],
+      ["Como rodar", "h2", 28, 32, ""],
+      ["Regras de trabalho (decididas pelo usuário)", "h2", 33, 39, ""],
+      ["Formato das respostas e padrão CNC (instruções do usuário, valem em toda sessão)", "h2", 40, 40, ""],
+      ["Output Guidelines", "h1", 41, 57, ""],
+      ["Pendências", "h2", 47, 51, ""],
+      ["Índice do código (economia de tokens)", "h2", 52, 57, ""]
     ]},
     "indexer.py": {"lang": "py", "linhas": 406, "simbolos": [
       ["RAIZ", "const", 22, 22, ""],
@@ -47,45 +47,46 @@
       ["sem_data", "function", 379, 380, ""],
       ["main", "function", 383, 401, ""]
     ]},
-    "Gerador/CHANGELOG.md": {"lang": "md", "linhas": 298, "simbolos": [
-      ["Histórico de versões — Gerador CNC Torno", "h1", 1, 298, ""],
-      ["2.23.0 — 12/10/2026 — Versão de teste Android no navegador", "h2", 11, 17, ""],
-      ["2.22.3 — 12/10/2026 — Excluir linha e corrigir janelas de ferramentas", "h2", 18, 24, ""],
-      ["2.22.2 — 12/10/2026 — Revisão completa de importação e conferência de cotas", "h2", 25, 32, ""],
-      ["2.22.1 — 12/10/2026 — DXFs reais e correção da seleção", "h2", 33, 39, ""],
-      ["2.17.0 — 11/10/2026 — Semiperfil superior, edição por interseção e seleção explícita (bran", "h2", 40, 47, ""],
-      ["2.16.0 — 11/10/2026 — Importador inteligente com fluxo de três etapas (branch isolada)", "h2", 48, 57, ""],
-      ["2.15.0 — 11/10/2026 — Editor CAD assistido com seleção automática e retângulo visível (bra", "h2", 58, 68, ""],
-      ["2.14.0 — 11/10/2026 — Corrigir reconstrução DXF ramificada (branch isolada)", "h2", 69, 82, ""],
-      ["2.13.0 — 11/10/2026 — Importação DXF real, topologia e prévia PDF (branch isolada)", "h2", 83, 94, ""],
-      ["2.12.0 — 11/10/2026 — Teste do Copo 7″: seleção de vista e cotas de detalhe (branch isolad", "h2", 95, 105, ""],
-      ["2.11.0 — 11/10/2026 — Orientação CNC validada com PDF Disco 7″ (branch isolada)", "h2", 106, 115, ""],
-      ["2.10.0 — 11/10/2026 — Escala proporcional, edição sobre cotas e seleção de vista no PDF", "h2", 116, 125, ""],
-      ["2.9.0 — 11/10/2026 — Projeção CNC de PDF, confirmação e salvamento direto (branch isolada)", "h2", 126, 135, ""],
-      ["2.8.0 — 11/10/2026 — Importação assistida de desenho PDF (branch isolada)", "h2", 136, 146, ""],
-      ["2.7.1 — 09/10/2026 — Leitor entende o modo ISO do Siemens 802D sl (G291, G290 e G92 S)", "h2", 147, 154, ""],
-      ["2.7.0 — 09/10/2026 — Diagnóstico de erros do programa, com causa e solução para cada tipo", "h2", 155, 164, ""],
-      ["2.6.0 — 09/10/2026 — Gerador gera G73 e G41/G42 + ângulo do suporte no banco de ferramenta", "h2", 165, 172, ""],
-      ["2.5.0 — 09/10/2026 — programa decodificado também no Gerador + programas do COPO BRUTO P2/", "h2", 173, 179, ""],
-      ["2.4.0 — 08/10/2026 — Simulação: programa decodificado, G73 e G41/G42", "h2", 180, 188, ""],
-      ["2.3.0 — 08/10/2026 — acesso por usuário (tela de entrada)", "h2", 189, 198, ""],
-      ["2.2.1 — 07/10/2026 — Simulação: janela em painel próprio e desenho com inserto e suporte", "h2", 199, 202, ""],
-      ["2.2.0 — 07/10/2026 — módulo Simulação (programa pronto colado)", "h2", 203, 211, ""],
-      ["2.1.2 — 06/10/2026 — desenho do porta-matriz maior e sem cruzamentos", "h2", 212, 215, ""],
-      ["2.1.1 — 06/10/2026 — cota M no porta-matriz", "h2", 216, 218, ""],
-      ["2.1.0 — 06/10/2026 — porta-matriz com desenho e 2 lados", "h2", 219, 222, ""],
-      ["2.0.0 — 06/10/2026 — revisão final", "h2", 223, 227, ""],
-      ["1.9.0 — 06/10/2026 — rosca externa e interna (G76)", "h2", 228, 234, ""],
-      ["1.8.0 — 06/10/2026 — canal interno", "h2", 235, 240, ""],
-      ["1.7.0 — 06/10/2026 — geometria Alimentador padrão", "h2", 241, 245, ""],
-      ["1.6.0 — 06/10/2026 — geometria Porta-matriz", "h2", 246, 251, ""],
-      ["1.5.0 — 06/10/2026 — geometria BA / BAT", "h2", 252, 254, ""],
-      ["1.4.0 — 06/10/2026 — elementos em sequência (canal sequencial)", "h2", 255, 260, ""],
-      ["1.3.1 — 06/10/2026 — correção: desenho não chegava ao Gerador", "h2", 261, 266, ""],
-      ["1.3.0 — 06/10/2026 — operação “Desenho da peça”", "h2", 267, 272, ""],
-      ["1.2.0 — 06/10/2026 — menu lateral, painéis independentes, tema Alumasa padrão, cantos esco", "h2", 273, 280, ""],
-      ["1.1.0 — 05/10/2026 — cabeçalho fixo, Configurações, telas mais enxutas", "h2", 281, 292, ""],
-      ["1.0.0 — ponto de partida (antes da rodada de 05/10/2026)", "h2", 293, 298, ""]
+    "Gerador/CHANGELOG.md": {"lang": "md", "linhas": 304, "simbolos": [
+      ["Histórico de versões — Gerador CNC Torno", "h1", 1, 304, ""],
+      ["2.23.1 — 12/10/2026 — Corrigir estrutura e visual de Ferramentas", "h2", 11, 16, ""],
+      ["2.23.0 — 12/10/2026 — Versão de teste Android no navegador", "h2", 17, 23, ""],
+      ["2.22.3 — 12/10/2026 — Excluir linha e corrigir janelas de ferramentas", "h2", 24, 30, ""],
+      ["2.22.2 — 12/10/2026 — Revisão completa de importação e conferência de cotas", "h2", 31, 38, ""],
+      ["2.22.1 — 12/10/2026 — DXFs reais e correção da seleção", "h2", 39, 45, ""],
+      ["2.17.0 — 11/10/2026 — Semiperfil superior, edição por interseção e seleção explícita (bran", "h2", 46, 53, ""],
+      ["2.16.0 — 11/10/2026 — Importador inteligente com fluxo de três etapas (branch isolada)", "h2", 54, 63, ""],
+      ["2.15.0 — 11/10/2026 — Editor CAD assistido com seleção automática e retângulo visível (bra", "h2", 64, 74, ""],
+      ["2.14.0 — 11/10/2026 — Corrigir reconstrução DXF ramificada (branch isolada)", "h2", 75, 88, ""],
+      ["2.13.0 — 11/10/2026 — Importação DXF real, topologia e prévia PDF (branch isolada)", "h2", 89, 100, ""],
+      ["2.12.0 — 11/10/2026 — Teste do Copo 7″: seleção de vista e cotas de detalhe (branch isolad", "h2", 101, 111, ""],
+      ["2.11.0 — 11/10/2026 — Orientação CNC validada com PDF Disco 7″ (branch isolada)", "h2", 112, 121, ""],
+      ["2.10.0 — 11/10/2026 — Escala proporcional, edição sobre cotas e seleção de vista no PDF", "h2", 122, 131, ""],
+      ["2.9.0 — 11/10/2026 — Projeção CNC de PDF, confirmação e salvamento direto (branch isolada)", "h2", 132, 141, ""],
+      ["2.8.0 — 11/10/2026 — Importação assistida de desenho PDF (branch isolada)", "h2", 142, 152, ""],
+      ["2.7.1 — 09/10/2026 — Leitor entende o modo ISO do Siemens 802D sl (G291, G290 e G92 S)", "h2", 153, 160, ""],
+      ["2.7.0 — 09/10/2026 — Diagnóstico de erros do programa, com causa e solução para cada tipo", "h2", 161, 170, ""],
+      ["2.6.0 — 09/10/2026 — Gerador gera G73 e G41/G42 + ângulo do suporte no banco de ferramenta", "h2", 171, 178, ""],
+      ["2.5.0 — 09/10/2026 — programa decodificado também no Gerador + programas do COPO BRUTO P2/", "h2", 179, 185, ""],
+      ["2.4.0 — 08/10/2026 — Simulação: programa decodificado, G73 e G41/G42", "h2", 186, 194, ""],
+      ["2.3.0 — 08/10/2026 — acesso por usuário (tela de entrada)", "h2", 195, 204, ""],
+      ["2.2.1 — 07/10/2026 — Simulação: janela em painel próprio e desenho com inserto e suporte", "h2", 205, 208, ""],
+      ["2.2.0 — 07/10/2026 — módulo Simulação (programa pronto colado)", "h2", 209, 217, ""],
+      ["2.1.2 — 06/10/2026 — desenho do porta-matriz maior e sem cruzamentos", "h2", 218, 221, ""],
+      ["2.1.1 — 06/10/2026 — cota M no porta-matriz", "h2", 222, 224, ""],
+      ["2.1.0 — 06/10/2026 — porta-matriz com desenho e 2 lados", "h2", 225, 228, ""],
+      ["2.0.0 — 06/10/2026 — revisão final", "h2", 229, 233, ""],
+      ["1.9.0 — 06/10/2026 — rosca externa e interna (G76)", "h2", 234, 240, ""],
+      ["1.8.0 — 06/10/2026 — canal interno", "h2", 241, 246, ""],
+      ["1.7.0 — 06/10/2026 — geometria Alimentador padrão", "h2", 247, 251, ""],
+      ["1.6.0 — 06/10/2026 — geometria Porta-matriz", "h2", 252, 257, ""],
+      ["1.5.0 — 06/10/2026 — geometria BA / BAT", "h2", 258, 260, ""],
+      ["1.4.0 — 06/10/2026 — elementos em sequência (canal sequencial)", "h2", 261, 266, ""],
+      ["1.3.1 — 06/10/2026 — correção: desenho não chegava ao Gerador", "h2", 267, 272, ""],
+      ["1.3.0 — 06/10/2026 — operação “Desenho da peça”", "h2", 273, 278, ""],
+      ["1.2.0 — 06/10/2026 — menu lateral, painéis independentes, tema Alumasa padrão, cantos esco", "h2", 279, 286, ""],
+      ["1.1.0 — 05/10/2026 — cabeçalho fixo, Configurações, telas mais enxutas", "h2", 287, 298, ""],
+      ["1.0.0 — ponto de partida (antes da rodada de 05/10/2026)", "h2", 299, 304, ""]
     ]},
     "Gerador/EDITOR-LATERAL-PERIMETRO-2.18.md": {"lang": "md", "linhas": 35, "simbolos": [
       ["Editor CAD v2.18 — painel lateral e perímetro assistido", "h1", 1, 35, ""],
@@ -1068,8 +1069,9 @@
       ["app.js", "script", 794, 794, ""],
       ["acesso.js", "script", 795, 795, ""]
     ]},
-    "Gerador/mobile.css": {"lang": "css", "linhas": 78, "simbolos": [
-      ["v2.23 — dimensões visuais e áreas de toque; medidas CAD/CNC intactas.", "secao", 1, 1, ""]
+    "Gerador/mobile.css": {"lang": "css", "linhas": 93, "simbolos": [
+      ["v2.23 — dimensões visuais e áreas de toque; medidas CAD/CNC intactas.", "secao", 1, 1, ""],
+      ["A tabela larga do desktop vira cartões legíveis no celular.", "secao", 38, 38, ""]
     ]},
     "Gerador/pdfdimensions.js": {"lang": "js", "linhas": 42, "simbolos": [
       ["number", "arrow", 8, 8, ""],
@@ -1431,7 +1433,7 @@
       ["setAviso", "method", 350, 350, "create"],
       ["redraw", "method", 350, 350, "setAviso"]
     ]},
-    "Gerador/style.css": {"lang": "css", "linhas": 563, "simbolos": [
+    "Gerador/style.css": {"lang": "css", "linhas": 565, "simbolos": [
       ["estrutura: menu lateral (abaixo do logo) + conteudo. Em telas largas a pagina nao rola: o ", "secao", 51, 51, ""],
       ["explicacoes (dicas): escondidas; o \"i\" ao lado do nome abre uma, e Configuracoes pode most", "secao", 101, 101, ""],
       ["entrada e acesso por usuario (v2.3.0)", "secao", 125, 125, ""],
@@ -1451,8 +1453,8 @@
       ["Cabeçalho e ações fora da área rolável; nada cobre os campos ao rolar.", "secao", 437, 437, ""],
       ["Ilustrações esquemáticas de roscamento: visual apenas, tipo CNC permanece 'rosca'.", "secao", 448, 448, ""],
       ["v2.20.2 — fixa a área útil do Banco de Ferramentas. Evita que a tela seja colocada na colu", "secao", 453, 453, ""],
-      ["v2.21 — assistente DXF independente; estilo semelhante ao PropertyManager de esboço", "secao", 470, 470, ""],
-      ["v2.22 — quatro caminhos da seção Desenho da peça", "secao", 514, 514, ""]
+      ["v2.21 — assistente DXF independente; estilo semelhante ao PropertyManager de esboço", "secao", 472, 472, ""],
+      ["v2.22 — quatro caminhos da seção Desenho da peça", "secao", 516, 516, ""]
     ]},
     "Gerador/test.js": {"lang": "js", "linhas": 281, "simbolos": [
       ["t1", "object", 2, 2, ""],
@@ -1627,6 +1629,10 @@
       ["pairs", "arrow", 16, 16, ""],
       ["errors", "object", 25, 25, ""],
       ["box", "arrow", 38, 38, ""]
+    ]},
+    "Gerador/testferramentaslayoutui.mjs": {"lang": "js", "linhas": 67, "simbolos": [
+      ["box", "arrow", 31, 31, ""],
+      ["box", "arrow", 47, 47, ""]
     ]},
     "Gerador/testpdf.js": {"lang": "js", "linhas": 11, "simbolos": [
       ["t", "function", 4, 4, ""]

@@ -8,6 +8,12 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.23.1 — 12/10/2026 — Corrigir estrutura e visual de Ferramentas
+- Removido fechamento `div` excedente ao final da Simulação: Ferramentas e Configurações voltam a pertencer a `main` dentro da área central. A correção resolve o banco aparecendo na coluna estreita do menu.
+- No celular, a tabela larga vira cartões com rótulos, nomes/observações quebrados e Editar/Duplicar/Excluir acessíveis. Desktop mantém tabela completa.
+- Regressão verifica a hierarquia DOM dos cinco módulos, largura central, cartões e campos visíveis em seis tamanhos, incluindo tela baixa semelhante ao viewport com teclado aberto. Também cobre oito tipos de ferramenta, janela sem sobreposição, salvar/editar/duplicar/excluir.
+- Publicação atualiza o mesmo link privado de teste Android. Dados do banco e arquivos locais mantidos.
+
 ## 2.23.0 — 12/10/2026 — Versão de teste Android no navegador
 - Interface adaptada para celular: navegação compacta, campos legíveis, botões de toque e formulários em uma coluna. Janela de ferramentas ajustada em retrato e paisagem.
 - DXF sem largura mínima de desktop no celular: 100% ajusta à tela, preservando a mesma escala nos dois eixos. Botões Ampliar/Diminuir/Ajustar à tela mantêm zoom de 100 a 400%, sem modificar medidas CAD.

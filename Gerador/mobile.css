@@ -35,6 +35,21 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
  #dxfPanel .dxf-graphics svg{min-width:0}
  #pdfStage{height:clamp(240px,50dvh,460px)!important}
  #pdfProfileSvg{min-height:180px}
+ /* A tabela larga do desktop vira cartões legíveis no celular. */
+ #view-ferr #tbFerr{display:block;min-width:0;width:100%}
+ #view-ferr #tbFerr thead{display:none}
+ #view-ferr #tbFerr tbody{display:grid;gap:12px}
+ #view-ferr #tbFerr tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--field)}
+ #view-ferr #tbFerr td{display:block;min-width:0;max-width:none;padding:0;border:0;overflow-wrap:anywhere;font-size:14px}
+ #view-ferr #tbFerr td[data-label]::before{content:attr(data-label);display:block;font:600 12px/1.4 system-ui,sans-serif;color:var(--muted);margin-bottom:3px}
+ #view-ferr #tbFerr .ferr-code{font-size:18px;font-weight:700;color:var(--accent)}
+ #view-ferr #tbFerr .ferr-name,#view-ferr #tbFerr .ferr-inc,#view-ferr #tbFerr .ferr-actions,#view-ferr #tbFerr .empty{grid-column:1/-1}
+ #view-ferr #tbFerr .ferr-name{font-size:15px;font-weight:650}
+ #view-ferr #tbFerr .ferr-name .note{font-weight:400;margin-top:5px}
+ #view-ferr #tbFerr .ferr-actions{display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid var(--line);padding-top:10px}
+ #view-ferr #tbFerr .ferr-actions::before{content:none}
+ #view-ferr #tbFerr .ferr-actions .btn{flex:1 1 80px;min-height:44px;margin:0}
+ #view-ferr .toolbar .btn{flex:1 1 140px;min-height:44px}
 }
 @media(max-width:600px){
  body{font-size:16px}

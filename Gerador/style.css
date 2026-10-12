@@ -465,6 +465,8 @@ dialog h3{margin:0 0 12px}
 #view-ferr .tablewrap{width:100%;max-width:100%;min-width:0;overflow-x:auto}
 #view-ferr #tbFerr{width:100%;min-width:740px;border-collapse:collapse}
 #view-ferr #tbFerr th,#view-ferr #tbFerr td{max-width:380px;overflow-wrap:anywhere;vertical-align:top}
+#view-ferr .ferr-actions{min-width:115px}
+#view-ferr .ferr-actions .btn{margin-bottom:5px}
 @media(max-width:960px){.shell>.content{width:100%;min-width:0}#view-ferr #tbFerr{min-width:700px}}
 
 /* v2.21 — assistente DXF independente; estilo semelhante ao PropertyManager de esboço */
