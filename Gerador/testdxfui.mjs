@@ -30,6 +30,7 @@ const L=(id,x,y,x2,y2)=>ent('LINE',[[5,id],[10,x],[20,y],[11,x2],[21,y2],[8,'0']
 const C=(id,r)=>ent('CIRCLE',[[5,id],[10,400],[20,100],[40,r],[8,'0']]);
 const dim=ent('DIMENSION',[[5,'dim1'],[70,160],[1,'<>'],[50,0],[13,50],[23,130],[14,200],[24,130],[10,125],[20,153]]);
 const cad=[...h,...L('ln1',50,130,100,130),...L('ln2',100,130,150,125),...L('ln3',150,125,200,125),
+ ...L('cross',160,116,160,139),...L('lower',50,70,200,70),
  ...L('axis',50,100,200,100),...C('cc1',30),...C('cc2',25),...C('cc3',20),
  ...dim,...group(0,'ENDSEC'),...group(0,'EOF')].join('\r\n')+'\r\n';
 let browser,passed=false;
@@ -59,13 +60,24 @@ try{
  assert(await page.locator('#dxfSimpleProblems').count()===1,'Diagnóstico simples deve existir');
  assert(await page.locator('#dxfAdvancedToggle').getAttribute('aria-expanded')==='false','Ferramentas avançadas ocultas por padrão');
  const originalSelected=await page.evaluate(()=>window.CNCDXFImport.getSelected().externo.size);
- await page.locator('#dxfProjected [data-cad-segment="ln1:0"]').evaluate(el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true})));
- assert((await page.evaluate(()=>window.CNCDXFImport.getSelected().externo.size))===originalSelected-1,
-  'Um clique simples retira linha da proposta');
+ const clickSegmentEarly=async id=>page.locator('#dxfProjected [data-cad-segment="'+id+'"]').evaluate(el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+ await clickSegmentEarly('ln1:0');
+ assert.equal(await page.evaluate(()=>window.CNCDXFImport.getSelected().externo.size),originalSelected,
+  'Um clique apenas seleciona, sem apagar ou desmarcar');
+ assert.equal(await page.locator('#dxfProjected [data-cad-segment="ln1:0"]').getAttribute('data-selected-focus'),'true',
+  'Realce laranja da linha focada');
+ assert(await page.locator('#dxfDeleteSelected').isEnabled(),'Botão Excluir selecionada ativo');
  assert(await page.locator('#dxfContext').isVisible(),'Correções contextuais aparecem ao clicar na linha');
+ await page.locator('#dxfContextRemove').click();
+ assert((await page.evaluate(()=>window.CNCDXFImport.getSelected().externo.size))===originalSelected-1);
+ await clickSegmentEarly('ln1:0');
  await page.locator('#dxfContextExternal').click();
  assert((await page.evaluate(()=>window.CNCDXFImport.getSelected().externo.size))===originalSelected,
   'Correção contextual recoloca linha no perfil');
+ assert.equal(await page.locator('#dxfProjected [data-cad-segment="lower:0"]').count(),0,
+  'Metade inferior original não é editável');
+ assert((await page.locator('#dxfProjected [data-construction="true"]').count())>0,
+  'Metade inferior somente como linhas tracejadas de construção');
  await page.locator('#dxfChangeView').click();
  assert(await page.locator('#dxfViewPicker').isVisible(),'Troca de vista abre escolhas');
  assert((await page.locator('.dxf-view-choice').count())>=3,'Opções de seção frontal e desenho completo');
@@ -97,6 +109,35 @@ try{
  assert((await page.locator('#dxfSource svg rect[stroke]').count())>=1,'Retângulo permanece visível ao selecionar a vista');
  assert((await page.locator('#dxfProjected [data-cad-segment]').count())>=3,'Entidades CAD interativas');
  const clickSegment=async id=>page.locator('#dxfProjected [data-cad-segment="'+id+'"]').evaluate(el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+ // Excluir requer SELEÇÃO + botão, nunca ocorre por clique direto.
+ await clickSegment('ln3:0');
+ assert(await page.locator('#dxfDeleteSelected').isEnabled());
+ await page.locator('#dxfDeleteSelected').click();
+ assert(await page.evaluate(()=>window.CNCDXFImport.getHidden().has('ln3:0')),'Excluir selecionada');
+ await page.locator('#dxfUndo').click();
+ assert.equal(await page.locator('#dxfProjected [data-cad-segment="ln3:0"]').count(),1);
+ // Corte em cruzamento real de LINE; mantém a ponta inicial.
+ await clickSegment('ln3:0');
+ await page.locator('#dxfTrimSelected').click();
+ await page.locator('#dxfKeepEnd').selectOption('ini');
+ await page.locator('#dxfConfirmGeometryEdit').click();
+ assert.equal(await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.find(e=>e.id==='ln3').b[0]),160);
+ await page.locator('#dxfUndo').click();
+ // Quebra física da linha em trechos independentes.
+ await clickSegment('ln3:0');
+ await page.locator('#dxfBreakSelected').click();
+ assert.equal(await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.some(e=>e.id==='ln3')),false);
+ assert((await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.filter(e=>e.id.startsWith('CAD_EDIT_')).length))>=2);
+ await page.locator('#dxfUndo').click();
+ // Estender até a próxima linha cruzada: de ln2 até cross (x 160).
+ await clickSegment('ln2:0');
+ await page.locator('#dxfExtendToSelected').click();
+ await page.locator('#dxfKeepEnd').selectOption('fim');
+ page.once('dialog',d=>d.accept());
+ await page.locator('#dxfConfirmGeometryEdit').click();
+ assert(Math.abs((await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.find(e=>e.id==='ln2').b[0]))-160)<.001);
+ await page.locator('#dxfUndo').click();
+
  // Excluir uma linha sem alterar a fonte original e desfazer.
  await page.locator('input[name=dxfAssign][value=apagar]').check();
  await clickSegment('ln3:0');
