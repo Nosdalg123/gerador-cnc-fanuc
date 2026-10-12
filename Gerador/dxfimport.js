@@ -2,10 +2,10 @@
    confirmada de entidades geometricamente representáveis. Sem exportar curvas omitidas. */
 (function(root){
 'use strict';
-const $=q=>document.querySelector(q),DX=root.CNCDXF,P=root.CNCDXFPerfil,E=root.CNCDXFEdicao,A=root.CNCDXFAssistente;
+const $=q=>document.querySelector(q),DX=root.CNCDXF,P=root.CNCDXFPerfil,E=root.CNCDXFEdicao,A=root.CNCDXFAssistente,G=root.CNCDXFGeomEdit;
 let doc=null,sourceDoc=null,rect=null,axis=NaN,suggest=null,active=false,start=null,zoom=1,fileName='',
  selected={externo:new Set(),interno:new Set()},chainInfo=null,hidden=new Set(),undo=[],pendingExtension=null,
- editCount=0,dragRect=null,projDrag=null,skipProjectedClick=false,activeView='lateral',views=[],contextId=null,focusIssue=null,quickRepairs=[];
+ editCount=0,dragRect=null,projDrag=null,skipProjectedClick=false,activeView='lateral',views=[],contextId=null,focusIssue=null,quickRepairs=[],geometryAction=null,editSequence=0;
 const KEY='cnc_dxf_rascunhos_v1';
 const val=id=>$(id).value;
 const fmt=n=>Number(n).toLocaleString('pt-BR',{maximumFractionDigits:3});
@@ -24,7 +24,54 @@ function removeLine(id){
  if(hidden.has(id))return;
  remember();hidden.add(id);selected.externo.delete(id);selected.interno.delete(id);
  if(pendingExtension===id)pendingExtension=null;
+ contextId=null;geometryAction=null;$('#dxfEditOptions').hidden=true;$('#dxfContext').hidden=true;
  markEdited();
+}
+function syncLineSelection(){
+ const current=contextId&&doc&&rect?P.segments(doc.geometry,rect,hidden).find(x=>x.uid===contextId):null;
+ if(!current)contextId=null;
+ const line=!!(current&&G.entityFor(doc.geometry,contextId));
+ $('#dxfSelectedLabel').textContent=current?
+  'Linha selecionada: '+contextId+(current.kind==='arc'?' · arco R'+fmt(current.r):' · '+fmt(Math.hypot(current.b[0]-current.a[0],current.b[1]-current.a[1]))+' mm'):
+  'Clique numa linha superior para selecionar (borda laranja)';
+ $('#dxfDeleteSelected').disabled=!current;
+ $('#dxfTrimSelected').disabled=!line;
+ $('#dxfBreakSelected').disabled=!line;
+ $('#dxfExtendToSelected').disabled=!line;
+ $('#dxfExtendMeasureSelected').disabled=!line;
+ if(!current)$('#dxfContext').hidden=true;
+}
+function changeSelection(next){
+ contextId=next;geometryAction=null;$('#dxfEditOptions').hidden=true;renderProjection();
+ if(contextId)$('#dxfContext').hidden=false;
+}
+function applyCutOrBreak(){
+ if(!contextId||!doc)return;
+ const id=contextId,op=geometryAction,end=val('#dxfKeepEnd');
+ if(op==='break'){
+  const cut=G.splitAtIntersections(doc.geometry,id,axis,rect,hidden);
+  if(!cut.ok){status(cut.reason,true);return}
+  remember();const wasExt=selected.externo.has(id),wasInt=selected.interno.has(id);
+  const result=G.applySplit(doc.geometry,id,cut.sections,'CAD_EDIT_'+(++editSequence));
+  if(!result.ok){status('Não foi possível quebrar a linha.',true);return}
+  selected.externo.delete(id);selected.interno.delete(id);hidden.delete(id);
+  for(const child of result.added){if(wasExt)selected.externo.add(child);if(wasInt)selected.interno.add(child)}
+  contextId=result.added[0];markEdited();
+  status('Linha dividida em '+result.added.length+' trechos independentes. Clique em cada trecho para incluir ou excluir.');
+ }else if(op==='trim'){
+  const cut=G.trimAtIntersection(doc.geometry,id,end,axis,rect);
+  if(!cut.ok){status(cut.reason,true);return}
+  remember();const entity=G.entityFor(doc.geometry,id);entity.a=cut.newA;entity.b=cut.newB;
+  markEdited();status('Trecho excedente cortado na interseção com '+cut.target+'. Confira as cotas.');
+ }else if(op==='until'){
+  const ext=G.nearestForward(doc.geometry,id,end,axis,rect,hidden);
+  if(!ext.ok){status(ext.reason,true);return}
+  if(!root.confirm('Estender '+fmt(ext.mm)+' mm até a linha '+ext.target+'?'))return;
+  remember();const result=E.extendLine(doc.geometry,id,end,ext.mm);
+  if(!result.ok){undo.pop();status(result.reason,true);return}
+  markEdited();status('Linha estendida '+fmt(ext.mm)+' mm até '+ext.target+'. Verifique a continuidade.');
+ }
+ geometryAction=null;$('#dxfEditOptions').hidden=true;
 }
 function updateZ0(face){
  $('#dxfFace').value=face;
@@ -225,7 +272,8 @@ function renderProjection(){
  if(none)a=NaN;
  axis=a;
  let cand=P.analyze(doc,rect,a,val('#dxfFace'),new Set(),hidden).candidate;
- host.innerHTML=P.svg(doc,rect,{axis:a,face:val('#dxfFace'),selected:all,external:selected.externo,internal:selected.interno,hidden,candidate:new Set(cand.map(s=>s.uid)),dimensions:dimsForRect()});
+ host.innerHTML=P.svg(doc,rect,{axis:a,face:val('#dxfFace'),selected:all,external:selected.externo,internal:selected.interno,hidden,candidate:new Set(cand.map(s=>s.uid)),dimensions:dimsForRect(),upperOnly:Number.isFinite(a),focus:contextId});
+ syncLineSelection();
  drawChains();
  const e=analyse('externo'),i=analyse('interno'),warn=$('#dxfWarnings');
  if(!e){warn.textContent='Selecione a seção longitudinal do DXF. A geometria original é exibida sem conversão inventada.';$('#dxfSaveCNC').disabled=true;renderProblems(null,null);return}
@@ -257,12 +305,12 @@ function renderProjection(){
 function autoRecognize(){
  if(!doc||!rect||val('#dxfAxis')==='')return;
  const result=E.autoSelect(doc,rect,Number(val('#dxfAxis')),hidden);
- selected.externo=new Set(result.externo);selected.interno=new Set(result.interno);
+ selected.externo=new Set(result.externo);selected.interno=new Set(result.interno);contextId=null;geometryAction=null;$('#dxfEditOptions').hidden=true;
  resetConfirm();renderProjection();
  status(result.reason+(result.chains?' · '+result.chains.bifurcations.length+' bifurcações identificadas.':''));
 }
 function view(rectangle){
- rect=rectangle;selected.externo.clear();selected.interno.clear();chainInfo=null;
+ rect=rectangle;selected.externo.clear();selected.interno.clear();chainInfo=null;contextId=null;geometryAction=null;
  active=false;start=null;pendingExtension=null;resetConfirm();renderSource();renderMeasures();renderProjection();
  if(rect&&val('#dxfAxis')!=='')autoRecognize();
 }
@@ -291,7 +339,7 @@ $('#dxfFile').onchange=async function(){
   let bytes=await f.arrayBuffer(),text=new TextDecoder('windows-1252').decode(bytes);
   status('Analisando entidades CAD, cotas e vistas do arquivo...');
   await new Promise(resolve=>root.requestAnimationFrame?root.requestAnimationFrame(()=>resolve()):resolve());
-  doc=DX.read(text);sourceDoc=clone(doc);fileName=f.name;rect=null;suggest=null;axis=NaN;zoom=1;active=false;
+  doc=DX.read(text);sourceDoc=clone(doc);fileName=f.name;rect=null;suggest=null;axis=NaN;zoom=1;active=false;editSequence=0;contextId=null;geometryAction=null;
   contextId=null;$('#dxfContext').hidden=true;views=[];activeView='lateral';
   hidden.clear();undo=[];editCount=0;pendingExtension=null;$('#dxfUndo').disabled=true;$('#dxfRestore').disabled=false;
   $('#dxfNome').value=f.name.replace(/\.dxf$/i,'');$('#dxfLength').value='';$('#dxfAxis').value='';$('#dxfFace').value='';
