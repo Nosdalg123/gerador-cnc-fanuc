@@ -441,3 +441,20 @@ dialog h3{margin:0 0 12px}
 #dlgFerr .tipo-card svg .tip{fill:#e5b83a;stroke:#66501c;stroke-width:1.2}
 #dlgFerr .tipo-card svg .tip-hole{fill:var(--field);stroke:#66501c;stroke-width:1}
 #dlgFerr .tipo-card[data-tipo="rosca"] svg{width:80px;max-width:100%;height:55px}
+
+/* v2.20.2 — fixa a área útil do Banco de Ferramentas.
+   Evita que a tela seja colocada na coluna de 210px destinada ao menu. */
+@media(min-width:961px){
+ .shell{grid-template-columns:210px minmax(0,1fr);width:100%;min-width:0}
+ .shell > .side{grid-column:1;grid-row:1;min-width:0}
+ .shell > .content{grid-column:2;grid-row:1;width:100%;min-width:0}
+}
+.content > main{width:100%;min-width:0;box-sizing:border-box}
+#view-ferr{display:block;width:100%;max-width:none;min-width:0;box-sizing:border-box}
+#view-ferr[hidden]{display:none!important}
+#view-ferr > .card{width:100%;max-width:none;box-sizing:border-box}
+#view-ferr .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#view-ferr .tablewrap{width:100%;max-width:100%;min-width:0;overflow-x:auto}
+#view-ferr #tbFerr{width:100%;min-width:740px;border-collapse:collapse}
+#view-ferr #tbFerr th,#view-ferr #tbFerr td{max-width:380px;overflow-wrap:anywhere;vertical-align:top}
+@media(max-width:960px){.shell>.content{width:100%;min-width:0}#view-ferr #tbFerr{min-width:700px}}
