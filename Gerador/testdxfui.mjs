@@ -179,9 +179,12 @@ try{
   'Extensão em milímetros deve ser reconstruída ao reabrir rascunho');
  assert(await page.locator('#dxfSaveCNC').isDisabled(),'Sem Z0 não libera CNC');
  // Reimportar, quebrar em duas LINEs, salvar e reabrir sem perder a geometria.
+ await page.locator('#dxfFile').setInputFiles([]);
  await page.locator('#dxfFile').setInputFiles({name:'synthetic-turning.dxf',mimeType:'application/dxf',buffer:Buffer.from(cad,'utf8')});
  await page.waitForFunction(()=>document.querySelector('#dxfStatus').textContent.includes('DXF CAD carregado:'),null,{timeout:10000});
+ assert(await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.some(e=>e.id==='ln3')),'Nova importação do mesmo arquivo reinicia a geometria');
  await clickSegment('ln3:0');
+ assert(await page.locator('#dxfBreakSelected').isEnabled(),'Linha LINE realmente selecionada após reimportar');
  await page.locator('#dxfBreakSelected').click();
  const splitBefore=await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.filter(e=>e.id.startsWith('CAD_EDIT_')).length);
  assert(splitBefore>=2,'Corte cria segmentos físicos');
