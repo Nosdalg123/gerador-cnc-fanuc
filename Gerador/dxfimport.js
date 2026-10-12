@@ -340,6 +340,13 @@ $('#dxfFile').onchange=async function(){
   status('Analisando entidades CAD, cotas e vistas do arquivo...');
   await new Promise(resolve=>root.requestAnimationFrame?root.requestAnimationFrame(()=>resolve()):resolve());
   doc=DX.read(text);sourceDoc=clone(doc);fileName=f.name;rect=null;suggest=null;axis=NaN;zoom=1;active=false;editSequence=0;contextId=null;geometryAction=null;
+  // Uma nova importação começa sempre no modo simples. Não herdar modo "estender",
+  // "apagar" ou "quadro" do DXF anteriormente aberto.
+  document.querySelector('input[name=dxfAssign][value=externo]').checked=true;
+  $('#dxfExtendControls').hidden=true;$('#dxfEditOptions').hidden=true;
+  $('#dxfPanel').classList.remove('advanced');
+  $('#dxfAdvancedToggle').textContent='Edição avançada';
+  $('#dxfAdvancedToggle').setAttribute('aria-expanded','false');
   contextId=null;$('#dxfContext').hidden=true;views=[];activeView='lateral';
   hidden.clear();undo=[];editCount=0;pendingExtension=null;$('#dxfUndo').disabled=true;$('#dxfRestore').disabled=false;
   $('#dxfNome').value=f.name.replace(/\.dxf$/i,'');$('#dxfLength').value='';$('#dxfAxis').value='';$('#dxfFace').value='';
