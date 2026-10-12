@@ -411,7 +411,7 @@
     $('#dlgEl').showModal();
     var f1 = EL[tp].marca ? $('#pkTam') : $('#dlgDwg input'); if (f1) { f1.focus(); f1.select(); }
   }
-  $('#dlgCancel').onclick = function () { $('#dlgEl').close(); };
+  $('#dlgElementoCancel').onclick = function () { $('#dlgEl').close(); };
   $('#frmEl').onsubmit = function (e) {
     var it = cur.it, ok = true;
     chaves(cur.tp).forEach(function (k) { var v = Number(it[k]); if (it[k] === '' || it[k] == null || !isFinite(v) || v < 0 || (k === 'a' && EL[cur.tp].marca && !(v > 0))) ok = false; });
