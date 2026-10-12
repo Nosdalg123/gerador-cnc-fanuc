@@ -1,0 +1,27 @@
+name: Regressão CNC
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, 'feature/editor-lateral-perimetro-v2.18.0']
+jobs:
+  regressao:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Testes de geometria e gerador
+        working-directory: Gerador
+        run: |
+          node test.js
+          node testdxf.js
+          node testdxfgeomedit.js
+          node testdxfassist.js
+          node testdxfedit.js
+          node testdxfchains.js
+          node testdxfaudit.js
+          node testpdf.js
+          node testpdfscale.js
+          node testprog.js
