@@ -29,7 +29,7 @@ try{
  await page.locator('#loginUser').fill('admin');await page.locator('#loginSenha').fill('admin');
  await page.locator('#loginForm button[type="submit"]').tap();
  await page.waitForFunction(()=>document.querySelector('#login').hidden);
- const noOverflow=async()=>assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Página cabe na largura Android');
+ const noOverflow=async()=>assert.ok(await page.evaluate(width=>document.documentElement.scrollWidth<=width+1,page.viewportSize().width),'Página cabe na largura Android sem reduzir a escala inicial');
  for(const [width,height] of [[360,800],[390,844],[412,915],[844,390]]){
   await page.setViewportSize({width,height});
   for(const nav of ['gerador','ferr','sim','desenho']){await page.locator('#nav-'+nav).tap();await noOverflow();}

@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-10-12 13:38",
+  "gerado_em": "2026-10-12 13:40",
   "como_ler": "simbolos = [nome, tipo, linha_inicio, linha_fim, pai]; linhas comecam em 1. Leia so a faixa necessaria (Read com offset/limit).",
   "regerar": "python indexer.py",
   "ignorado": [".cache", ".claude", ".git", ".idea", ".mypy_cache", ".pytest_cache", ".venv", ".vscode", "Manuais da maquina", "__pycache__", "build", "dist", "env", "node_modules", "venv", "versoes"],
@@ -1068,7 +1068,7 @@
       ["app.js", "script", 794, 794, ""],
       ["acesso.js", "script", 795, 795, ""]
     ]},
-    "Gerador/mobile.css": {"lang": "css", "linhas": 76, "simbolos": [
+    "Gerador/mobile.css": {"lang": "css", "linhas": 78, "simbolos": [
       ["v2.23 — dimensões visuais e áreas de toque; medidas CAD/CNC intactas.", "secao", 1, 1, ""]
     ]},
     "Gerador/pdfdimensions.js": {"lang": "js", "linhas": 42, "simbolos": [

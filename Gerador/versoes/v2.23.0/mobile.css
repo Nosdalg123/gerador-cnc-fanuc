@@ -14,6 +14,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
  .card{padding:12px}
  .row{grid-template-columns:repeat(2,minmax(0,1fr))}
  .grid,.pp-fields{min-width:0}
+ .ps-esq{grid-template-columns:minmax(0,1fr)}
+ .ps-simcard .simcv{height:clamp(220px,55dvh,520px)}
  .toolbar{align-items:center}
  .toolbar>*{max-width:100%;min-width:0}
  .pvbox,.pvbox svg,.pp-pv,.simsvg{max-width:100%}
