@@ -417,3 +417,7 @@ dialog h3{margin:0 0 12px}
 #dxfPanel #dxfProjected{min-height:430px}
 #dxfPanel #dxfEditDirectionArrow{pointer-events:none}
 @media(max-width:800px){#dxfPanel .dxf-editor-layout{grid-template-columns:1fr}#dxfPanel .dxf-command-sidebar{position:static;max-height:none}}
+
+#dxfPanel #dxfProjected [data-cad-segment].dxf-perimeter-marked{stroke:#10a876!important;stroke-width:5!important;opacity:1!important}
+#dxfPanel #dxfProjected [data-cad-hit].dxf-perimeter-marked{stroke:#10a876!important;stroke-opacity:.3!important}
+#dxfPanel .dxf-command-sidebar #dxfPerimeterWizard{display:flex;flex-direction:column;align-items:stretch;gap:8px}
