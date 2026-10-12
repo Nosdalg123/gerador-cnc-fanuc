@@ -27,7 +27,7 @@ const head=[...group(0,'SECTION'),...group(2,'HEADER'),...group(9,'$INSUNITS'),.
 const data=[...head,...L('l1',40,130,70,130),...arc,
  ...L('l2',75,135,120,135),...L('l3',120.18,135,170,135),
  ...L('lower',40,75,170,75),...L('axis',40,100,170,100),
- ...C('cc1',30),...C('cc2',25),...C('cc3',20),
+ ...C('cc1',40),...C('cc2',35),...C('cc3',30),
  ...group(0,'ENDSEC'),...group(0,'EOF')].join('\r\n')+'\r\n';
 let browser;
 try{
