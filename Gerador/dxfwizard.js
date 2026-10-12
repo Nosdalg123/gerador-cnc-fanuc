@@ -7,7 +7,7 @@ const KEY='cnc_dxf_assistente_221',clone=o=>JSON.parse(JSON.stringify(o));
 const fmt=n=>Number(n).toLocaleString('pt-BR',{maximumFractionDigits:3});
 let original=null,doc=null,region=null,axis=NaN,face='',name='',fileName='',step=1,selectingRegion=false,
  dragStart=null,viewName='',chosen=new Set(),focused=null,tool='pick',built=false,
- activeRepair=null,undo=[],log=[],editCount=0,zoom=1;
+ activeRepair=null,undo=[],log=[],repairMarks=[],editCount=0,zoom=1;
 const status=(msg,bad)=>{$('#wStatus').textContent=msg;$('#wStatus').style.color=bad?'#b33d30':''};
 const validRect=r=>r&&r.x2-r.x1>1&&r.y2-r.y1>1;
 const allSegments=()=>G.collect(doc,region,axis);
@@ -21,11 +21,11 @@ function setStep(n){
  step=n;render();
 }
 function capture(){
- undo.push({doc:clone(doc),chosen:[...chosen],built,editCount,log:log.slice()});
+ undo.push({doc:clone(doc),chosen:[...chosen],built,editCount,log:log.slice(),repairMarks:clone(repairMarks)});
  if(undo.length>30)undo.shift();resetReview();
 }
 function clearWork(){
- chosen.clear();built=false;focused=null;activeRepair=null;tool='pick';undo=[];log=[];editCount=0;
+ chosen.clear();built=false;focused=null;activeRepair=null;tool='pick';undo=[];log=[];repairMarks=[];editCount=0;
 }
 function svgPointer(evt,svg){
  const r=svg.getBoundingClientRect(),v=svg.viewBox.baseVal;
@@ -96,6 +96,7 @@ function applyRepair(repair){
  capture();const change=G.apply(doc.geometry,repair);
  if(!change.ok){undo.pop();status(change.reason,true);return}
  editCount++;built=false;activeRepair=null;
+ repairMarks.push({before:repair.before.slice(),point:repair.point.slice(),uid:repair.uid});
  log.push((repair.safe?'Pontas unidas':'Linha estendida')+' '+repair.uid+' em '+fmt(repair.mm)+' mm');
  render();status(log[log.length-1]+'. Confira a marcação destacada e a cota original.');
 }
@@ -116,12 +117,17 @@ function renderCanvas(){
   const coord=E.viewTransform(region,face);
   const g=graph();
   const overlay=document.createElementNS('http://www.w3.org/2000/svg','g');overlay.style.pointerEvents='none';
-  const points=g.gaps.slice(0,12).flatMap(x=>[x.a,x.b]);
+  const points=g.gaps.slice(0,12).flatMap(x=>[x.a,x.b]).concat(g.crossings.slice(0,12).map(x=>x.point));
   for(const pt of points){
    const xy=coord(pt),circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
    circle.setAttribute('cx',xy[0]);circle.setAttribute('cy',xy[1]);circle.setAttribute('r',5);
    circle.setAttribute('stroke','#b72d3c');circle.setAttribute('stroke-width',2);
    circle.setAttribute('fill','none');overlay.appendChild(circle);
+  }
+  for(const change of repairMarks){
+   const a=coord(change.before),b=coord(change.point),line=document.createElementNS('http://www.w3.org/2000/svg','path');
+   line.setAttribute('d','M'+a.join(',')+'L'+b.join(','));line.setAttribute('stroke','#14a875');
+   line.setAttribute('stroke-width','4');line.setAttribute('stroke-dasharray','3 3');overlay.appendChild(line);
   }
   if(activeRepair&&activeRepair.before&&activeRepair.point){
    const a=coord(activeRepair.before),b=coord(activeRepair.point),line=document.createElementNS('http://www.w3.org/2000/svg','path');
@@ -233,7 +239,7 @@ $('#wApplyExtend').onclick=()=>{
  tool='pick';render();status(log[log.length-1]+'. A geometria CAD fonte não foi modificada.');
 };
 $('#wClear').onclick=()=>{if(!chosen.size)return;capture();chosen.clear();built=false;focused=null;render()};
-$('#wUndo').onclick=()=>{const u=undo.pop();if(!u)return;doc=u.doc;chosen=new Set(u.chosen);built=u.built;editCount=u.editCount;log=u.log;tool='pick';focused=null;activeRepair=null;render();status('Operação desfeita.')};
+$('#wUndo').onclick=()=>{const u=undo.pop();if(!u)return;doc=u.doc;chosen=new Set(u.chosen);built=u.built;editCount=u.editCount;log=u.log;repairMarks=u.repairMarks||[];tool='pick';focused=null;activeRepair=null;render();status('Operação desfeita.')};
 $('#wSuggest').onclick=()=>{
  if(!doc||!Number.isFinite(axis))return;
  const hint=E.autoSelect(doc,region,axis,new Set()),valid=new Set(allSegments().map(s=>s.uid));
@@ -255,7 +261,7 @@ $('#wAutoSafe').onclick=()=>{
  if(!ops.length){status('Não há folgas curtas inequívocas para corrigir automaticamente.');return}
  if(!root.confirm('Coincidir '+ops.length+' par(es) de extremidades em até 0,20 mm? O ajuste será registrado e poderá ser desfeito.'))return;
  capture();let done=0;
- for(const op of ops){if(G.apply(doc.geometry,op).ok){done++;log.push(op.label+' em '+op.uid)}}
+ for(const op of ops){if(G.apply(doc.geometry,op).ok){done++;repairMarks.push({before:op.before.slice(),point:op.point.slice(),uid:op.uid});log.push(op.label+' em '+op.uid)}}
  if(!done){undo.pop();status('Nenhum ajuste aplicável; selecione linhas LINE nativas.',true);return}
  editCount+=done;built=false;render();
  status(done+' união(ões) aplicada(s), destacadas no diagnóstico. Desfazer recupera as cotas originais.');
@@ -301,13 +307,13 @@ $('#wSave').onclick=()=>{
  if(!$('#wReviewed').checked){status('Marque a confirmação de revisão e de bloqueio CNC.',true);return}
  const draft={schema:'cnc-dxf-wizard-2.21',nome:nm,data:new Date().toISOString(),fileName,
   sourceDoc:original,doc,region,axis,face,length:$('#wLength').value,
-  selected:[...chosen],built,editCount,log};
+  selected:[...chosen],built,editCount,log,repairMarks};
  try{localStorage.setItem(KEY,JSON.stringify(draft));status('Rascunho '+nm+' salvo neste navegador. CNC continua bloqueado.')}
  catch(e){status('O navegador não possui espaço para este DXF. Use Exportar cópia JSON.',true)}
 };
 $('#wExport').onclick=()=>{
  if(!doc)return;
- const draft={schema:'cnc-dxf-wizard-2.21',nome:$('#wName').value||name,sourceDoc:original,doc,region,axis,face,length:$('#wLength').value,selected:[...chosen],built,editCount,log};
+ const draft={schema:'cnc-dxf-wizard-2.21',nome:$('#wName').value||name,sourceDoc:original,doc,region,axis,face,length:$('#wLength').value,selected:[...chosen],built,editCount,log,repairMarks};
  const blob=new Blob([JSON.stringify(draft)],{type:'application/json'}),url=URL.createObjectURL(blob),
  a=document.createElement('a');a.href=url;a.download='cnc-dxf-'+(draft.nome.replace(/[^a-z0-9-]+/gi,'_'))+'.json';
  a.click();URL.revokeObjectURL(url);status('Cópia JSON exportada; não é programa CNC.');
@@ -317,7 +323,7 @@ $('#wRestoreDraft').onclick=()=>{
   const d=JSON.parse(localStorage.getItem(KEY)||'null');
   if(!d||d.schema!=='cnc-dxf-wizard-2.21'){status('Nenhum rascunho experimental salvo.',true);return}
   original=d.sourceDoc;doc=d.doc;region=d.region;axis=d.axis;face=d.face;fileName=d.fileName||'rascunho.dxf';
-  chosen=new Set(d.selected||[]);built=!!d.built;editCount=d.editCount||0;log=d.log||[];
+  chosen=new Set(d.selected||[]);built=!!d.built;editCount=d.editCount||0;log=d.log||[];repairMarks=d.repairMarks||[];
   $('#wName').value=d.nome;$('#wAxis').value=axis;$('#wFace').value=face;
   $('#wLength').value=d.length||'';viewName='manual';undo=[];renderViews();step=2;render();
   status('Rascunho reaberto para revisão na etapa 2.');
