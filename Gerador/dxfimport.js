@@ -431,9 +431,9 @@ projected.addEventListener('pointerup',function(e){
 projected.addEventListener('pointercancel',()=>{projDrag=null;cancelDrag(projected)});
 projected.addEventListener('click',function(e){
  if(skipProjectedClick){skipProjectedClick=false;return}
- const target=e.target.closest('[data-cad-segment]');if(!target||!doc)return;
- const id=target.getAttribute('data-cad-segment'),currentMode=mode();
- contextId=id;$('#dxfContext').hidden=false;$('#dxfContextTitle').textContent='Trecho '+id+' · escolha uma correção se necessário';
+ const target=e.target.closest('[data-cad-segment],[data-cad-hit]');if(!target||!doc)return;
+ const id=target.getAttribute('data-cad-segment')||target.getAttribute('data-cad-hit'),currentMode=mode();
+ contextId=id;$('#dxfContext').hidden=false;$('#dxfContextTitle').textContent='Trecho '+id+' selecionado · escolha uma correção';
  const entity=rect?P.segments(doc.geometry,rect,hidden).find(t=>t.uid===id):null;
  if(entity){
   const info=P.classify(entity,axis,val('#dxfFace')||'esquerda');
@@ -446,10 +446,8 @@ projected.addEventListener('click',function(e){
  }
  if(currentMode==='quadro')return;
  if(!$('#dxfPanel').classList.contains('advanced')){
-  remember();
-  if(selected.externo.has(id)||selected.interno.has(id)){selected.externo.delete(id);selected.interno.delete(id)}
-  else selected.externo.add(id);
-  resetConfirm();renderProjection();return;
+  // Um clique SELECIONA, nunca remove o elemento sem comando explícito.
+  changeSelection(id);return;
  }
  if(currentMode==='estender'){
   pendingExtension=id;$('#dxfExtendSelected').textContent='Linha selecionada: '+id+
@@ -465,6 +463,49 @@ projected.addEventListener('click',function(e){
  }
  resetConfirm();renderProjection();
 });
+function beginGeometryEdit(op){
+ if(!contextId||!G.entityFor(doc.geometry,contextId)){status('Selecione uma linha reta LINE na metade superior.',true);return}
+ geometryAction=op;
+ if(op==='break'){applyCutOrBreak();return}
+ $('#dxfEditOptions').hidden=false;
+ $('#dxfEditOptionsLabel').textContent=op==='trim'?
+  'Cortar na interseção: escolha a ponta que DEVE PERMANECER':'Estender até a próxima linha: escolha a ponta de saída';
+ $('#dxfKeepEnd').value=op==='trim'?'ini':'fim';
+ updateGeometryPreview();
+ $('#dxfEditOptions').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function updateGeometryPreview(){
+ if(!geometryAction||!contextId)return;
+ const end=val('#dxfKeepEnd');
+ const preview=geometryAction==='trim'?G.trimAtIntersection(doc.geometry,contextId,end,axis,rect):
+  G.nearestForward(doc.geometry,contextId,end,axis,rect,hidden);
+ $('#dxfConfirmGeometryEdit').disabled=!preview.ok;
+ $('#dxfEditPreviewText').textContent=preview.ok?
+  (geometryAction==='trim'?'Cortar '+fmt(preview.cutMm)+' mm, mantendo a ponta '+(end==='ini'?'inicial':'final'):
+  'Estender '+fmt(preview.mm)+' mm até '+preview.target):preview.reason;
+ const svg=$('#dxfProjected svg');if(svg){
+  svg.querySelector('#dxfEditPreviewPath')?.remove();
+  if(preview.ok){
+   const entity=G.entityFor(doc.geometry,contextId),to=E.viewTransform(rect,val('#dxfFace'));
+   if(entity&&to){
+    const a=geometryAction==='trim'?preview.newA:(end==='ini'?preview.point:entity.a);
+    const b=geometryAction==='trim'?preview.newB:(end==='fim'?preview.point:entity.b);
+    const v1=to(a),v2=to(b),p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.id='dxfEditPreviewPath';p.setAttribute('d','M'+v1.join(',')+'L'+v2.join(','));
+    p.setAttribute('stroke','#db6e19');p.setAttribute('stroke-width','4');p.setAttribute('stroke-dasharray','5 3');
+    p.setAttribute('fill','none');p.style.pointerEvents='none';svg.appendChild(p);
+   }
+  }
+ }
+}
+$('#dxfDeleteSelected').onclick=function(){if(contextId)removeLine(contextId)};
+$('#dxfTrimSelected').onclick=()=>beginGeometryEdit('trim');
+$('#dxfBreakSelected').onclick=()=>beginGeometryEdit('break');
+$('#dxfExtendToSelected').onclick=()=>beginGeometryEdit('until');
+$('#dxfExtendMeasureSelected').onclick=function(){if(contextId)contextEdit('extend')};
+$('#dxfConfirmGeometryEdit').onclick=applyCutOrBreak;
+$('#dxfCancelGeometryEdit').onclick=function(){geometryAction=null;$('#dxfEditOptions').hidden=true;renderProjection()};
+$('#dxfKeepEnd').onchange=updateGeometryPreview;
 function contextEdit(action){
  if(!contextId||!doc)return;
  if(action==='extend'){
@@ -477,7 +518,7 @@ function contextEdit(action){
   status('Extensão manual: escolha a ponta, a medida em milímetros e confirme.');
   return;
  }
- if(action==='delete'){removeLine(contextId);status('Linha removida da cópia de trabalho. O CAD original foi preservado.');}
+ if(action==='delete'){removeLine(contextId);status('Linha selecionada excluída da cópia de trabalho. Use Desfazer para recuperar.');}
  else{
   remember();
   selected.externo.delete(contextId);selected.interno.delete(contextId);
@@ -534,12 +575,12 @@ $('#dxfExtendApply').onclick=function(){
 $('#dxfUndo').onclick=function(){
  const prior=undo.pop();if(!prior)return;
  doc=prior.doc;hidden=new Set(prior.hidden);selected.externo=new Set(prior.externo);selected.interno=new Set(prior.interno);
- editCount=prior.editCount;$('#dxfUndo').disabled=undo.length===0;resetConfirm();renderProjection();status('Última edição desfeita.');
+ editCount=prior.editCount;contextId=null;geometryAction=null;$('#dxfEditOptions').hidden=true;$('#dxfUndo').disabled=undo.length===0;resetConfirm();renderProjection();status('Última edição desfeita.');
 };
 $('#dxfRestore').onclick=function(){
  if(!sourceDoc)return;
  if(!confirm('Restaurar a geometria CAD original e apagar as extensões/exclusões feitas na cópia de trabalho?'))return;
- remember();doc=clone(sourceDoc);hidden.clear();editCount=0;pendingExtension=null;
+ remember();doc=clone(sourceDoc);hidden.clear();editCount=0;pendingExtension=null;contextId=null;geometryAction=null;$('#dxfEditOptions').hidden=true;
  selected.externo.clear();selected.interno.clear();autoRecognize();
  status('Geometria original restaurada. Proposta automática refeita.');
 };
