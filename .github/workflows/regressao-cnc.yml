@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, 'feature/editor-lateral-perimetro-v2.18.0', 'revisoes/v2.21.0-dxf-assistente-3-etapas', 'revisoes/v2.22.0-desenho-quatro-caminhos', 'revisoes/v2.22.1-teste-dxf-real', 'revisoes/v2.22.2-revisao-completa']
+    branches: [main, 'feature/editor-lateral-perimetro-v2.18.0', 'revisoes/v2.21.0-dxf-assistente-3-etapas', 'revisoes/v2.22.0-desenho-quatro-caminhos', 'revisoes/v2.22.1-teste-dxf-real', 'revisoes/v2.22.2-revisao-completa', 'revisoes/v2.22.3-excluir-linha-layout']
 jobs:
   regressao:
     runs-on: ubuntu-latest
@@ -39,3 +39,4 @@ jobs:
           node testdxfwizardui.mjs
           node testdesenhoroutesui.mjs
           node testdxfui.mjs
+          node testeditorcontrolsui.mjs

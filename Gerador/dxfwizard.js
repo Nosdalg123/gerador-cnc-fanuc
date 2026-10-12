@@ -7,12 +7,12 @@ const KEY='cnc_dxf_assistente_221',clone=o=>JSON.parse(JSON.stringify(o));
 const fmt=n=>Number(n).toLocaleString('pt-BR',{maximumFractionDigits:3});
 let original=null,doc=null,region=null,axis=NaN,face='',name='',fileName='',step=1,selectingRegion=false,
  dragStart=null,viewName='',chosen=new Set(),focused=null,tool='pick',built=false,
- activeRepair=null,undo=[],log=[],repairMarks=[],editCount=0,zoom=1,preciseClick=null;
+ activeRepair=null,undo=[],log=[],repairMarks=[],editCount=0,zoom=1,preciseClick=null,hidden=new Set();
 const status=(msg,bad)=>{$('#wStatus').textContent=msg;$('#wStatus').style.color=bad?'#b33d30':''};
 const validRect=r=>r&&r.x2-r.x1>1&&r.y2-r.y1>1;
-const allSegments=()=>G.collect(doc,region,axis);
+const allSegments=()=>G.collect(doc,region,axis,hidden);
 const graph=()=>G.analyze(allSegments(),chosen);
-const review=()=>R.check({doc,sourceDoc:original,region,axis,face,graph:graph(),length:$('#wLength').value,built});
+const review=()=>({...R.check({doc,sourceDoc:original,region,axis,face,graph:graph(),length:$('#wLength').value,built}),deletedSegments:hidden.size});
 function resetReview(){$('#wReviewed').checked=false}
 function setStep(n){
  if(n>1&&!doc){status('Importe primeiro o DXF.',true);return}
@@ -22,11 +22,12 @@ function setStep(n){
  step=n;tool='pick';focused=null;activeRepair=null;render();
 }
 function capture(){
- undo.push({doc:clone(doc),chosen:[...chosen],built,editCount,log:log.slice(),repairMarks:clone(repairMarks)});
+ undo.push({doc:clone(doc),chosen:[...chosen],hidden:[...hidden],built,editCount,log:log.slice(),repairMarks:clone(repairMarks)});
  if(undo.length>30)undo.shift();resetReview();
 }
-function clearWork(){
- chosen.clear();built=false;focused=null;activeRepair=null;tool='pick';undo=[];log=[];repairMarks=[];editCount=0;
+function clearWork(newFile=false){
+ chosen.clear();built=false;focused=null;activeRepair=null;tool='pick';undo=[];
+ if(newFile){hidden.clear();log=[];repairMarks=[];editCount=0;}
 }
 function svgPointer(evt,svg){
  const matrix=svg.getScreenCTM();
@@ -110,8 +111,9 @@ function renderCanvas(){
  const source=step===1,sel=source?new Set():chosen;
  const parts=!source?allSegments():[],allowed=new Set(parts.map(s=>s.uid));
  const contour=!source&&chosen.size?graph():null;
- const hide=step!==1&&built&&!$('#wRefs').checked?
-   new Set(P.segments(doc.geometry,region).map(s=>s.uid).filter(x=>!chosen.has(x))):null;
+ const hide=new Set(source?[]:hidden);
+ if(!source&&built&&!$('#wRefs').checked)
+  for(const s of P.segments(doc.geometry,region))if(!chosen.has(s.uid))hide.add(s.uid);
  host.innerHTML=P.svg(source?original:doc,source?null:region,{
   axis:source?NaN:axis,face:source?'':face,selected:sel,external:sel,hidden:hide,
   candidate:allowed,upperOnly:!source&&Number.isFinite(axis),focus:focused,
@@ -178,7 +180,7 @@ function renderSummary(){
   'Arquivo: '+fileName+' · unidade: '+doc.unitName,
   'Perfil: '+chosen.size+' trechos · '+g.chosen.filter(s=>s.kind==='arc').length+' arcos · '+(g.ok?'cadeia conectada':'conexões pendentes')+'.',
   'Extensão Z: '+fmt(g.span)+' mm; nominal: '+($('#wLength').value?fmt($('#wLength').value):'não informado')+' mm.',
-  'Cotas nativas: '+cotas.length+' · edições: '+editCount+' · fonte preservada.',
+  'Cotas nativas: '+cotas.length+' · edições: '+editCount+' · excluídos: '+hidden.size+' · fonte preservada.',
   'Eixo Y: '+(Number.isFinite(axis)?fmt(axis):'pendente')+'; Z0: '+(face||'pendente'),
  ];
  for(const item of list){const p=document.createElement('p');p.textContent=item;host.appendChild(p)}
@@ -213,6 +215,11 @@ function render(){
  $('#wExtendMode').setAttribute('aria-pressed',String(tool==='extend'));
  $('#wTrimMode').setAttribute('aria-pressed',String(tool==='trim'));
  $('#wBreak').disabled=!(focused&&F.entityFor(doc.geometry,focused));
+ const focus=allSegments().find(s=>s.uid===focused);
+ $('#wDeleteSelected').disabled=!focus;
+ $('#wUndo').disabled=!undo.length;
+ $('#wFocused').textContent=focus?'Selecionada: '+(focus.kind==='arc'?'arco R'+fmt(focus.r):'linha')+' · '+focused:
+  'Clique numa linha para selecionar (realce laranja).';
  $('#wBuild').disabled=chosen.size<2;
  $('#wAutoSafe').disabled=!G.proposal(graph()).some(x=>x.safe);
  syncExtend();renderCanvas();
@@ -236,7 +243,7 @@ $('#wFile').onchange=async function(){
  try{
   const text=new TextDecoder('windows-1252').decode(await file.arrayBuffer());
   original=DX.read(text);doc=clone(original);fileName=file.name;name=file.name.replace(/\.dxf$/i,'');
-  $('#wName').value=name;region=null;axis=NaN;face='';zoom=1;clearWork();
+  $('#wName').value=name;region=null;axis=NaN;face='';zoom=1;clearWork(true);
   $('#wZoom').value='100';$('#wZoomValue').value='100%';
   const views=A.views(original),best=views.find(v=>v.profile);
   if(best){region=clone(best.rect);axis=best.axis;viewName=best.id}
@@ -280,7 +287,7 @@ $('#wApplyExtend').onclick=()=>{
   const s=allSegments().find(x=>x.uid===focused),end=$('#wExtEnd').value;
   if(!s)return;
   if(s.clippedEnd===end){status('Ponta recortada no eixo: escolha a outra ponta ou quebre a linha.',true);return}
-  const ext=F.nearestForward(doc.geometry,focused,end,axis,region);
+  const ext=F.nearestForward(doc.geometry,focused,end,axis,region,hidden);
   if(!ext.ok){status(ext.reason,true);return}
   if(!root.confirm('Estender '+fmt(ext.mm)+' mm até '+ext.target+'?'))return;
   capture();const result=E.extendLine(doc.geometry,focused,end,ext.mm);
@@ -292,7 +299,7 @@ $('#wApplyExtend').onclick=()=>{
   const end=$('#wExtEnd').value,s=allSegments().find(x=>x.uid===focused);
   if(!s)return;
   if(s.clippedEnd===end){status('Escolha a ponta CAD que permanece acima do eixo para preservar.',true);return}
-  const cut=F.trimAtIntersection(doc.geometry,focused,end,axis,region);
+  const cut=F.trimAtIntersection(doc.geometry,focused,end,axis,region,hidden);
   if(!cut.ok){status(cut.reason,true);return}
   capture();const e=F.entityFor(doc.geometry,focused);e.a=cut.newA;e.b=cut.newB;
   editCount++;built=false;log.push('Linha '+focused+' cortada na conexão com '+cut.target);
@@ -300,7 +307,7 @@ $('#wApplyExtend').onclick=()=>{
  };
  $('#wBreak').onclick=()=>{
   if(!focused)return;
-  const cut=F.splitAtIntersections(doc.geometry,focused,axis,region);
+  const cut=F.splitAtIntersections(doc.geometry,focused,axis,region,hidden);
   if(!cut.ok){status(cut.reason,true);return}
   capture();const id=focused,wasSelected=chosen.has(id);
   const result=F.applySplit(doc.geometry,id,cut.sections,'W_EDIT_'+(editCount+1));
@@ -312,11 +319,18 @@ $('#wApplyExtend').onclick=()=>{
   log.push('Linha '+id+' dividida em '+result.added.length+' trechos');render();
   status(log[log.length-1]+'. Clique nos trechos que deseja desmarcar.');
  };
+$('#wDeleteSelected').onclick=()=>{
+ const selected=allSegments().find(s=>s.uid===focused);if(!selected)return;
+ capture();const id=focused;hidden.add(id);chosen.delete(id);
+ editCount++;built=false;focused=null;activeRepair=null;tool='pick';
+ log.push('Trecho '+id+' excluído da cópia de trabalho');render();
+ status(log[log.length-1]+'. Use Desfazer para recuperar.');
+};
 $('#wClear').onclick=()=>{if(!chosen.size)return;capture();chosen.clear();built=false;focused=null;render()};
-$('#wUndo').onclick=()=>{const u=undo.pop();if(!u)return;doc=u.doc;chosen=new Set(u.chosen);built=u.built;editCount=u.editCount;log=u.log;repairMarks=u.repairMarks||[];tool='pick';focused=null;activeRepair=null;render();status('Operação desfeita.')};
+$('#wUndo').onclick=()=>{const u=undo.pop();if(!u)return;doc=u.doc;chosen=new Set(u.chosen);hidden=new Set(u.hidden||[]);built=u.built;editCount=u.editCount;log=u.log;repairMarks=u.repairMarks||[];tool='pick';focused=null;activeRepair=null;render();status('Operação desfeita.')};
 $('#wSuggest').onclick=()=>{
  if(!doc||!Number.isFinite(axis))return;
- const hint=E.autoSelect(doc,region,axis,new Set()),valid=new Set(allSegments().map(s=>s.uid));
+ const hint=E.autoSelect(doc,region,axis,hidden),valid=new Set(allSegments().map(s=>s.uid));
  capture();chosen=new Set(hint.externo.filter(id=>valid.has(id)));built=false;render();
  status('Proposta de '+chosen.size+' trechos. Clique para conferir/arcos, antes de construir. A cadeia não foi validada automaticamente.');
 };
@@ -387,13 +401,13 @@ $('#wSave').onclick=()=>{
  if(!$('#wReviewed').checked){status('Marque a confirmação de revisão e de bloqueio CNC.',true);return}
  const draft={schema:'cnc-dxf-wizard-2.21',nome:nm,data:new Date().toISOString(),fileName,
   sourceDoc:original,doc,region,axis,face,length:$('#wLength').value,
-  selected:[...chosen],built,editCount,log,repairMarks,review:review()};
+  selected:[...chosen],deleted:[...hidden],built,editCount,log,repairMarks,review:review()};
  try{localStorage.setItem(KEY,JSON.stringify(draft));status('Rascunho '+nm+' salvo neste navegador. CNC continua bloqueado.')}
  catch(e){status('O navegador não possui espaço para este DXF. Use Exportar cópia JSON.',true)}
 };
 $('#wExport').onclick=()=>{
  if(!doc)return;
- const draft={schema:'cnc-dxf-wizard-2.21',nome:$('#wName').value||name,sourceDoc:original,doc,region,axis,face,length:$('#wLength').value,selected:[...chosen],built,editCount,log,repairMarks,review:review()};
+ const draft={schema:'cnc-dxf-wizard-2.21',nome:$('#wName').value||name,sourceDoc:original,doc,region,axis,face,length:$('#wLength').value,selected:[...chosen],deleted:[...hidden],built,editCount,log,repairMarks,review:review()};
  const blob=new Blob([JSON.stringify(draft)],{type:'application/json'}),url=URL.createObjectURL(blob),
  a=document.createElement('a');a.href=url;a.download='cnc-dxf-'+(draft.nome.replace(/[^a-z0-9-]+/gi,'_'))+'.json';
  a.click();URL.revokeObjectURL(url);status('Cópia JSON exportada; não é programa CNC.');
@@ -403,11 +417,21 @@ $('#wRestoreDraft').onclick=()=>{
   const d=JSON.parse(localStorage.getItem(KEY)||'null');
   if(!d||d.schema!=='cnc-dxf-wizard-2.21'){status('Nenhum rascunho experimental salvo.',true);return}
   original=d.sourceDoc;doc=d.doc;region=d.region;axis=d.axis;face=d.face;fileName=d.fileName||'rascunho.dxf';
-  chosen=new Set(d.selected||[]);built=!!d.built;editCount=d.editCount||0;log=d.log||[];repairMarks=d.repairMarks||[];
+  hidden=new Set(d.deleted||[]);chosen=new Set((d.selected||[]).filter(id=>!hidden.has(id)));built=!!d.built;editCount=d.editCount||0;log=d.log||[];repairMarks=d.repairMarks||[];
   $('#wName').value=d.nome;$('#wAxis').value=axis;$('#wFace').value=face;
   $('#wLength').value=d.length||'';viewName='manual';undo=[];renderViews();step=2;render();
   status('Rascunho reaberto para revisão na etapa 2.');
  }catch(e){status('Falha ao reabrir rascunho.',true)}
 };
-root.CNCDXFWizard={getState:()=>({doc,region,axis,face,chosen:[...chosen],step,built,log:log.slice()})};
+root.CNCDXFWizard={getState:()=>({doc,region,axis,face,chosen:[...chosen],deleted:[...hidden],step,built,log:log.slice()})};
+// O painel sticky deve caber na área de main abaixo do cabeçalho, inclusive
+// ao redimensionar ou usar zoom do navegador. Em telas pequenas a página rola.
+function resizePanels(){
+ const main=$('main'),style=getComputedStyle(main);
+ const desktop=window.matchMedia('(min-width:961px)').matches;
+ const height=desktop?main.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom):window.innerHeight-120;
+ $('#view-desenho').style.setProperty('--w-panel-height',Math.max(240,height)+'px');
+}
+const panelObserver=new ResizeObserver(resizePanels);panelObserver.observe($('main'));
+window.addEventListener('resize',resizePanels);resizePanels();
 })(window);

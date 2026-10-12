@@ -404,6 +404,7 @@ dialog h3{margin:0 0 12px}
 /* v2.18 — comandos fixos à esquerda, geometria à direita */
 #dxfPanel .dxf-editor-layout{display:grid;grid-template-columns:minmax(250px,310px) minmax(0,1fr);gap:14px;align-items:start;margin-top:12px}
 #dxfPanel .dxf-command-sidebar{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow-y:auto;background:var(--card,#fff);border:1px solid var(--border,#ccd3da);border-radius:10px;padding:12px;min-width:0}
+#dxfPanel .dxf-command-sidebar{max-height:max(240px,calc(var(--w-panel-height,100dvh) - 12px));background:var(--panel);border-color:var(--line);overflow-x:hidden;scrollbar-gutter:stable}
 #dxfPanel .dxf-command-sidebar h3{margin:4px 0 8px}
 #dxfPanel .dxf-sidebar-section{border-top:1px solid var(--border,#d5dce3);padding:10px 0}
 #dxfPanel .dxf-sidebar-section>summary{font-weight:700;cursor:pointer;padding:3px 0 9px}
@@ -433,6 +434,13 @@ dialog h3{margin:0 0 12px}
 #dlgFerr .tipo-card{min-width:0;box-sizing:border-box}
 #dlgFerr [hidden]{display:none!important}
 #dlgFerr .dlg-actions{position:sticky;bottom:-18px;background:var(--panel);padding:12px 0 2px;z-index:1}
+/* Cabeçalho e ações fora da área rolável; nada cobre os campos ao rolar. */
+#dlgFerr{padding:0;overflow:hidden}
+#dlgFerr[open]{display:flex;flex-direction:column}
+#dlgFerr #frmFerr{display:flex;flex-direction:column;min-height:0;max-height:min(calc(92dvh - 2px),948px);width:100%;overflow:hidden}
+#dlgFerr h3{flex:none;margin:0;padding:16px 18px 12px}
+#dlgFerr .row{min-height:0;flex:1 1 auto;overflow:auto;padding:0 18px 16px;scrollbar-gutter:stable}
+#dlgFerr .dlg-actions{flex:none;position:static;margin:0;padding:12px 18px;border-top:1px solid var(--line)}
 @media(max-width:580px){#dlgFerr .row{grid-template-columns:minmax(0,1fr)}#dlgFerr .group-title,#dlgFerr .row .full{grid-column:1}}
 .pv-thread{stroke:#c45f18;stroke-width:1.15;fill:none;stroke-linecap:round;pointer-events:none}
 .pv-thread-label{fill:#a85018;font-size:10px;pointer-events:none}
@@ -467,13 +475,20 @@ dialog h3{margin:0 0 12px}
 #dxfWizard .w-steps button{flex:1 1 170px;min-height:42px;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-weight:600;background:var(--field);color:var(--ink)}
 #dxfWizard .w-steps button[aria-current="true"]{border-color:var(--accent);box-shadow:inset 0 -3px var(--accent);background:var(--chip)}
 #dxfWizard .w-workspace{display:grid;grid-template-columns:minmax(275px,325px) minmax(0,1fr);gap:12px;align-items:start}
-#dxfWizard .w-controls{position:sticky;top:0;max-height:calc(100dvh - 70px);overflow-y:auto;min-width:0}
+#dxfWizard .w-controls{position:sticky;top:0;max-height:var(--w-panel-height,calc(100dvh - 120px));overflow-y:auto;overflow-x:hidden;min-width:0;min-height:0;scrollbar-gutter:stable}
 #dxfWizard .w-controls h3{margin:2px 0 14px}
 #dxfWizard .w-controls .field{display:block;margin-bottom:12px}
 #dxfWizard .w-controls .field input,#dxfWizard .w-controls .field select{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
 #dxfWizard .w-controls .btn{white-space:normal;text-align:left}
 #dxfWizard .w-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;margin-bottom:12px}
 #dxfWizard .w-actions button{min-width:0}
+#dxfWizard #wDeleteSelected{color:var(--err);border-color:var(--err)}
+#dxfWizard #wFocused{padding:6px 8px;border:1px solid var(--line);border-radius:6px;overflow-wrap:anywhere;margin:6px 0 10px}
+#dxfWizard label.note{display:flex;align-items:flex-start;gap:8px}
+#dxfWizard input[type="checkbox"]{flex:none;width:auto;margin:3px 0 0}
+#dxfWizard .w-main>.toolbar{align-items:center}
+#dxfWizard #wZoom{width:auto;min-width:80px;flex:1 1 120px}
+#dxfWizard #wZoomValue{flex:none;min-width:40px}
 #dxfWizard #wBuild,#dxfWizard #wNext1,#dxfWizard #wNext2,#dxfWizard #wSave{width:100%;text-align:center;margin:10px 0}
 #dxfWizard .w-extend{display:flex;flex-direction:column;gap:8px;margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--field)}
 #dxfWizard .w-extend[hidden]{display:none!important}
@@ -486,7 +501,7 @@ dialog h3{margin:0 0 12px}
 #dxfWizard .w-main{min-width:0}
 #dxfWizard .w-canvas-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-bottom:12px}
 #dxfWizard .w-canvas-head span{font-size:12px;color:var(--muted)}
-#dxfWizard #wCanvas{min-height:470px;max-height:calc(100dvh - 220px);overflow:auto;background:#fff}
+#dxfWizard #wCanvas{min-height:clamp(240px,45dvh,470px);max-height:max(240px,calc(var(--w-panel-height,100dvh) - 160px));overflow:auto;background:#fff}
 #dxfWizard #wCanvas svg{min-width:530px;max-width:none;display:block;height:auto}
 #dxfWizard #wCanvas [data-cad-segment],#dxfWizard #wCanvas [data-cad-hit]{cursor:pointer}
 #dxfWizard #wCanvas [data-cad-segment]:hover{stroke:#d95618!important;stroke-width:5!important}

@@ -30,7 +30,7 @@ try{
  await page.goto('http://127.0.0.1:'+server.address().port+'/');
  await page.evaluate(()=>{
   const login=document.querySelector('#login');login.hidden=true;login.style.display='none';
-  document.querySelector('#view-desenho').hidden=false;
+  document.querySelector('#nav-desenho').click();
  });
  // Clique real sobre o traço: usa a transformação SVG da página, inclusive zoom/scroll.
  const clickSegment=async (host,id,fraction=.5)=>{
@@ -65,6 +65,16 @@ try{
    assert.equal(await page.locator('#wZoomValue').innerText(),'200%');
   }
   assert(await page.locator('#wExtendControls').isHidden());
+  assert(await page.locator('#wDeleteSelected').isDisabled(),'Excluir exige selecionar uma entidade');
+  const deletionId=i===0?'EF:0':'C7:0';
+  await clickSegment('#wCanvas',deletionId);
+  await page.locator('#wDeleteSelected').click();
+  assert.equal(await page.locator('#wCanvas [data-cad-segment="'+deletionId+'"]').count(),0,'Trecho real removido da cópia');
+  assert(await page.evaluate(id=>window.CNCDXFWizard.getState().deleted.includes(id),deletionId));
+  await page.locator('#wUndo').click();
+  assert.equal(await page.locator('#wCanvas [data-cad-segment="'+deletionId+'"]').count(),1,'Desfazer recupera a geometria real');
+  // Desfazer também recupera a marcação anterior ao comando de excluir.
+  await clickSegment('#wCanvas',deletionId);
   for(const id of spec.ids){
    const beforeClick=await selected();
    await clickSegment('#wCanvas',id,id==='F3:0'?.2:id==='E7:0'?.35:.5);
@@ -168,6 +178,20 @@ try{
   assert.equal(await page.evaluate(()=>window.CNCDXFWizard.getState().built),true);
   assert.equal((await selected()).length,spec.ids.length);
   await page.locator('#wStep1').click();
+  if(i===1){
+   // Persistir exclusão de auxiliar, sem alterar a cadeia já conferida.
+   await page.locator('#wStep2').click();
+   await page.locator('#wRefs').check();
+   await clickSegment('#wCanvas','246:0',.4);
+   await page.locator('#wDeleteSelected').click();
+   await page.locator('#wStep3').click();await page.locator('#wReviewed').check();await page.locator('#wSave').click();
+   await page.locator('#wRestoreDraft').click();
+   assert.equal(await page.locator('#wCanvas [data-cad-segment="246:0"]').count(),0,'Exclusão persiste no rascunho real');
+   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('cnc_dxf_assistente_221')));
+   assert(saved.sourceDoc.geometry.some(e=>e.id==='246'),'Auxiliar permanece no original');
+   assert(saved.deleted.includes('246:0'));
+   await page.locator('#wStep1').click();
+  }
   console.log(spec.name+': clique real, '+(i===0?'quebra/corte e ponta recortada protegida, ':'zoom e seleção de trechos curtos, ')+spec.ids.length+' trechos, '+graph.arcs+
    ' arcos, extensão Z='+graph.span.toFixed(3)+' mm, rascunho e fonte preservada — PASSOU.');
  }

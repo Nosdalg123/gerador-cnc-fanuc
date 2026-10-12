@@ -26,7 +26,7 @@ function entityFor(geometry,uid){
  const e=(geometry||[]).find(q=>q.id===id);
  return e&&e.type==='LINE'&&index===0?e:null;
 }
-function hitsOnLine(s,others,axis,rect,excluded){
+function hitsOnLine(s,others,axis,rect,excluded,hidden){
  if(!s||s.type!=='LINE')return [];
  const dir=subtract(s.b,s.a),len=dist(s.a,s.b);
  if(len<EPS)return [];
@@ -35,7 +35,8 @@ function hitsOnLine(s,others,axis,rect,excluded){
   (!rect||p[0]>=rect.x1-.15&&p[0]<=rect.x2+.15&&p[1]>=rect.y1-.15&&p[1]<=rect.y2+.15)}
  for(const other of others||[]){
   if(other.id===s.id||other.id===excluded)continue;
-  for(const t of DX.explode(other)){
+  for(const [index,t] of DX.explode(other).entries()){
+   if(hidden&&hidden.has(other.id+':'+index))continue;
    if(t.kind==='line'){
     const v=subtract(t.b,t.a),den=cross(unit,v);
     if(Math.abs(den)<1e-9)continue;
@@ -96,12 +97,8 @@ function nearestForward(geometry,uid,end,axis,rect,hidden,limit=10000){
  const valid=(geometry||[]).filter(q=>{
   if(!rect)return true;
   return DX.cut([q],rect).length>0;
- }).filter(q=>{
-  if(!hidden)return true;
-  const pieces=DX.explode(q);
-  return pieces.some((p,i)=>!hidden.has(q.id+':'+i));
  });
- const results=hitsOnLine(e,valid,axis,rect);
+ const results=hitsOnLine(e,valid,axis,rect,undefined,hidden);
  const outward=end==='fim'?1:-1,positive=results.map(q=>{
   const delta=end==='fim'?q.distance-len:-q.distance;
   return {...q,mm:delta,end};
@@ -116,7 +113,7 @@ function splitAtIntersections(geometry,uid,axis,rect,hidden){
  if(!e)return {ok:false,reason:'Quebrar só funciona em linhas LINE.'};
  const length=dist(e.a,e.b);
  const others=(geometry||[]).filter(x=>x.id!==e.id&&(!rect||DX.cut([x],rect).length)&&(!hidden||DX.explode(x).some((t,i)=>!hidden.has(x.id+':'+i))));
- const hits=hitsOnLine(e,others,axis,rect).filter(h=>h.distance>.001&&h.distance<length-.001).sort((a,b)=>a.distance-b.distance);
+ const hits=hitsOnLine(e,others,axis,rect,undefined,hidden).filter(h=>h.distance>.001&&h.distance<length-.001).sort((a,b)=>a.distance-b.distance);
  const knots=[0,...hits.map(h=>h.distance).filter((x,i,arr)=>!i||x-arr[i-1]>.001),length];
  if(knots.length<=2)return {ok:false,reason:'Não encontrei cruzamento dentro da linha. Nenhuma alteração feita.'};
  const unit=subtract(e.b,e.a).map(q=>q/length);
@@ -129,7 +126,7 @@ function trimAtIntersection(geometry,uid,keep,axis,rect,hidden){
  if(!e)return {ok:false,reason:'Cortar funciona em linhas LINE; arcos são mantidos nativos.'};
  const length=dist(e.a,e.b);
  const others=(geometry||[]).filter(q=>q.id!==e.id&&(!rect||DX.cut([q],rect).length)&&(!hidden||DX.explode(q).some((t,i)=>!hidden.has(q.id+':'+i))));
- const hits=hitsOnLine(e,others,axis,rect).filter(x=>x.distance>.0001&&x.distance<length-.0001);
+ const hits=hitsOnLine(e,others,axis,rect,undefined,hidden).filter(x=>x.distance>.0001&&x.distance<length-.0001);
  if(!hits.length)return {ok:false,reason:'Não há interseção dentro da linha para cortar. Use Quebrar ou estender.'};
  if(keep!=='ini'&&keep!=='fim')return {ok:false,reason:'Escolha qual extremidade preservar.'};
  hits.sort((a,b)=>keep==='ini'?a.distance-b.distance:b.distance-a.distance);

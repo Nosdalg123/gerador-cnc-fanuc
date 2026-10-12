@@ -7,9 +7,9 @@
 'use strict';
 const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const good=p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite);
-function collect(doc,rect,axis){
+function collect(doc,rect,axis,hidden){
  if(!doc||!rect)return [];
- return P.segments(doc.geometry,rect).filter(s=>s.kind==='line'||s.kind==='arc')
+ return P.segments(doc.geometry,rect,hidden).filter(s=>s.kind==='line'||s.kind==='arc')
  .map(s=>P.upperSegment(s,axis)).filter(Boolean).map(s=>{
   const pts=DX.sample(s,Math.max(64,Math.ceil((s.r||1)*4)));
   return {...s,points:pts,start:pts[0],end:pts[pts.length-1]};

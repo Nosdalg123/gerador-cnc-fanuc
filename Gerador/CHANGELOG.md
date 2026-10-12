@@ -8,6 +8,13 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.22.3 — 12/10/2026 — Excluir linha e corrigir janelas de ferramentas
+- Etapa 2 do DXF ganhou **Excluir linha selecionada**, com realce da entidade em foco, Desfazer e persistência das exclusões no rascunho/JSON. LINE, ARC e trechos individuais de polilinha são removidos da cópia de trabalho, preservando a fonte.
+- Cortar, quebrar, estender e sugerir contorno ignoram trechos excluídos, inclusive dentro de uma polilinha parcialmente mantida.
+- Corrigido erro de execução que impedia abrir e alternar tipos na janela de ferramentas. Cabeçalho e ações permanecem fora da área rolável; campos finais não ficam cobertos.
+- Painel lateral DXF ajustado à altura disponível abaixo do cabeçalho; zoom e caixas de seleção corrigidos. Layout conferido em 1366×768, 1024×600, 768×800 e 390×844.
+- Regressões Chromium de exclusão/desfazer, oito tipos, salvar/editar ferramenta e layout; Disco/Copo reais também testados, incluindo exclusão persistida no Copo. Ver `REVISAO-2.22.3-EXCLUIR-LAYOUT.md`.
+
 ## 2.22.2 — 12/10/2026 — Revisão completa de importação e conferência de cotas
 - Teste real do Disco cobre a face curva completa: 9 trechos, 4 arcos, 109,50 mm. Cortes F3/EB e F2/EA preservam extremidades nativas, inclusive tangência com ruído micrométrico.
 - Conferência da etapa 3 detecta comprimento parcial, texto de cota divergente, referência de diâmetro sem vértice correspondente, roscas na DIMENSION e notas em INSERT. A seleção não aprova CNC.

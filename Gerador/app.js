@@ -634,7 +634,7 @@
   // mostra so os campos que fazem sentido para o tipo escolhido (ex.: Ø da broca so em furacao)
   function syncTipo() {
     var tp = frm.elements.tipo.value || 'externa', cap = tp.charAt(0).toUpperCase() + tp.slice(1);
-    $('#tipoGrid .tipo-card').forEach(function (b) {
+    $$('#tipoGrid .tipo-card').forEach(function (b) {
       b.setAttribute('aria-checked', String(b.dataset.tipo === tp && (tp !== 'rosca' || b.dataset.roscaLado === (frm.elements.roscaLado.value || 'externa'))));
     });
     $$('[data-tipos]', frm).forEach(function (el) { el.hidden = el.dataset.tipos.split(' ').indexOf(tp) < 0; });

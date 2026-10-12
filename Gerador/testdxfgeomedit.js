@@ -25,6 +25,15 @@ const backward=G.nearestForward(geo,'outer:0','ini',0,rect,new Set());
 assert(!backward.ok,'Sem destino para extensão do início');
 const hidden=G.nearestForward(geo,'outer:0','fim',0,rect,new Set(['next:0']));
 assert(!hidden.ok,'Linha apagada não é destino de extensão');
+const poly={id:'poly',type:'LWPOLYLINE',closed:false,v:[{x:40,y:10},{x:40,y:30},{x:95,y:30},{x:95,y:10}]};
+const partial=new Set(['poly:0']);
+assert(!G.trimAtIntersection([geo[0],poly],'outer:0','ini',0,rect,partial).ok,
+ 'Trecho excluído de polilinha não é destino de corte');
+assert(!G.splitAtIntersections([geo[0],poly],'outer:0',0,rect,partial).ok,
+ 'Trecho excluído de polilinha não cria quebra');
+const visibleTarget=G.nearestForward([L('short',[0,20],[30,20]),poly],'short:0','fim',0,rect,partial);
+assert(visibleTarget.ok&&Math.abs(visibleTarget.mm-65)<.001,
+ 'Extensão ignora trecho excluído e usa trecho restante da mesma polilinha');
 const none=G.trimAtIntersection([L('single',[0,20],[100,20])],'single:0','ini',0,rect);
 assert(!none.ok,'Sem cruzamento não corta por adivinhação');
 const doc={units:4,geometry:geo,entities:[],dimensions:[]};
