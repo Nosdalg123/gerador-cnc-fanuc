@@ -159,11 +159,11 @@ if(verbose){ for (const [g,f,tl] of [['espina_cabeca',fc,{t1:{...t1,...acab}}],[
   const coneCantos=C.psCantos(coneBase,85);
   if(!coneCantos.some(c=>c.alvo==='rc-cone'&&c.onde==='ini'))
     throw Error('Regressão: quina na entrada do cone não aparece para selecionar');
-  const rounded=T.gerar(ps({dBruto:170,lBruto:130,lPeca:120,trechos1:[...coneBase,{tipo:'raio',a:3,alvo:'rc-cone',onde:'ini'}]}),{t1,t2},M);
+  const rounded=T.gerar(ps({dBruto:170,lBruto:180,lPeca:160,trechos1:[...coneBase,{tipo:'raio',a:3,alvo:'rc-cone',onde:'ini'}]}),{t1,t2},M);
   if((rounded.erros||[]).length)throw Error('Raio R3 cone não aceito: '+rounded.erros.join(' | '));
   const textCone=rounded.code||(rounded.lados||[]).map(l=>l.code||'').join('\n');
   if(!/G3X[^\n]+Z-[^\n]+R3/.test(textCone))throw Error('Raio na entrada do cone não produziu G3 R3');
-  const largeCone=T.gerar(ps({dBruto:170,lBruto:130,lPeca:120,trechos1:[...coneBase,{tipo:'raio',a:90,alvo:'rc-cone',onde:'ini'}]}),{t1,t2},M);
+  const largeCone=T.gerar(ps({dBruto:170,lBruto:180,lPeca:160,trechos1:[...coneBase,{tipo:'raio',a:90,alvo:'rc-cone',onde:'ini'}]}),{t1,t2},M);
   if(!(largeCone.erros||[]).some(x=>/não cabe na entrada do cone/.test(x)))
     throw Error('Raio acima do espaço do cone não foi bloqueado');
   // internos: degrau entre dois cilindros
