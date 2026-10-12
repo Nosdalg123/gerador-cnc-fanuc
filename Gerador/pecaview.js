@@ -4,7 +4,7 @@
   'use strict';
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
-  function previewSvg(cena, W, H, marks, cls) {
+  function previewSvg(cena, W, H, marks, cls, roscas) {
     if (!cena || !cena.protect) return '';
     W = W || 420; H = H || 190;
     var P = cena.protect, m = 18, zmin = 0, rmax = 0;
@@ -33,12 +33,29 @@
       }
       if (d) cav += '<path class="pv-int" d="' + d + '"/>';
     });
+    var threadMarks = '';
+    (roscas || []).forEach(function (t) {
+      if (!(t.passo > 0 && t.r > 0)) return;
+      var lo = Math.min(t.z0, t.z1), hi = Math.max(t.z0, t.z1);
+      var x0 = Math.max(lo, zmin), x1 = Math.min(hi, zmax);
+      if (x1 - x0 < 0.001) return;
+      // Dentes em zigue-zague com no máximo 70 traços, apenas sobre a seção visível.
+      var n = Math.max(3, Math.min(70, Math.round((x1 - x0) / t.passo * 2)));
+      var baseY = Number(Y(t.r)), amp = Math.max(2, Math.min(5, t.passo * s * 0.22));
+      var d = 'M' + X(x0) + ',' + baseY;
+      for (var k = 1; k <= n; k++) {
+        var zz = x0 + (x1 - x0) * k / n, yy = baseY + (k % 2 ? (t.interno ? -amp : amp) : 0);
+        d += 'L' + X(zz) + ',' + yy.toFixed(1);
+      }
+      threadMarks += '<path class="pv-thread" d="' + d + '"/>';
+      threadMarks += '<text class="pv-thread-label" x="' + X((x0 + x1) / 2) + '" y="' + (baseY + (t.interno ? -9 : 14)).toFixed(1) + '" text-anchor="middle">' + esc(t.nome) + '</text>';
+    });
     var mk = '';
     (marks || []).forEach(function (q) {
       mk += '<g class="pv-mk' + (q.on ? ' on' : '') + '" data-n="' + q.n + '" tabindex="0" role="button" aria-label="' + esc(q.rot || 'Canto ' + q.n) + '"><circle cx="' + X(q.z) + '" cy="' + Y(q.r) + '" r="10"/><text x="' + X(q.z) + '" y="' + (+Y(q.r) + 4) + '" text-anchor="middle">' + q.n + '</text></g>';
     });
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="' + (cls || 'pv') + '" role="img" aria-label="Meia seção da peça"><polyline class="pv-bruto" points="' + bruto + '"/>' +
-      '<polygon class="pv-piece" points="' + pts + '"/>' + cav +
+      '<polygon class="pv-piece" points="' + pts + '"/>' + cav + threadMarks +
       '<line class="pv-axis" x1="' + (m - 8) + '" y1="' + Y(0) + '" x2="' + (W - m + 8) + '" y2="' + Y(0) + '"/>' +
       '<text class="pv-t" x="' + X(0) + '" y="' + (H - 4) + '" text-anchor="middle">Z0 (face)</text>' +
       '<text class="pv-t" x="' + X(zmin) + '" y="' + (H - 4) + '" text-anchor="middle">fundo</text>' +
