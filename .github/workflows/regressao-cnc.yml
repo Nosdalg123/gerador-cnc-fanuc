@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, 'feature/editor-lateral-perimetro-v2.18.0', 'revisoes/v2.21.0-dxf-assistente-3-etapas']
+    branches: [main, 'feature/editor-lateral-perimetro-v2.18.0', 'revisoes/v2.21.0-dxf-assistente-3-etapas', 'revisoes/v2.22.0-desenho-quatro-caminhos']
 jobs:
   regressao:
     runs-on: ubuntu-latest
@@ -34,4 +34,6 @@ jobs:
           npx --prefix Gerador playwright install --with-deps chromium
       - name: Testar as 3 etapas no navegador
         working-directory: Gerador
-        run: node testdxfwizardui.mjs
+        run: |
+          node testdxfwizardui.mjs
+          node testdesenhoroutesui.mjs
