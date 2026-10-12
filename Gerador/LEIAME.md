@@ -1,6 +1,101 @@
 # Gerador CNC Torno
 
-Abrir: dois cliques em `index.html` (Chrome ou Edge). Não precisa instalar nada nem estar online.
+Abrir: dois cliques em `index.html` (Chrome ou Edge). O Gerador funciona localmente; a importação automática de texto do PDF precisa carregar a biblioteca PDF.js na primeira utilização.
+
+## Edição simples do semiperfil do torno — v2.17.0
+1. Importe o DXF. O **perfil acima do eixo X0** é o único editável no painel do torno; sua projeção espelhada abaixo aparece em **linhas tracejadas de construção**. O arquivo CAD completo fica disponível em Trocar vista.
+2. Clique na linha superior para **selecionar** (traço laranja destacado). Nenhuma linha é excluída apenas pelo clique.
+3. Use **Excluir selecionada** para apagar da cópia de trabalho. **Cortar até cruzamento** permite preservar a extremidade inicial ou final. **Quebrar nas conexões** separa os trechos onde a linha cruza outras entidades, possibilitando excluir só uma parte.
+4. **Estender até próxima linha** encontra uma interseção geométrica à frente e apresenta o comprimento calculado antes de confirmar. **Estender por medida** permite digitar o comprimento em milímetros. O editor mantém Desfazer e Restaurar original.
+5. Todos os comandos de corte e quebra trabalham com LINE; arcos e SPLINE não são descaracterizados. A linha inferior tracejada não gera elementos de torneamento.
+6. Salve o trabalho como rascunho (com Z0 pendente se necessário). Como há alterações geométricas, o Gerador mantém o bloqueio até a revisão completa e simulação.
+
+Detalhes e ensaios em `TESTE-SEMIPERFIL-2.17.md`.
+
+## Importação inteligente CAD — v2.16.0
+1. Clique em **Importar CAD DXF (geometria real)** e selecione o desenho. A seção sugerida abre com um contorno verde (externo), azul (interno quando reconhecido) e linhas de referência em âmbar.
+2. **Trocar vista** mostra as miniaturas da seção principal, vista frontal e folha completa. A vista frontal é apenas referência. Se necessário, **Selecionar outra região** abre a seleção com retângulo visível no desenho original.
+3. **Corrigir com um clique:** uma linha já escolhida é retirada do contorno; outra linha clicada é acrescentada ao externo. Se desejar classificá-la como interna, clique em **Adicionar interno** no painel contextual da linha.
+4. Consulte **Pontos a conferir**: os problemas aparecem resumidos e podem ser localizados no desenho. Para pequenas lacunas colineares com destino único, confirme a extensão sugerida em milímetros; não são criadas conexões ambíguas automaticamente.
+5. Use **Edição avançada** somente quando precisar apagar por quadro, estender uma linha por medida, restaurar geometria ou ajustar eixo e cadeias.
+6. Defina Z0 com um clique quando conhecer a fixação, ou mantenha pendente. **Salvar desenho (rascunho)** preserva trabalho sem liberar CNC.
+
+A detecção continua assistida e precisa de conferência de todas as cotas, raios, roscas, cavidades e programa Fanuc. Ver `IMPORTADOR-INTELIGENTE-2.16.md`.
+
+## Editor DXF interativo — v2.15.0
+1. Clique **Importar CAD DXF (geometria real)** e selecione o arquivo. O sistema delimita uma vista principal sugerida e marca uma **proposta de contorno externo/interno**. Corrija-a antes de liberar CNC.
+2. **Delimitar outra vista**: pressione o botão, clique e arraste no desenho original. O retângulo azul acompanha o mouse; solte para aplicar. A caixa fica visível.
+3. No painel projetado, escolha **Externo**, **Interno** ou **Desmarcar perfil**; clique em cada linha para adicioná-la/removê-la da proposta sem apagar a geometria.
+4. Escolha **Apagar linha** e clique em uma entidade para ocultá-la da cópia de trabalho; ou **Apagar por retângulo** e arraste uma caixa azul sobre várias linhas para removê-las juntas. A fonte original continua intacta.
+5. Para **Estender linha**, escolha o modo, clique em uma entidade LINE, marque **Inicial** ou **Final**, digite o comprimento em milímetros e pressione **Aplicar extensão**. ARC/LWPOLYLINE não são elegíveis.
+6. Use **Desfazer edição** para voltar um passo e **Restaurar desenho original** para reiniciar o contorno de trabalho.
+7. Z0: clique em **Z0 na esquerda**, **Z0 na direita** ou **Z0 pendente**. A indicação aparece no desenho; a fixação da peça deve ser confirmada na preparação da máquina.
+8. Salve em **Rascunho CAD** para continuar mais tarde, inclusive sem Z0. Se tiver apagado/estendido segmentos, revise o CAD e complete as operações antes de transferir para o Gerador CNC.
+
+O reconhecimento não substitui engenharia de processo: raios, SPLINE, canais, roscas, paredes internas e transições devem ser inteiramente associados e validados. Veja `TESTE-DXF-EDITOR-2.15.md`.
+
+## Escolher cadeias CAD reais e corrigir rascunhos (v2.14.0)
+**Problema corrigido:** o Disco tem várias cadeias desconectadas e o Copo tem várias bifurcações. A versão também corrige dois erros que impediam a projeção no navegador: inicialização do módulo DXF e escala NaN ao recortar a vista. O teste Chromium automatizado cobre a importação e o salvamento de rascunho. Selecionar a maior componente inteira mistura perfis externos, internos e auxiliares.
+
+1. Importe o DXF e confira a vista lateral sugerida. O sistema mantém escala igual em X e Z e preserva dimensões/raios da fonte CAD.
+2. Informe/confira o **eixo X0**; a face Z0 pode continuar pendente para rascunho, mas é obrigatória para salvar perfil pronto.
+3. Clique em **Localizar cadeias reais**. Cada opção representa somente um caminho entre pontas, bifurcações ou circuito fechado. Marque **Externo**, **Interno** ou **Remover** antes de adicionar a cadeia desejada.
+4. Clique em cada segmento para inspecionar **Ø, comprimento de cilindro/cone, face radial ou R nativo**. Ao identificar ponta solta, o aviso mostra posição CAD e Ø para correção.
+5. O auditor bloqueia exportação CNC se faltarem segmentos/raios/roscas/SPLINE, se houver bifurcação, sobreposição, lacuna, eixo/Z0 indefinido ou comprimento diferente da cota axial do CAD.
+6. **Salvar rascunho CAD** mantém a fonte sem liberar usinagem. **Corrigir trechos no editor manual** abre os elementos traduzíveis como rascunho INCOMPLETO. Após concluir todos os detalhes, **Confirmar revisão completa do CAD** agora salva também a confirmação na lista usada pelo Gerador.
+
+Veja `TESTE-DXF-CADEIAS.md` para resultados nos dois arquivos reais e o comando de regressão local com os anexos originais.
+
+## Importar CAD DXF — geometria real (v2.13.0)
+1. Em **Desenho da peça**, clique em **Importar CAD DXF (geometria real)**. Aceita DXF ASCII em milímetros (DWG requer exportação; DXF binário não suportado).
+2. Selecione seu DXF. O sistema desenha as entidades CAD e sugere uma vista longitudinal com base nos círculos concêntricos da vista frontal. Ajuste o recorte se necessário.
+3. No segundo painel aparece a **geometria vetorial efetiva**, em escala uniforme, incluindo linhas e arcos; uma SPLINE NURBS é desenhada por amostragem da curva original. **Isso ainda não é programa CNC**.
+4. Informe/confira eixo X0 e qual face será Z0. Rascunhos podem ser salvos com Z0 pendente; para o CNC é obrigatório defini-lo.
+5. Em **Marcar no perfil**, selecione Externo ou Interno e clique nas entidades da projeção. A cadeia sugerida automaticamente é apenas um ponto de partida; retire linhas auxiliares e incorpore raios/entalhes.
+6. Confira **Cotas e elementos reconhecidos**: usam entidades DIMENSION nativas, não estimativas a partir da imagem. Ângulos CAD podem usar o suplemento (ex.: 174° quando a peça indica 6°), então confirme a cotagem.
+7. O painel avisa onde há pontas soltas, múltiplos grupos, ramificações, raios sem tradução e notas de rosca. **Salvar rascunho CAD** nunca libera CNC.
+8. **Corrigir trechos no editor manual** transfere somente cilindros e cones escolhidos e marca `cadOrigem.incompleto=true`. O Gerador BLOQUEIA código para esses rascunhos até clicar em **Confirmar revisão completa do CAD** após realmente completar as operações.
+9. O botão de salvar diretamente na lista do Gerador só habilita para perfil longitudinal simples, conectado, completamente conferido, sem elementos CAD pendentes e com origem definida; revise o programa e simule.
+
+No módulo PDF original, contornos complexos sem associação de cotas passam a ter **prévia vetorial para comparação**, mas não são promovidos a perfil usinável.
+
+Veja `TESTE-DXF-REAIS.md` para resultados obtidos diretamente com os anexos e limitações.
+
+## Separação de vistas e detalhes — teste Copo 7″ (v2.12.0)
+- Ao abrir um PDF, selecione manualmente uma vista com o botão **Selecionar vista no PDF**. Não se reconstrói um contorno com todas as vistas da página misturadas.
+- Atalhos de “SEÇÃO Y-Y” ou “DETALHE Z” **localizam legendas**, mas não escolhem uma caixa de tamanho adivinhado. Arraste o retângulo em torno da vista e de suas cotas.
+- O leitor de cotas reconhece indicações de rosca minúsculas (m10), roscas como M64 P4, raios R3 e R6,50 e ângulos como 6°. Números sem glifo Ø permanecem sem classificação geométrica até serem conferidos.
+- Se o recorte for vetorialmente denso ou contiver entidades ainda não representáveis (roscas, raios, ângulos), **Salvar desenho confirmado** fica bloqueado. É intencional: evitar programa CNC incorreto.
+- Veja `TESTE-COPO7.md` para medições extraídas diretamente do arquivo e limitações reais.
+
+## Orientação PDF → Torno CNC e teste Disco 7″ (v2.11.0)
+- **Selecionar a vista** com um retângulo incluindo suas cotas; o PDF pode conter várias vistas e escalas diferentes.
+- Em **Orientação em relação ao torno CNC**, escolher eixo horizontal/vertical e qual extremidade real da vista ficará voltada para a ferramenta (**Z0**). A face oposta ficará voltada à placa.
+- O perfil salvo usa diâmetros no X, começa em Z0 e aumenta profundidade em **Z negativo**. A projeção sempre mostra a face Z0 à direita por convenção de tela, ainda que no PDF a face escolhida esteja à esquerda, à direita, no topo ou na base.
+- **Inverter face Z0** reverte os trechos externo/interno e troca diâmetros inicial/final dos cones. Confirme a inversão visualmente.
+- O nome salvo mantém os metadados da face escolhida, acessíveis no Gerador.
+- Raios, ângulos e roscas identificados no PDF são destacados como cotas. Como o editor PDF ainda não reproduz essas operações integralmente, salvamento de geometria supostamente completa fica bloqueado; use o editor manual e confirme todos os detalhes.
+- Veja `TESTE-DISCO7.md` para medidas verificadas, teste de orientação no G71 e pendências.
+
+## PDF com escala geométrica proporcional (v2.10.0)
+1. Abra **Desenho da peça → Importar desenho PDF**.
+2. Se houver várias vistas, clique em **Selecionar vista no PDF** e arraste um retângulo incluindo o contorno e as cotas de UMA vista. Legendas 'SEÇÃO', 'CORTE' e 'VISTA' podem gerar atalhos de seleção.
+3. O desenho reconhecido aparece no painel **Peça reconstruída para CNC** com a mesma escala nos dois eixos: cada milímetro em Z e cada milímetro no diâmetro usam a mesma ampliação. A escala de tela se ajusta ao espaço disponível e não equivale a tamanho físico real.
+4. **Clique nas cotas em azul ou na peça projetada** para alterar diretamente diâmetros, comprimentos, cones e lado, ou use os botões para complementar o contorno. Não há lista técnica de partes no módulo PDF.
+5. Compare todas as dimensões com o PDF. Modificações desmarcam automaticamente a confirmação; perfil externo incompleto ou Ø interno maior/igual ao externo são impedimentos para salvar.
+6. Marque **Confirmo que a geometria...**. Informe **Nome do desenho** ao lado do botão grande **Salvar desenho confirmado**. Depois o desenho fica na lista do Gerador em **Peça simples → Importar desenho salvo**.
+
+**Limites do reconhecimento automático:** PDFs com texto selecionável e seções vetoriais simétricas têm maior chance de leitura. Perfis complexos podem não ser reconstruídos, inclusive com seleção de vista. O software não realiza OCR e não substitui CAD, cotagem de engenharia, compensações de ferramenta ou verificação de segurança. Linhas vetoriais podem fornecer **estimativas**, não cotas finais; confira todas as medidas e simule antes de executar.
+
+## Desenho a partir de PDF (v2.9.0)
+1. Abra **Desenho da peça → Importar desenho PDF** e escolha o arquivo.
+2. Veja o PDF original à esquerda e a projeção XZ independente à direita, com diâmetros e comprimentos cotados.
+3. O importador tenta interpretar automaticamente peças anulares simples com Ø externo, Ø interno e comprimento; outras geometrias podem exigir preenchimento manual dos trechos.
+4. Corrija as cotas até o desenho projetado coincidir com o original. A confirmação é desmarcada a cada mudança de geometria.
+5. Marque **Confirmo que a peça reconstruída...**, digite um nome e clique **Salvar desenho confirmado**. O sistema salva imediatamente na mesma lista de desenhos usada pelo editor manual.
+6. No Gerador, selecione **Peça simples**, escolha em **Importar desenho salvo** e informe bruto/ferramentas. Não é necessário redesenhar.
+
+A projeção é ilustrativa, **não é uma medição a partir de pixels**. PDFs digitalizados precisam de interpretação humana (não há OCR). Sempre confira geometria, fixação e código antes de usinar.
 
 ## Fluxo
 1. **Tipo de peça** → medidas (bloco bruto + peça final) → **ferramentas** do banco → **incrementos de corte**.

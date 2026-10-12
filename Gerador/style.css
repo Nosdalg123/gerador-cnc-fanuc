@@ -400,3 +400,24 @@ dialog h3{margin:0 0 12px}
 .ps-svg text.m{fill:var(--sim-axis)}
 .ps-cap{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.35}
 .ps-aviso{font-size:12.5px;color:var(--warn)}
+
+/* v2.18 — comandos fixos à esquerda, geometria à direita */
+#dxfPanel .dxf-editor-layout{display:grid;grid-template-columns:minmax(250px,310px) minmax(0,1fr);gap:14px;align-items:start;margin-top:12px}
+#dxfPanel .dxf-command-sidebar{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow-y:auto;background:var(--card,#fff);border:1px solid var(--border,#ccd3da);border-radius:10px;padding:12px;min-width:0}
+#dxfPanel .dxf-command-sidebar h3{margin:4px 0 8px}
+#dxfPanel .dxf-sidebar-section{border-top:1px solid var(--border,#d5dce3);padding:10px 0}
+#dxfPanel .dxf-sidebar-section>summary{font-weight:700;cursor:pointer;padding:3px 0 9px}
+#dxfPanel .dxf-command-sidebar button{white-space:normal;text-align:left}
+#dxfPanel .dxf-command-sidebar .dxf-primary-tools{display:flex;flex-direction:column;align-items:stretch;gap:7px}
+#dxfPanel .dxf-command-sidebar .dxf-edit-options:not([hidden]),#dxfPanel .dxf-command-sidebar .dxf-extend-controls:not([hidden]){display:flex;flex-wrap:wrap;flex-direction:column;gap:8px}
+#dxfPanel .dxf-command-sidebar .dxf-main-actions,#dxfPanel .dxf-command-sidebar .dxf-z0-actions{display:flex;flex-wrap:wrap;gap:6px}
+#dxfPanel .dxf-editor-layout>.pdf-workspace{display:block;min-width:0;margin:0}
+#dxfPanel .dxf-editor-layout .pdf-projection{width:100%;min-width:0}
+#dxfPanel .dxf-editor-layout .pdf-original{width:100%;margin-bottom:12px}
+#dxfPanel #dxfProjected{min-height:430px}
+#dxfPanel #dxfEditDirectionArrow{pointer-events:none}
+@media(max-width:800px){#dxfPanel .dxf-editor-layout{grid-template-columns:1fr}#dxfPanel .dxf-command-sidebar{position:static;max-height:none}}
+
+#dxfPanel #dxfProjected [data-cad-segment].dxf-perimeter-marked{stroke:#10a876!important;stroke-width:5!important;opacity:1!important}
+#dxfPanel #dxfProjected [data-cad-hit].dxf-perimeter-marked{stroke:#10a876!important;stroke-opacity:.3!important}
+#dxfPanel .dxf-command-sidebar #dxfPerimeterWizard{display:flex;flex-direction:column;align-items:stretch;gap:8px}

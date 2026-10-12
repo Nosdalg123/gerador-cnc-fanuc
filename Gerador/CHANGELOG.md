@@ -8,6 +8,113 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.17.0 — 11/10/2026 — Semiperfil superior, edição por interseção e seleção explícita (branch isolada)
+- O painel de torneamento apresenta **só a metade superior** editável do CAD, com a metade inferior projetada como **construção tracejada não interativa** a partir das entidades selecionadas.
+- Clique sobre uma entidade **seleciona e realça**, sem excluir/desmarcar involuntariamente. Área sensível de clique ampliada; **Excluir selecionada** só atua após seleção.
+- Novas ferramentas **Cortar até cruzamento** (com prévia da ponta preservada), **Quebrar nas conexões** (gera linhas independentes em interseções geométricas) e **Estender até próxima linha** (LINE/ARC como destino, prévia em mm e confirmação). Continua disponível **Estender por medida**.
+- Todas as edições atuam em cópia de trabalho; o CAD fonte permanece íntegro, e rascunhos persistem também linhas substituídas por segmentos independentes.
+- Segurança: cortes/quebras disponíveis inicialmente para LINE. Não converter SPLINE, raios e roscas em G-code automaticamente; perfil editado exige revisão CNC completa.
+- Adicionados `dxfgeomedit.js`, `testdxfgeomedit.js` e teste de interação Chromium; documentação: `TESTE-SEMIPERFIL-2.17.md`.
+
+## 2.16.0 — 11/10/2026 — Importador inteligente com fluxo de três etapas (branch isolada)
+- A importação CAD abre diretamente com **contorno externo/interno sugerido**, sem expor dezenas de comandos.
+- **Trocar vista** exibe miniaturas vetoriais da seção longitudinal, vista frontal e desenho completo; vista não longitudinal é referência, não gera perfil CNC.
+- **Um clique** inclui ou retira linhas do perfil; painel contextual só mostra ações pertinentes ao trecho selecionado.
+- Lista curta **Pontos a conferir** destaca lacunas, bifurcações, arcos, roscas e curvas especiais, com botão para localizar o problema.
+- Pequenas lacunas colineares podem ser corrigidas por extensão **sugerida**, com tolerâncias conservadoras e confirmação do usuário.
+- Os controles técnicos da 2.15.0 permanecem em **Edição avançada**. O salvamento como rascunho e a escolha de Z0 pendente permanecem disponíveis.
+- Novos `dxfassist.js` e `testdxfassist.js`; smoke Chromium cobre escolha de vista e edição contextual. Veja `IMPORTADOR-INTELIGENTE-2.16.md`.
+- Proposta automática não libera código CNC nem substitui conferência de raios, roscas, cavidades e fixação.
+
+## 2.15.0 — 11/10/2026 — Editor CAD assistido com seleção automática e retângulo visível (branch isolada)
+- Primeira proposta automática ao carregar a vista lateral de DXF: separação axial/radial de cadeias candidatas externas e internas. **Sugestão, não geometria CNC validada.**
+- Corrigida delimitação da vista: **retângulo azul desenhado durante o arraste**, mantendo caixa visível após soltar o mouse.
+- Novos modos de clique no perfil: **Adicionar externo**, **Adicionar interno**, **Desmarcar perfil**, **Apagar linha**, **Apagar por retângulo** e **Estender linha**.
+- **Estender linha LINE** em mm, escolhendo ponta inicial/final; mantém alinhamento e atualiza as coordenadas. Arcos e polilinhas não são estendidos automaticamente.
+- Histórico **Desfazer** e **Restaurar desenho original**; alterações só na cópia projetada. A referência CAD original permanece íntegra.
+- Botões diretos **Z0 na esquerda / Z0 na direita / Z0 pendente**, com indicação visual na projeção. Face física deve ser confirmada na preparação.
+- Rascunhos mantêm região, eixo, Z0, segmentos externos/internos, linhas ocultadas e extensões, armazenando as diferenças em vez de duplicar o CAD inteiro.
+- Bloqueio do CNC se a geometria foi alterada ou se arcos, roscas, descontinuidades e dimensões não estão representados integralmente; alternativa de completar no editor manual.
+- `dxfedit.js`, `testdxfedit.js`, regressão Chromium atualizada, relatório `TESTE-DXF-EDITOR-2.15.md`.
+
+## 2.14.0 — 11/10/2026 — Corrigir reconstrução DXF ramificada (branch isolada)
+- Auditoria direta dos DXFs reais Disco 7″ e Copo 7″: a maior componente incluía caminhos ramificados que não são um único perfil CNC. Corrigida causa raiz.
+- `dxfchains.js`: separação em cadeias por pontas/bifurcações, snap por distância geométrica real e destaque de caminhos internos/externos individuais.
+- O botão **Localizar cadeias reais** não seleciona mais cegamente a maior componente. Usuário vê extensão em Z, número de entidades, presença de arcos e bifurcações antes de escolher cada cadeia.
+- `dxfprofile.js`: detecção consistente de pontas e ramificações; indicação de coordenada CAD e Ø da anomalia.
+- `dxfaudit.js`: validação independente do contorno externo e interno, unidade, Z0, comprimento nominal vs DIMENSION do DXF, sobreposições, lacunas, raios, roscas e SPLINE antes de liberar transferência CNC.
+- `desenho.js`: **corrigida persistência da confirmação de revisão completa do CAD** na lista usada pelo Gerador, impedindo que rascunhos confirmados permaneçam bloqueados por dados antigos.
+- Status de carregamento de arquivos grandes e alternância exclusiva entre os painéis DXF/PDF.
+- `testdxfchains.js`, `testdxfaudit.js`, `testdxfreal.js` e relatório `TESTE-DXF-CADEIAS.md`.
+- Corrigido erro **`root is not defined`** que impedia a inicialização do painel DXF no navegador (a versão 2.13 passava nos testes Node, mas não carregava a projeção).
+- Corrigida escala SVG `NaN` quando o desenho era recortado por vista: largura/altura agora são derivadas do retângulo CAD.
+- Adicionados testes Chromium/Playwright da importação, prévia original, projeção, eixo, cadeias, salvamento de rascunho e bloqueio CNC sem Z0. Regressão via GitHub Actions na branch.
+- Limitação intencional: ainda não transforma integralmente geometrias complexas com arcos, roscas e cavidades em CNC sem revisão; não liberar perfis parciais.
+
+## 2.13.0 — 11/10/2026 — Importação DXF real, topologia e prévia PDF (branch isolada)
+- Criado **Importar CAD DXF** em Desenho da peça, independente da importação PDF e do editor manual.
+- DXF ASCII R2000 testado com arquivos verdadeiros Disco 7″ e Copo 7″: Model Space, LINE, ARC, CIRCLE, LWPOLYLINE (incluindo bulge), SPLINE NURBS, DIMENSION nativa, TEXT/MTEXT; separação de Paper Space.
+- Geometria original representada em SVG com **escala X/Y única**. Dois painéis: CAD original e perfil vetorial reconstruído. A escolha de face Z0 espelha a representação conforme a convenção do torno; não altera os raios nem as medidas.
+- Sugerir seção longitudinal usando centros dos círculos concêntricos da vista frontal, e permitir delimitar outra vista no CAD.
+- Dimensões DXF calculadas dos pontos originais, inclusive diâmetros e raios nativos; listar chamadas de rosca e tipos auxiliares/ignorados.
+- Marcação clicável de entidades para perfil externo/interno; detecção de segmentos desconectados, ramificações, faces e curvas sem mapeamento CNC completo. Sem fabricação de medidas por OCR.
+- Rascunhos CAD com nome e Z0 opcional em armazenamento local. Envio de trechos geométricos comprovados ao editor como rascunho **INCOMPLETO**, bloqueando o Gerador até revisão completa explicitamente confirmada; alterações posteriores reabrem a pendência.
+- PDF: se a identificação dimensionada falhar, exibir **prévia vetorial do próprio PDF** no painel da direita, devidamente marcada como não validada para CNC.
+- Teste `testdxf.js`, auditoria de arquivos reais em `TESTE-DXF-REAIS.md`; não substitui teste de interface no navegador nem validação de usinagem.
+- Limite assumido: não há conversão universal automática de arcos, SPLINE, roscas e cavidades em código Fanuc, nem suporte DWG binário; o usuário pode corrigir no editor sem perder fonte CAD.
+
+## 2.12.0 — 11/10/2026 — Teste do Copo 7″: seleção de vista e cotas de detalhe (branch isolada)
+- Testado contra textos e posições reais do PDF **Copo 7″ / Empurrador P2**: seção Y–Y, vista frontal, Detalhe Z e quadro de revisões.
+- `pdfdimensions.js`: classifica **m10** minúsculo, M64 P4, 6°, R3/R6,50, distingue legendas de vistas e números sem Ø.
+- `pdfregions.js`: novo recorte por extensão orientada da cota. Não depende só da posição de origem da primeira letra.
+- `pdfimport.js`: exige delimitar uma vista antes de tentar reconstruir o perfil; legenda da seção/detail apenas localiza o texto, não recorta automaticamente uma caixa de dimensões arbitrárias.
+- `pdfvector.js`: regiões com alta densidade de segmentos vetoriais acionam bloqueio conservador de perfil supostamente completo (roscas/raios/arcos não representados).
+- `testpdfcopo.js`: testes de separação de regiões, detalhes, revisão, roscas e verificação de que a geometria complexa não vira um anel falso.
+- Documento `TESTE-COPO7.md` registra medidas lidas do arquivo real, limitações e pendências.
+- Escala de desenho impressa 1:10 NÃO define o fator da projeção CNC; mede-se a geometria pelas cotas e pela escala uniforme de tela.
+- `main` 2.7.1 e branches anteriores 2.10.0 e 2.11.0 preservadas. **Não há reconstrução automática integral do Copo 7″ nem liberação para usinagem.**
+
+## 2.11.0 — 11/10/2026 — Orientação CNC validada com PDF Disco 7″ (branch isolada)
+- Exame da página real com vista lateral, frontal e isométrica. Extração de 15 trechos dimensionais: cotas lineares, raios, ângulos e roscas.
+- Corrigida extrapolação indevida em `pdfimport.js`: não confundir o maior número horizontal com Ø nem o maior vertical com comprimento; somente reconstruir contornos fundamentados nas cotas reconhecidas.
+- Seleção de vista obrigatória para salvar. Eixo da peça e face Z0 voltada à ferramenta exigem escolha humana explícita; o algoritmo não determina a posição da placa apenas pelo desenho.
+- Ao trocar a face Z0, inverter ordem dos cilindros internos/externos e extremos dos cones; salvar metadados de orientação junto ao desenho.
+- O Gerador apresenta a orientação do PDF e avisa quando houve edição posterior no editor manual.
+- Mostrar cotas extraídas por tipo no painel projetado; quando há raios, roscas ou ângulos não modeláveis nesta interface, bloquear o salvamento de contorno confirmado (concluir no editor manual).
+- Testes reproduzíveis: `testpdfdisco.js` (cotas reais do arquivo), `testpdforientcnc.js` (G71 com duas orientações), além de três testes anteriores.
+- Documentação: `TESTE-DISCO7.md`. **Limitação declarada:** o arquivo complexo ainda não é reconstruído integralmente; requer CAD ou revisão manual de arcos, roscas, perfis e fixação. Não liberar programa automaticamente.
+
+## 2.10.0 — 11/10/2026 — Escala proporcional, edição sobre cotas e seleção de vista no PDF
+- Projeção XZ usa **escala geométrica uniforme**: o mesmo fator é aplicado ao comprimento e aos diâmetros (proporção X:Ø = 1:1), ajustada ao tamanho do painel; não promete escala física 1:1 em monitor.
+- Cotas clicáveis na própria projeção, com edição de diâmetro, comprimento, cone e lado. É possível acrescentar/remover segmentos pelo painel, sem exibir uma lista técnica de partes.
+- Campo **Nome do desenho** ao lado de um botão grande **Salvar desenho confirmado**. O botão só habilita após conferir a vista e confirmar a geometria.
+- Usuário pode selecionar a vista correta por retângulo no PDF. Também aparecem atalhos quando uma legenda 'SEÇÃO/CORTE/VISTA' é detectada; a extração de cotas fica restrita à vista escolhida.
+- Reconhecimento vetorial conservador de seções simétricas com segmentos retilíneos, tanto no eixo horizontal quanto vertical; além da identificação por texto de anéis simples.
+- Perfis inferidos de linhas podem ter cotas aproximadas: exigem conferência e ajustes. Não se garante reconstrução universal de peças complexas, perfis com arcos, desenhos rasterizados, tolerâncias, detalhes escondidos ou cotas faltantes. Nunca se deve atribuir cotas a vistas diferentes sem seleção.
+- Salva no mesmo formato da lista do Gerador, mantendo as versões anteriores isoladas. Testes em `testpdfscale.js`.
+- **Atenção:** nada é executado na máquina. Simulador e revisão humana continuam obrigatórios.
+
+## 2.9.0 — 11/10/2026 — Projeção CNC de PDF, confirmação e salvamento direto (branch isolada)
+- Novo painel lado a lado: original PDF à esquerda e geometria CNC reconstruída à direita, independente da imagem e com cotas projetadas (Ø externo, Ø interno, comprimento total e trechos).
+- Prévia SVG escalada somente para apresentação; os valores informados nas cotas, não os pixels, definem a geometria salva.
+- Perfil recalculado ao editar qualquer cota, diâmetro, comprimento, cone ou lado; mudanças desmarcam a confirmação.
+- Botão "Salvar desenho confirmado" só aparece após validação, nome informado e confirmação da geometria.
+- Salva imediatamente o objeto de desenho padrão no mesmo localStorage e lista já utilizados pelo Gerador, selecionando o novo desenho automaticamente.
+- Gerador de Peça simples mostra claramente "Importar desenho salvo" e lista os desenhos novos e manuais.
+- Mantém o editor manual anterior e as versões 2.7.1 (main) e 2.8.0 (branch anterior) sem alterações.
+- Limites: reconhecimento automático ainda direcionado a peça anular simples, sem OCR; dois lados requerem conferência no editor manual. É proibido rodar código CNC não validado na máquina.
+
+## 2.8.0 — 11/10/2026 — Importação assistida de desenho PDF (branch isolada)
+- Reconhecimento automático inicial de anéis cilíndricos com duas cotas de diâmetro e uma de comprimento (caso de teste: Peça1.pdf, Ø50/Ø20/30 mm). Pré-preenche os trechos externo e interno e exige confirmação da seção. Ainda não interpreta automaticamente peças escalonadas, cones múltiplos nem PDFs rasterizados.
+- Nova opção "Importar desenho PDF" dentro de Desenho da peça, sem remover editor manual.
+- Visualização do PDF original, escolha de página, zoom, rotação e arraste.
+- Extração de texto e diâmetros candidatos de PDFs com texto via PDF.js (CDN; requer conexão); PDFs digitalizados usam conferência e transcrição manual.
+- Montagem de trechos externos/internos, cilindros e cones, lados 1 e 2, com revisão explícita.
+- Transfere somente rascunho para o editor atual, sem gerar CNC automaticamente; usuário revisa e salva.
+- Limitação: não há OCR nem reconhecimento automático de contorno vetorial, furos, raios, chanfros, tolerâncias ou cotas associativas. Sem PDF.js conectado a visualização permanece disponível via navegador.
+- Versão criada em branch separada; main 2.7.1 preservada.
+
+
 ## 2.7.1 — 09/10/2026 — Leitor entende o modo ISO do Siemens 802D sl (G291, G290 e G92 S)
 - Programas da casa vistos no comando **Siemens SINUMERIK 802D sl** (pasta `\MPF\`, como o `FUNDO-PF`) são Fanuc em modo ISO: começam com `G291` (liga o modo ISO; `G290` volta ao modo Siemens) e usam G71/G70, G96, G95 e T0101 como os programas da casa.
 - **`G92 S…` agora vale como limite de rotação em G96** (o equivalente do `G50 S` do Fanuc, no sistema B/C e no Siemens em modo ISO). Antes o leitor ignorava a linha e lia o `S` como velocidade de corte (`G96 S1000` + `G92 S1200` virava Vc 1200) e ainda dava um aviso falso de "G96 sem limite de rotação". `G92` com X/Z (preset de coordenadas ou ciclo de rosca do sistema A) continua ignorado, com aviso.

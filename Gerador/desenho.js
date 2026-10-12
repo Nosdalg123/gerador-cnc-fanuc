@@ -122,7 +122,7 @@
   function strip(d) { var c = clone(d); delete c.alterado; delete c.criado; return c; }
   function salvoDe(id) { return lista.filter(function (x) { return x.id === id; })[0]; }
   function sujo() { var s = work.id && salvoDe(work.id); return !s || JSON.stringify(strip(s)) !== JSON.stringify(strip(work)); }
-  function avisaMudou() { if (api.onMudou) api.onMudou(); }
+  function avisaMudou(id) { if (api.onMudou) api.onMudou(id || null); }
 
   /* ---------- geracao do desenho (usa o gerador real) ---------- */
   var SEED = root.CNC_SEED_TOOLS, seedTool = function (k) { return SEED.filter(function (s) { return s.seedKey === k; })[0]; };
@@ -186,6 +186,7 @@
     $$('button', el).forEach(function (b) { b.onclick = function () { abre(b.dataset.t, -1); }; });
   }
   function cabecalho() {
+    $('#dsConfirmarCAD').hidden = !(work.cadOrigem&&work.cadOrigem.incompleto);
     var h = '<option value="">— desenho novo (ainda não salvo) —</option>';
     lista.forEach(function (d) { h += '<option value="' + esc(d.id) + '"' + (d.id === work.id ? ' selected' : '') + '>' + esc(d.nome) + '</option>'; });
     $('#dsSel').innerHTML = h;
@@ -241,7 +242,7 @@
     });
     listas(); grafico();
   }
-  function mudou() { persistWork(); tela(); }
+  function mudou() { if(work.pdfOrientacao)work.pdfOrientacao.editadoDepoisDaImportacao=true;if(work.cadOrigem){work.cadOrigem.editadoDepoisDaImportacao=true;work.cadOrigem.incompleto=true;work.cadOrigem.verificado=false;}persistWork(); tela(); }
 
   /* ---------- salvar / abrir / excluir ---------- */
   function abrirId(id) {
@@ -260,10 +261,19 @@
     var agora = new Date().toISOString();
     if (work.id && salvoDe(work.id)) { var i = lista.indexOf(salvoDe(work.id)); work.alterado = agora; lista[i] = clone(work); }
     else { work.id = uid(); work.criado = agora; work.alterado = agora; lista.push(clone(work)); }
-    save(K_DES, lista); persistWork(); tela(); avisaMudou();
+    save(K_DES, lista); persistWork(); tela(); avisaMudou(work.id);
     return true;
   }
   $('#dsSalvar').onclick = salvar;
+  $('#dsConfirmarCAD').onclick=function(){
+    if(!work.cadOrigem||!work.cadOrigem.incompleto)return;
+    if(!confirm('Confirmo que reconstruí/conferi o PERFIL COMPLETO a partir do CAD original: contornos externos e internos, degraus, raios, chanfros, roscas, comprimentos, face Z0 e fixação. Entendo que ainda devo validar o código e simular antes de usinar.'))return;
+    work.cadOrigem.incompleto=false;work.cadOrigem.verificado=true;work.cadOrigem.editadoDepoisDaImportacao=false;
+    if(!salvar()){
+      work.cadOrigem.incompleto=true;work.cadOrigem.verificado=false;
+      persistWork();tela();alert('Informe o nome do desenho e tente salvar novamente. A confirmação não foi registrada.');
+    }
+  };
   $('#dsDup').onclick = function () {
     if (!work.id) return; var c = clone(work); c.id = uid(); c.nome = work.nome + ' (cópia)'; c.criado = c.alterado = new Date().toISOString();
     lista.push(c); save(K_DES, lista); work = clone(c); ui.lado = 1; persistWork(); tela(); avisaMudou(); $('#dsNome').focus(); $('#dsNome').select();
@@ -421,6 +431,28 @@
     obter: function (id) { var d = salvoDe(id); return d ? clone(d) : null; },
     abrir: function (id) { abrirId(id); },
     novo: function () { abrirId(null); },
+    importarPDF: function (dados) {
+      if (!confirmaDescartar()) return false;
+      var novo = vazio();
+      novo.nome = String(dados.nome || 'Desenho PDF').trim();
+      novo.lPeca = dados.lPeca;
+      novo.dRef = dados.dRef;
+      if(dados.pdfOrientacao) novo.pdfOrientacao = clone(dados.pdfOrientacao);
+      if(dados.cadOrigem) novo.cadOrigem=clone(dados.cadOrigem);
+      novo.lados = dados.items.some(function (it) { return it.side === '2'; }) ? '2' : '1';
+      dados.items.forEach(function (it) {
+        var el = { id: uid(), tipo: it.tipo, a: it.a, b: it.b };
+        if (it.tipo === 'cone' || it.tipo === 'icone') el.c = it.c;
+        novo[(it.tipo.charAt(0) === 'i' ? 'internos' : 'trechos') + it.side].push(el);
+      });
+      work = norm(novo); ui.lado = 1; persistWork(); tela();
+      return true;
+    },
+    salvarPDF: function (dados) {
+      if (!api.importarPDF(dados)) return null;
+      if (!salvar()) return null;
+      return work.id;
+    },
     mostrar: function () { tela(); },
     sujoId: function () { return work.id && sujo() ? work.id : null; },   // id do desenho salvo que tem alteracoes ainda nao salvas no editor
     // ao sair da tela do desenho: oferece salvar (o Gerador so enxerga o que foi salvo)

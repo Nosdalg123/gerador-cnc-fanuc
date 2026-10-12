@@ -1,0 +1,51 @@
+name: CNC CAD and Fanuc Regression
+on:
+  push:
+    branches:
+      - feature/dxf-perfis-v2.14.0
+      - feature/dxf-editor-interativo-v2.15.0
+      - feature/importador-inteligente-v2.16.0
+      - feature/perfil-superior-cad-v2.17.0
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: Gerador
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify JavaScript syntax
+        run: |
+          for f in dxfcore.js dxfprofile.js dxfchains.js dxfaudit.js dxfedit.js dxfassist.js dxfgeomedit.js dxfimport.js pdfimport.js desenho.js app.js; do
+            node --check "$f"
+          done
+      - name: CAD entity, chains, and safety tests
+        run: |
+          node testdxf.js
+          node testdxfchains.js
+          node testdxfaudit.js
+          node testdxfedit.js
+          node testdxfassist.js
+          node testdxfgeomedit.js
+      - name: PDF and orientation regression tests
+        run: |
+          node testpdf.js
+          node testpdfview.js
+          node testpdfscale.js
+          node testpdfdisco.js
+          node testpdfcopo.js
+          node testpdforientcnc.js
+      - name: Original CNC generator and diagnostics suite
+        run: node test.js
+      - name: Chromium UI import and draft smoke test
+        run: |
+          npm install --no-save playwright
+          npx playwright install chromium
+          node testdxfui.mjs
+

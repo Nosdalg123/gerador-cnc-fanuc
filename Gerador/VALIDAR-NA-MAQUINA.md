@@ -53,3 +53,59 @@ O leitor segue os mesmos critérios dos geradores; o que não foi confirmado na 
 - O **filete da rosca** (só percurso e tempo das passadas).
 - A haste/porta-ferramenta (só a pastilha); folga de haste em furos pequenos e canais internos fica por conta do operador.
 - Interferência da placa no perfil externo além do que o card "Máquina e placa" descreve.
+## Desenhos convertidos de PDF (2.10.0)
+- Conferir manualmente **vista selecionada, origem Z0, Ø externo/interno, comprimento, degraus e orientação dos lados**. A projeção mantém proporção correta em X e Ø, mas isso não garante a interpretação da peça.
+- Cotas inferidas de linhas vetoriais são estimativas: substituir pelos valores explícitos do desenho antes de gerar código CNC. PDFs digitalizados ou com raios/chanfros não suportados requerem CAD ou digitação verificada.
+- Antes de levar à máquina: validar fixação, ferramentas, compensações e simulação, executar a seco conforme procedimentos da ferramentaria.
+
+## Orientação de importações PDF — v2.11.0
+- [ ] Identificar a **face livre Z0** da fixação real antes de usar o desenho; escolher o eixo e a face no importador não determina automaticamente onde estão as castanhas.
+- [ ] Comparar a seção selecionada do PDF, todas as cotas, e o perfil salvo em X (diâmetro), Z negativo; verificar cones invertidos e múltiplos lados.
+- [ ] Desenhos como Disco 7″ possuem R20, R3,50, M39 P2, M8 x50 e 61°: o importador PDF **não reconstrói esses elementos automaticamente**; não transferir a geometria simplificada como peça aprovada para usinagem.
+- [ ] Confirmar G71/G70, direção de corte, medidas de bruto, zona de fixação e trajetória a seco na máquina.
+
+## Copo 7″ / Baioneta — PDF (v2.12.0)
+- [ ] Separar SEÇÃO Y–Y, vista frontal, DETALHE Z e quadro de revisões antes de reconhecer cotas.
+- [ ] Conferir Ø externos/internos, profundidades, inclinação de 6°, R3, R6,50 e rosca M64 P4 no desenho original.
+- [ ] Confirmar se m10 identifica furo/rosca/elemento com outra função; não deduzir usinagem sem as vistas e cotas associadas.
+- [ ] Confirmar face livre Z0 e fixação real; não definida no PDF.
+- [ ] Exigir reconstrução CAD confiável e simulação antes de gerar qualquer programa para usinagem real.
+
+## CAD DXF real — v2.13.0
+- [ ] Confirmar Model Space e $INSUNITS=4 (mm), unidade/escala geométrica e recorte da vista longitudinal.
+- [ ] Comparar eixo de simetria X0, Z0, lado preso na placa, offset das castanhas e sentido negativo de Z.
+- [ ] Conferir todos os trechos externos/internos, canais, furos, chanfros, raios ARC, cones e roscas apontados pelo DXF.
+- [ ] As entidades visualizadas em DXF não equivalem a código CNC completo. Não programar raios ou SPLINE como linhas substitutas sem tratamento geométrico.
+- [ ] Rascunhos do editor manual marcados `cadOrigem.incompleto` estão bloqueados para geração; confirmar apenas após comparar todas as superfícies com a fonte CAD.
+- [ ] Realizar simulação, verificação a seco e conferência da máquina/controlador e das ferramentas antes da produção.
+
+## DXF com cadeias ramificadas — v2.14.0
+- [ ] Selecione especificamente cada cadeia externa/interna, sem transferir em bloco a maior componente do CAD.
+- [ ] Confirme pontas e bifurcações nas coordenadas CAD e nos diâmetros exibidos.
+- [ ] Verifique que todos os raios CAD estão associados a cantos no editor, sem converter ARC/SPLINE em linhas retas.
+- [ ] Compare comprimento do perfil com a DIMENSION axial nativa e com o desenho de fabricação.
+- [ ] Confirme a fixação, a face Z0 e os eixos X/Z. A orientação não é inferida do desenho.
+- [ ] Se um rascunho for completado no editor manual, use **Confirmar revisão completa do CAD** para persistir essa informação.
+- [ ] Execute revisão de programa/simulação, inspeção a seco e validação na máquina antes de usinar.
+
+## Editor CAD interativo — v2.15.0
+- [ ] Conferir proposta automática externa/interna antes de utilizá-la; nunca interpretar a seleção inicial como contorno validado.
+- [ ] Confirmar que linhas apagadas eram auxiliares e que a exclusão não removeu entidades de usinagem.
+- [ ] Conferir no CAD e cotas nominais as extremidades estendidas e o comprimento Z total.
+- [ ] Comparar face Z0 selecionada com a fixação real e verificar origem de máquina/castanhas.
+- [ ] Verificar todos os raios, roscas, SPLINE, canais e cavidades não convertidos; não gerar G-code de rascunho incompleto.
+- [ ] Repetir simulação e prova a seco antes de produção.
+
+## Importação inteligente CAD — v2.16.0
+- [ ] Confirmar que a miniatura selecionada representa a SEÇÃO LONGITUDINAL, não apenas a vista frontal.
+- [ ] Comparar todas as linhas verdes/azuis com os contornos externos/internos efetivos do desenho.
+- [ ] Conferir qualquer conexão estendida ou removida, com tolerância CAD e cota nominal.
+- [ ] Validar roscas, raios, SPLINE, canais, furos e cavidades antes de usar a geometria no Gerador.
+- [ ] Definir face Z0 somente após conferir a fixação, efetuar simulação e prova a seco.
+
+## Semiperfil superior e operações de corte CAD — v2.17.0
+- [ ] Confirmar eixo central X0 e que a geometria superior corresponde ao contorno usinável.
+- [ ] Tratar metade inferior tracejada apenas como desenho de construção, NÃO como segunda operação/fixação.
+- [ ] Conferir interseções usadas para cortar/quebrar/estender e comparar novas dimensões com o DXF original.
+- [ ] Conferir que as linhas removidas realmente são internas/auxiliares, sem perder canais, degraus e raios.
+- [ ] Verificar cantos/raios, roscas, cavidades e fixação; não liberar contorno editado sem revisão de engenharia e simulação.

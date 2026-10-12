@@ -260,7 +260,7 @@
   function buildCampos() {
     var g = ger(), h = '', grupo = null, vals = state.vals[state.tipo] = state.vals[state.tipo] || {}, advFeitos = {};
     if (g.desenho) h += desenhoHtml(g);
-    if (g.usaDesenho) h += '<div class="field full"><label for="selDesenho">Desenho da peça' + INFO_BTN + '</label><div class="ds-row"><select id="selDesenho"></select><button type="button" class="btn sm" id="dsEditar">Editar</button><button type="button" class="btn sm" id="dsNovoG">Novo</button></div><div class="dica">O perfil (externo e interno), o comprimento final e os lados vêm do desenho salvo na operação Desenho da peça. Aqui você só informa o bruto e como usinar.</div><div class="note" id="dsInfo"></div></div>';
+    if (g.usaDesenho) h += '<div class="field full"><label for="selDesenho">Importar desenho salvo' + INFO_BTN + '</label><div class="ds-row"><select id="selDesenho"></select><button type="button" class="btn sm primary" id="dsUsar">Usar desenho</button><button type="button" class="btn sm" id="dsEditar">Editar desenho</button><button type="button" class="btn sm" id="dsNovoG">Novo</button></div><div class="dica">O perfil (externo e interno), o comprimento final e os lados vêm do desenho salvo na operação Desenho da peça. Aqui você só informa o bruto e como usinar.</div><div class="note" id="dsInfo"></div></div>';
     g.campos.forEach(function (c) {
       if (c.pos || c.doDesenho) return; // pos: vai no desenho da espina; doDesenho: vem do desenho salvo
       if (c.avancado) { // todos os campos do mesmo bloco recolhido saem juntos, no lugar do primeiro
@@ -283,6 +283,10 @@
     if (g.usaDesenho) {
       fillDesenhoSel();
       $('#selDesenho').onchange = function () { state.desenhoSel = this.value; persist(); infoDesenho(); render(); };
+      $('#dsUsar').onclick = function () {
+        state.desenhoSel = $('#selDesenho').value;
+        persist(); infoDesenho(); render();
+      };
       $('#dsEditar').onclick = function () { if (state.desenhoSel) CNCDesenhos.abrir(state.desenhoSel); showView('desenho'); };
       $('#dsNovoG').onclick = function () { CNCDesenhos.novo(); showView('desenho'); };
     }
@@ -302,6 +306,8 @@
     var n = ['trechos1', 'trechos2', 'internos1', 'internos2'].reduce(function (s, k) { return s + (d.lados === '2' || k.slice(-1) === '1' ? d[k].length : 0); }, 0);
     el.textContent = (d.lados === '2' ? '2 lados' : '1 lado') + ' · comprimento final ' + CNC.fmt(Number(d.lPeca)) + ' mm · ' + n + (n === 1 ? ' elemento' : ' elementos') +
       (n === 0 ? ' · ⚠ desenho vazio: clique em Editar, adicione os elementos e salve' : '') +
+      (d.cadOrigem ? ' · DXF: '+esc(d.cadOrigem.arquivo)+' · Z0 '+esc(d.cadOrigem.faceZ0)+(d.cadOrigem.incompleto?' · ⛔ INCOMPLETO: confirmar no editor':d.cadOrigem.verificado?' · CAD conferido':' · rascunho') : '') +
+      (d.pdfOrientacao ? ' · PDF: eixo ' + esc(d.pdfOrientacao.eixoPDF) + ', face Z0 ' + esc(d.pdfOrientacao.faceZ0PDF) + (d.pdfOrientacao.editadoDepoisDaImportacao ? ' · ⚠ orientação a rever após edição' : '') : '') +
       (CNCDesenhos.sujoId() === d.id ? ' · ⚠ há alterações deste desenho ainda não salvas no editor (o Gerador usa a versão salva)' : '');
   }
   function fillDesenhoSel() {
@@ -311,7 +317,7 @@
     s.innerHTML = ls.length ? ls.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === state.desenhoSel ? ' selected' : '') + '>' + esc(x.nome) + '</option>'; }).join('') : '<option value="">(nenhum desenho salvo)</option>';
     persist(); infoDesenho();
   }
-  CNCDesenhos.onMudou = function () { fillDesenhoSel(); };
+  CNCDesenhos.onMudou = function (id) { if (id && CNCDesenhos.obter(id)) state.desenhoSel = id; fillDesenhoSel(); render(); };
 
   function vals() {
     var f = {}, v = state.vals[state.tipo] || {};
@@ -510,7 +516,10 @@
       var bl = $('.toolblock[data-slot="' + slot.id + '"]'); if (bl) bl.hidden = !!(slot.usado && !slot.usado(f)); // so as ferramentas que o processo usa
     });
 
-    var r = g.usaDesenho && !desenhoAtual() ? { erros: ['Escolha um desenho da peça (ou crie um na operação Desenho da peça).'], avisos: [] } : g.gerar(f, tl, { nome: state.nome, autor: state.autor, data: dataEfetiva(), maq: state.maq });
+    var draftCAD=g.usaDesenho&&desenhoAtual()&&desenhoAtual().cadOrigem&&desenhoAtual().cadOrigem.incompleto;
+    var r = draftCAD ? { erros: ['Desenho DXF é um RASCUNHO INCOMPLETO: abra Desenho da peça, corrija raios, roscas, furos e trechos omitidos e clique em Confirmar revisão completa do CAD antes de gerar código.'], avisos: [] }
+      : g.usaDesenho && !desenhoAtual() ? { erros: ['Escolha um desenho da peça (ou crie um na operação Desenho da peça).'], avisos: [] }
+      : g.gerar(f, tl, { nome: state.nome, autor: state.autor, data: dataEfetiva(), maq: state.maq });
     lastResult = r;
     renderLadoSel(r);
     var cur = r.lados ? r.lados[state.lado] : r;
