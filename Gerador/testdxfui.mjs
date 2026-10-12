@@ -178,6 +178,19 @@ try{
  assert.equal(await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.find(e=>e.id==='ln1').b[0]),104,
   'Extensão em milímetros deve ser reconstruída ao reabrir rascunho');
  assert(await page.locator('#dxfSaveCNC').isDisabled(),'Sem Z0 não libera CNC');
+ // Reimportar, quebrar em duas LINEs, salvar e reabrir sem perder a geometria.
+ await page.locator('#dxfFile').setInputFiles({name:'synthetic-turning.dxf',mimeType:'application/dxf',buffer:Buffer.from(cad,'utf8')});
+ await page.waitForFunction(()=>document.querySelector('#dxfStatus').textContent.includes('DXF CAD carregado:'),null,{timeout:10000});
+ await clickSegment('ln3:0');
+ await page.locator('#dxfBreakSelected').click();
+ const splitBefore=await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.filter(e=>e.id.startsWith('CAD_EDIT_')).length);
+ assert(splitBefore>=2,'Corte cria segmentos físicos');
+ await page.locator('#dxfNome').fill('Rascunho com linha quebrada');
+ await page.locator('#dxfSaveDraft').click();
+ await page.locator('#dxfOpenDraft').click();
+ assert.equal(await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.filter(e=>e.id.startsWith('CAD_EDIT_')).length),splitBefore,'Segmentos criados são preservados após reabrir rascunho');
+ assert(!await page.evaluate(()=>window.CNCDXFImport.getModel().geometry.some(e=>e.id==='ln3')),'Linha antiga permanece substituída no rascunho');
+ assert(await page.locator('#dxfSaveCNC').isDisabled(),'Perfil editado não deve ser liberado automaticamente para CNC');
  assert.equal(errors.length,0,'Sem erro de JavaScript no navegador: '+errors.join('; '));
  console.log('Chromium DXF UI: prévia original, projeção, eixo, cadeias, rascunho e trava CNC aprovados.');
  passed=true;
