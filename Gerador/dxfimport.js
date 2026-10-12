@@ -349,6 +349,7 @@ $('#dxfFile').onchange=async function(){
   renderSource();renderMeasures();
   suggestView();
   status('DXF CAD carregado: '+doc.geometry.length+' entidades e '+doc.dimensions.length+' cotas nativas. Perfil sugerido; confira e corrija apenas o necessário.');
+  this.value=''; // Aceita reabrir o MESMO arquivo DXF e reinicia a geometria corretamente.
   showOriginal(false);showPicker(false);
  }catch(e){doc=null;status('Falha ao importar DXF: '+String(e.message||e),true)}
 };
