@@ -458,3 +458,40 @@ dialog h3{margin:0 0 12px}
 #view-ferr #tbFerr{width:100%;min-width:740px;border-collapse:collapse}
 #view-ferr #tbFerr th,#view-ferr #tbFerr td{max-width:380px;overflow-wrap:anywhere;vertical-align:top}
 @media(max-width:960px){.shell>.content{width:100%;min-width:0}#view-ferr #tbFerr{min-width:700px}}
+
+/* v2.21 — assistente DXF independente; estilo semelhante ao PropertyManager de esboço */
+#dxfWizard[hidden],#dxfWizard [hidden]{display:none!important}
+#dxfWizard{max-width:none;width:100%;min-width:0}
+#dxfWizard>.card{margin-bottom:12px}
+#dxfWizard .w-steps{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+#dxfWizard .w-steps button{flex:1 1 170px;min-height:42px;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-weight:600;background:var(--field);color:var(--ink)}
+#dxfWizard .w-steps button[aria-current="true"]{border-color:var(--accent);box-shadow:inset 0 -3px var(--accent);background:var(--chip)}
+#dxfWizard .w-workspace{display:grid;grid-template-columns:minmax(275px,325px) minmax(0,1fr);gap:12px;align-items:start}
+#dxfWizard .w-controls{position:sticky;top:0;max-height:calc(100dvh - 70px);overflow-y:auto;min-width:0}
+#dxfWizard .w-controls h3{margin:2px 0 14px}
+#dxfWizard .w-controls .field{display:block;margin-bottom:12px}
+#dxfWizard .w-controls .field input,#dxfWizard .w-controls .field select{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+#dxfWizard .w-controls .btn{white-space:normal;text-align:left}
+#dxfWizard .w-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;margin-bottom:12px}
+#dxfWizard .w-actions button{min-width:0}
+#dxfWizard #wBuild,#dxfWizard #wNext1,#dxfWizard #wNext2,#dxfWizard #wSave{width:100%;text-align:center;margin:10px 0}
+#dxfWizard .w-extend{display:flex;flex-direction:column;gap:8px;margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--field)}
+#dxfWizard .w-extend[hidden]{display:none!important}
+#dxfWizard .w-diagnostics{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+#dxfWizard .w-diagnostics>strong{display:block;margin-bottom:7px}
+#dxfWizard .w-issue{display:flex;flex-wrap:wrap;gap:5px;align-items:center;border-left:3px solid #d67c28;padding:7px 4px 7px 9px;margin:7px 0;background:var(--field);font-size:12px}
+#dxfWizard .w-issue span{flex:1 1 100%;font-weight:600}
+#dxfWizard .w-issue small{color:var(--muted)}
+#dxfWizard #wProblems{max-height:310px;overflow-y:auto;margin-bottom:12px}
+#dxfWizard .w-main{min-width:0}
+#dxfWizard .w-canvas-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-bottom:12px}
+#dxfWizard .w-canvas-head span{font-size:12px;color:var(--muted)}
+#dxfWizard #wCanvas{min-height:470px;max-height:calc(100dvh - 220px);overflow:auto;background:#fff}
+#dxfWizard #wCanvas svg{min-width:530px;max-width:none;display:block;height:auto}
+#dxfWizard #wCanvas [data-cad-segment],#dxfWizard #wCanvas [data-cad-hit]{cursor:pointer}
+#dxfWizard #wCanvas [data-cad-segment]:hover{stroke:#d95618!important;stroke-width:5!important}
+#dxfWizard #wCanvas [data-cad-hit]{stroke-width:19;pointer-events:stroke}
+#dxfWizard .w-legend{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}
+#dxfWizard .w-color{width:10px;height:10px;border-radius:3px;display:inline-block}
+#dxfWizard #wSummary p{margin:7px 0;border-bottom:1px solid var(--line);padding-bottom:7px}
+@media(max-width:850px){#dxfWizard .w-workspace{grid-template-columns:minmax(0,1fr)}#dxfWizard .w-controls{position:static;max-height:none}}
