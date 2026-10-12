@@ -1390,9 +1390,19 @@
     pieces.forEach(function (pc, j) {
       var r1 = pc.d1 / 2, rBef = j ? pieces[j - 1].d2 / 2 : 0, h = r1 - rBef;
       if (tx[j]) {
-        if (pc.t !== 'cil') err(tx[j].nome + 'chanfro/raio só em cilindro (o trecho seguinte é um cone).');
+        if (pc.t !== 'cil' && !(pc.t === 'cone' && tx[j].t === 'raio')) err(tx[j].nome + 'este canto de cone só aceita raio geométrico, não chanfro.');
         else if (h < EPS) err(tx[j].nome + 'não há degrau entre os trechos para formar o canto.');
-        else if (tx[j].size > h + EPS && j > 0) err(tx[j].nome + 'o tamanho (' + fmt(tx[j].size) + ') é maior que a altura do degrau (' + fmt(h) + ').');
+        else if (pc.t === 'cone') {
+          // Tangência exata: parede radial -> geratriz oblíqua do cone.
+          // Ângulo de deflexão entre a vertical radial e a direção do cone.
+          var drCone = (pc.d2 - pc.d1) / 2, diagCone = Math.hypot(pc.L, drCone);
+          var angCone = Math.atan2(pc.L, drCone), distCone = tx[j].size * Math.tan(angCone / 2);
+          var zTangCone = distCone * pc.L / diagCone, rTangCone = distCone * drCone / diagCone;
+          if (!(pc.L > EPS && diagCone > EPS && distCone > EPS) || zTangCone >= pc.L - EPS ||
+              distCone > h + EPS || !isFinite(zTangCone + rTangCone))
+            err(tx[j].nome + 'o raio R' + fmt(tx[j].size) + ' não cabe na entrada do cone; reduza o raio ou altere o degrau.');
+          else tx[j].coneTang = { radial: distCone, dz: zTangCone, dr: rTangCone };
+        }
         else if (tx[j].size > h + EPS) err(tx[j].nome + 'o tamanho (' + fmt(tx[j].size) + ') é maior que o raio do trecho (' + fmt(h) + ').');
       }
       if (tc[j]) {
@@ -1411,11 +1421,11 @@
     var mv = out.moves, cur = null;
     function push(code, key, g, to, R) { mv.push({ code: code, key: key, g: g, from: cur, to: to, R: R }); cur = [to[0] == null ? (cur ? cur[0] : 0) : to[0], to[1]]; }
     pieces.forEach(function (pc, j) {
-      var r1 = pc.d1 / 2, r2 = pc.d2 / 2, x = tx[j], c = tc[j], key = 'ps' + j;
+      var r1 = pc.d1 / 2, r2 = pc.d2 / 2, x = tx[j], c = tc[j], key = 'ps' + j, inOffset = x ? (x.coneTang ? x.coneTang.radial : x.size) : 0;
       if (j === 0) {
         if (modo === 'G72') { // G72 tipo I: o primeiro bloco do contorno anda so em Z; depois entra em X na face
           push('N1G0Z0', 'psn1', 'G0', [0, R0]);
-          push('G1X' + (x ? xmS(pc.d1s, x.sym) : pc.d1s), 'psz0', 'G1', [0, r1 - (x ? x.size : 0)]);
+          push('G1X' + (x ? xmS(pc.d1s, x.sym) : pc.d1s), 'psz0', 'G1', [0, r1 - inOffset]);
         } else {
           push('N1G0X' + (x ? xmS(pc.d1s, x.sym) : pc.d1s), 'psn1', 'G0', [null, r1 - (x ? x.size : 0)]);
           push('Z0', 'psz0', 'G0', [0, r1 - (x ? x.size : 0)]);
@@ -1425,8 +1435,14 @@
       }
       if (x) {
         var zc = addS(pc.zS, x.sym), tz = [-(pc.zN0 + x.size), r1];
+        if (x.coneTang) {
+          var tang = x.coneTang;
+          push('G3X' + fmt(2 * (r1 + tang.dr)) + 'Z-' + fmt(pc.zN0 + tang.dz) + 'R' + fmt(x.size),
+               key + 'c', 'G3', [-(pc.zN0 + tang.dz), r1 + tang.dr], x.size);
+        } else {
         if (x.t === 'chanfro') push('G1X' + pc.d1s + 'Z-' + zc, key + 'c', 'G1', tz);
         else push('G3X' + pc.d1s + 'Z-' + zc + 'R' + x.sym, key + 'c', 'G3', tz, x.size);
+        }
       }
       var zEs = c ? subS(pc.zE, c.sym) : pc.zE, zEn = pc.zN1 - (c ? c.size : 0);
       if (pc.t === 'cil') push('G1Z-' + zEs, key + 'l', 'G1', [-zEn, r2]);
@@ -1494,10 +1510,9 @@
     var pcs = psPecasLista(lista, false), out = [];
     if (!(R0 > 0)) R0 = 1e9;
     pcs.forEach(function (pc, j) {
-      if (!pc.cil) return;
       var rBef = j ? pcs[j - 1].r2 : 0, rNext = j + 1 < pcs.length ? pcs[j + 1].r1 : R0, ultimo = j === pcs.length - 1;
-      if (pc.r1 - rBef > EPS) out.push({ alvo: pc.id, onde: 'ini', ext: true, z: pc.z0, r: pc.r1, rot: j ? 'Quina do degrau · Ø' + fmt(2 * rBef) + ' → Ø' + fmt(2 * pc.r1) : 'Quina da face · Ø' + fmt(2 * pc.r1) });
-      if (rNext - pc.r2 > EPS) out.push({ alvo: pc.id, onde: 'fim', ext: false, z: pc.z1, r: pc.r2, rot: 'Pé do degrau · Ø' + fmt(2 * pc.r2) + ' → ' + (ultimo ? 'bruto Ø' + fmt(2 * R0) : 'Ø' + fmt(2 * rNext)) });
+      if (pc.r1 - rBef > EPS) out.push({ alvo: pc.id, onde: 'ini', ext: true, z: pc.z0, r: pc.r1, rot: (pc.cil ? '' : 'Cone · ') + (j ? 'Quina do degrau · Ø' + fmt(2 * rBef) + ' → Ø' + fmt(2 * pc.r1) : 'Quina da face · Ø' + fmt(2 * pc.r1)) });
+      if (pc.cil && rNext - pc.r2 > EPS) out.push({ alvo: pc.id, onde: 'fim', ext: false, z: pc.z1, r: pc.r2, rot: 'Pé do degrau · Ø' + fmt(2 * pc.r2) + ' → ' + (ultimo ? 'bruto Ø' + fmt(2 * R0) : 'Ø' + fmt(2 * rNext)) });
     });
     return out;
   }
