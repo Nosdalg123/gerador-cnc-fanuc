@@ -154,6 +154,18 @@ if(verbose){ for (const [g,f,tl] of [['espina_cabeca',fc,{t1:{...t1,...acab}}],[
   chk(run('PS erro: canto de trecho removido','peca_simples',ps({trechos1:[...L,{tipo:'raio',a:1,alvo:'zz',onde:'ini'}]}),{t1,t2}));
   chk(run('PS erro: dois no mesmo canto','peca_simples',ps({trechos1:[...L,{tipo:'raio',a:1,alvo:'b',onde:'ini'},{tipo:'chanfro',a:1,alvo:'b',onde:'ini'}]}),{t1,t2}));
   chk(run('PS erro: raio maior que o degrau','peca_simples',ps({trechos1:[...L,{tipo:'raio',a:12,alvo:'b',onde:'ini'}]}),{t1,t2}));
+  // Regressão v2.19: raio na quina de entrada do CONE (Ø40 -> Ø120 -> Ø163).
+  const coneBase=[{id:'rc-cil',tipo:'cil',a:40,b:60},{id:'rc-cone',tipo:'cone',a:120,b:163,c:45}];
+  const coneCantos=C.psCantos(coneBase,85);
+  if(!coneCantos.some(c=>c.alvo==='rc-cone'&&c.onde==='ini'))
+    throw Error('Regressão: quina na entrada do cone não aparece para selecionar');
+  const rounded=T.gerar(ps({dBruto:170,lBruto:130,lPeca:120,trechos1:[...coneBase,{tipo:'raio',a:3,alvo:'rc-cone',onde:'ini'}]}),{t1,t2},M);
+  if((rounded.erros||[]).length)throw Error('Raio R3 cone não aceito: '+rounded.erros.join(' | '));
+  const textCone=rounded.code||(rounded.lados||[]).map(l=>l.code||'').join('\n');
+  if(!/G3X[^\n]+Z-[^\n]+R3/.test(textCone))throw Error('Raio na entrada do cone não produziu G3 R3');
+  const largeCone=T.gerar(ps({dBruto:170,lBruto:130,lPeca:120,trechos1:[...coneBase,{tipo:'raio',a:90,alvo:'rc-cone',onde:'ini'}]}),{t1,t2},M);
+  if(!(largeCone.erros||[]).some(x=>/não cabe na entrada do cone/.test(x)))
+    throw Error('Raio acima do espaço do cone não foi bloqueado');
   // internos: degrau entre dois cilindros
   const I=[{id:'i1',tipo:'icil',a:60,b:20},{id:'i2',tipo:'icil',a:45,b:20},{id:'i3',tipo:'icil',a:35,b:15}];
   console.log('\n== CANTOS internos:',C.psCantosInt(I,15).map(c=>c.alvo+'/'+c.onde+' '+c.rot).join(' | '));
