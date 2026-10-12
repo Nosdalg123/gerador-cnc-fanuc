@@ -421,3 +421,18 @@ dialog h3{margin:0 0 12px}
 #dxfPanel #dxfProjected [data-cad-segment].dxf-perimeter-marked{stroke:#10a876!important;stroke-width:5!important;opacity:1!important}
 #dxfPanel #dxfProjected [data-cad-hit].dxf-perimeter-marked{stroke:#10a876!important;stroke-opacity:.3!important}
 #dxfPanel .dxf-command-sidebar #dxfPerimeterWizard{display:flex;flex-direction:column;align-items:stretch;gap:8px}
+
+/* Diálogo de ferramentas: grade contida, sem sobreposição entre controles. */
+#dlgFerr{width:min(860px,calc(100vw - 28px));max-width:calc(100vw - 28px);max-height:min(92dvh,950px);overflow:auto;box-sizing:border-box}
+#dlgFerr #frmFerr{min-width:0}
+#dlgFerr .row{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0;align-items:start}
+#dlgFerr .field{min-width:0;max-width:100%}
+#dlgFerr .field input,#dlgFerr .field select,#dlgFerr .field textarea{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+#dlgFerr .field label{display:block;overflow-wrap:anywhere}
+#dlgFerr .tipo-grid{grid-template-columns:repeat(auto-fit,minmax(125px,1fr));min-width:0}
+#dlgFerr .tipo-card{min-width:0;box-sizing:border-box}
+#dlgFerr [hidden]{display:none!important}
+#dlgFerr .dlg-actions{position:sticky;bottom:-18px;background:var(--panel);padding:12px 0 2px;z-index:1}
+@media(max-width:580px){#dlgFerr .row{grid-template-columns:minmax(0,1fr)}#dlgFerr .group-title,#dlgFerr .row .full{grid-column:1}}
+.pv-thread{stroke:#c45f18;stroke-width:1.15;fill:none;stroke-linecap:round;pointer-events:none}
+.pv-thread-label{fill:#a85018;font-size:10px;pointer-events:none}
