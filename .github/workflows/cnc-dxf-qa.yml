@@ -5,6 +5,7 @@ on:
       - feature/dxf-perfis-v2.14.0
       - feature/dxf-editor-interativo-v2.15.0
       - feature/importador-inteligente-v2.16.0
+      - feature/perfil-superior-cad-v2.17.0
   workflow_dispatch:
 
 jobs:
@@ -21,7 +22,7 @@ jobs:
           node-version: '22'
       - name: Verify JavaScript syntax
         run: |
-          for f in dxfcore.js dxfprofile.js dxfchains.js dxfaudit.js dxfedit.js dxfassist.js dxfimport.js pdfimport.js desenho.js app.js; do
+          for f in dxfcore.js dxfprofile.js dxfchains.js dxfaudit.js dxfedit.js dxfassist.js dxfgeomedit.js dxfimport.js pdfimport.js desenho.js app.js; do
             node --check "$f"
           done
       - name: CAD entity, chains, and safety tests
@@ -31,6 +32,7 @@ jobs:
           node testdxfaudit.js
           node testdxfedit.js
           node testdxfassist.js
+          node testdxfgeomedit.js
       - name: PDF and orientation regression tests
         run: |
           node testpdf.js
