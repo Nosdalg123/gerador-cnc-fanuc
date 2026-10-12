@@ -13,7 +13,7 @@ function collect(doc,rect,axis){
   const pts=DX.sample(s,Math.max(64,Math.ceil((s.r||1)*4)));
   return {...s,points:pts,start:pts[0],end:pts[pts.length-1]};
  }).filter(s=>good(s.start)&&good(s.end)&&
-  (!Number.isFinite(axis)||P.above(s,axis,.15)));
+  (!Number.isFinite(axis)||s.points.every(p=>p[1]>=axis-.15)));
 }
 function analyze(segments,selection,tolerance=.16){
  const chosen=segments.filter(s=>selection.has(s.uid)),nodes=[],edges=[],invalid=[];
