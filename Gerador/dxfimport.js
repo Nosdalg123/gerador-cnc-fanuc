@@ -6,6 +6,47 @@ const $=q=>document.querySelector(q),DX=root.CNCDXF,P=root.CNCDXFPerfil,E=root.C
 let doc=null,sourceDoc=null,rect=null,axis=NaN,suggest=null,active=false,start=null,zoom=1,fileName='',
  selected={externo:new Set(),interno:new Set()},chainInfo=null,hidden=new Set(),undo=[],pendingExtension=null,
  editCount=0,dragRect=null,projDrag=null,skipProjectedClick=false,activeView='lateral',views=[],contextId=null,focusIssue=null,quickRepairs=[],geometryAction=null,editSequence=0;
+
+let perimeterMode=false,perimeterPicked=new Set();
+function perimeterStatus(message){$('#dxfPerimeterStatus').textContent=message}
+function stopPerimeterMode(){perimeterMode=false;$('#dxfPerimeterBuild').disabled=true;$('#dxfPerimeterCancel').disabled=true;$('#dxfPerimeterStart').disabled=false}
+$('#dxfPerimeterStart').onclick=function(){
+ if(!doc||!rect){perimeterStatus('Importe o DXF e selecione a vista longitudinal.');return}
+ perimeterMode=true;perimeterPicked.clear();$('#dxfPerimeterStart').disabled=true;
+ $('#dxfPerimeterCancel').disabled=false;$('#dxfPerimeterBuild').disabled=true;
+ perimeterStatus('Clique nos trechos do perímetro superior. Clique novamente para desmarcar.');
+};
+$('#dxfPerimeterCancel').onclick=function(){perimeterPicked.clear();stopPerimeterMode();perimeterStatus('Marcação cancelada. Desenho mantido.');renderProjection()};
+$('#dxfPerimeterBuild').onclick=function(){
+ if(!doc||!rect)return;
+ const all=P.segments(doc.geometry,rect,hidden),chosen=all.filter(s=>perimeterPicked.has(s.uid));
+ if(chosen.length<2){perimeterStatus('Marque pelo menos dois trechos conectados.');return}
+ // O caminho precisa ser contínuo, sem bifurcações e sem intervalos acima da tolerância.
+ const tolerance=.15,vertices=[],edges=[];
+ function vertex(p){let i=vertices.findIndex(q=>Math.hypot(q.p[0]-p[0],q.p[1]-p[1])<=tolerance);if(i<0){i=vertices.length;vertices.push({p,edges:[]})}return i}
+ for(const s of chosen){
+  if(!s.a||!s.b||!s.a.every(Number.isFinite)||!s.b.every(Number.isFinite)){
+   perimeterStatus('Trecho com geometria não reconhecida. Revise antes de construir.');return}
+  const a=vertex(s.a),b=vertex(s.b);
+  if(a===b){perimeterStatus('Há um trecho degenerado. Corrija antes de construir.');return}
+  const index=edges.length;edges.push({a,b,uid:s.uid});vertices[a].edges.push(index);vertices[b].edges.push(index);
+ }
+ const bad=vertices.find(v=>v.edges.length>2),ends=vertices.filter(v=>v.edges.length===1);
+ if(bad){perimeterStatus('Existem bifurcações no perímetro. Desmarque os ramos ou use Cortar/Quebrar.');return}
+ if(ends.length!==0&&ends.length!==2){perimeterStatus('Há lacunas ou trechos separados. Confira as conexões antes de construir.');return}
+ const seen=new Set(),queue=[0];while(queue.length){
+  const i=queue.pop();if(seen.has(i))continue;seen.add(i);
+  for(const e of vertices[i].edges){const edge=edges[e];queue.push(edge.a===i?edge.b:edge.a)}
+ }
+ if(seen.size!==vertices.length){perimeterStatus('Linhas marcadas não formam um único perímetro. Confira os trechos separados.');return}
+ remember();
+ const keep=new Set(chosen.map(s=>s.uid));
+ for(const s of all){if(!keep.has(s.uid)){hidden.add(s.uid);selected.externo.delete(s.uid);selected.interno.delete(s.uid)}}
+ selected.externo=new Set(keep);for(const id of keep)selected.interno.delete(id);
+ perimeterPicked.clear();stopPerimeterMode();markEdited();
+ perimeterStatus('Perímetro isolado: '+chosen.length+' trechos, '+ends.length+' ponta(s) livre(s). Revise cotas e conexões; ainda não é CNC validado.');
+};
+
 const KEY='cnc_dxf_rascunhos_v1';
 /* Distribui controles existentes no painel fixo, sem duplicar ações nem IDs. */
 (function organizeCadSidebar(){
@@ -357,6 +398,7 @@ $('#dxfFile').onchange=async function(){
   let bytes=await f.arrayBuffer(),text=new TextDecoder('windows-1252').decode(bytes);
   status('Analisando entidades CAD, cotas e vistas do arquivo...');
   await new Promise(resolve=>root.requestAnimationFrame?root.requestAnimationFrame(()=>resolve()):resolve());
+  stopPerimeterMode();perimeterPicked.clear();perimeterStatus('Aguardando seleção.');
   doc=DX.read(text);sourceDoc=clone(doc);fileName=f.name;rect=null;suggest=null;axis=NaN;zoom=1;active=false;editSequence=0;contextId=null;geometryAction=null;
   // Uma nova importação começa sempre no modo simples. Não herdar modo "estender",
   // "apagar" ou "quadro" do DXF anteriormente aberto.
@@ -471,6 +513,19 @@ projected.addEventListener('click',function(e){
   $('#dxfEntityInfo').textContent='Entidade '+id+': '+caption+'. '+(info.reason||'');
  }
  if(currentMode==='quadro')return;
+ if(perimeterMode){
+  if(perimeterPicked.has(id))perimeterPicked.delete(id);else perimeterPicked.add(id);
+  $('#dxfPerimeterBuild').disabled=perimeterPicked.size<2;
+  perimeterStatus(perimeterPicked.size+' trecho(s) marcado(s). Selecione os restantes ou clique em Construir perímetro.');
+  // Marcação visual provisória: preservar a seleção CNC original até construir.
+  const svg=$('#dxfProjected svg');if(svg){
+   svg.querySelectorAll('[data-cad-segment],[data-cad-hit]').forEach(el=>{
+    const uid=el.getAttribute('data-cad-segment')||el.getAttribute('data-cad-hit');
+    el.classList.toggle('dxf-perimeter-marked',perimeterPicked.has(uid));
+   });
+  }
+  return;
+ }
  if(!$('#dxfPanel').classList.contains('advanced')){
   // Um clique SELECIONA, nunca remove o elemento sem comando explícito.
   changeSelection(id);return;
