@@ -39,7 +39,7 @@ try{
   const login=document.querySelector('#login');if(login){login.hidden=true;login.style.display='none'}
   document.querySelector('#view-desenho').hidden=false;
  });
- await page.locator('#dxfWizardModo').click();
+ await page.locator('#desenhoImportarDXF').click();
  assert.equal(await page.locator('#dxfPanel').isVisible(),false,'Importador antigo deveria permanecer oculto');
  await page.locator('#wFile').setInputFiles({name:'teste-disco-sintetico.dxf',mimeType:'application/dxf',buffer:Buffer.from(data)});
  await page.waitForTimeout(500);
