@@ -59,7 +59,7 @@ function applyCutOrBreak(){
   contextId=result.added[0];markEdited();
   status('Linha dividida em '+result.added.length+' trechos independentes. Clique em cada trecho para incluir ou excluir.');
  }else if(op==='trim'){
-  const cut=G.trimAtIntersection(doc.geometry,id,end,axis,rect);
+  const cut=G.trimAtIntersection(doc.geometry,id,end,axis,rect,hidden);
   if(!cut.ok){status(cut.reason,true);return}
   remember();const entity=G.entityFor(doc.geometry,id);entity.a=cut.newA;entity.b=cut.newB;
   markEdited();status('Trecho excedente cortado na interseção com '+cut.target+'. Confira as cotas.');
@@ -477,7 +477,7 @@ function beginGeometryEdit(op){
 function updateGeometryPreview(){
  if(!geometryAction||!contextId)return;
  const end=val('#dxfKeepEnd');
- const preview=geometryAction==='trim'?G.trimAtIntersection(doc.geometry,contextId,end,axis,rect):
+ const preview=geometryAction==='trim'?G.trimAtIntersection(doc.geometry,contextId,end,axis,rect,hidden):
   G.nearestForward(doc.geometry,contextId,end,axis,rect,hidden);
  $('#dxfConfirmGeometryEdit').disabled=!preview.ok;
  $('#dxfEditPreviewText').textContent=preview.ok?
