@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path');
+const app=fs.readFileSync(path.join(__dirname,'app.js'),'utf8');
+const html=fs.readFileSync(path.join(__dirname,'index.html'),'utf8');
+assert(app.includes("id: 'rosca', lado: 'externa'"),'Falta ícone externo');
+assert(app.includes("id: 'rosca', lado: 'interna'"),'Falta ícone interno');
+assert(app.includes("frm.elements.roscaLado.value = b.dataset.tipo === 'rosca'"),'Não guarda escolha');
+assert(app.includes("b.dataset.roscaLado === (frm.elements.roscaLado.value || 'externa')"),'Não seleciona lado ao editar');
+assert(html.includes('name="roscaLado"'),'Falta campo persistido');
+assert(!app.includes("id: 'rosca_interna'"),'Tipo novo quebraria compatibilidade CNC');
+console.log('OK: dois esquemas, persistência de orientação e compatibilidade CNC');
