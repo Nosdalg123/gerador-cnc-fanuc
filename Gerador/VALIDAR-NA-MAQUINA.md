@@ -102,3 +102,10 @@ O leitor segue os mesmos critérios dos geradores; o que não foi confirmado na 
 - [ ] Conferir qualquer conexão estendida ou removida, com tolerância CAD e cota nominal.
 - [ ] Validar roscas, raios, SPLINE, canais, furos e cavidades antes de usar a geometria no Gerador.
 - [ ] Definir face Z0 somente após conferir a fixação, efetuar simulação e prova a seco.
+
+## Semiperfil superior e operações de corte CAD — v2.17.0
+- [ ] Confirmar eixo central X0 e que a geometria superior corresponde ao contorno usinável.
+- [ ] Tratar metade inferior tracejada apenas como desenho de construção, NÃO como segunda operação/fixação.
+- [ ] Conferir interseções usadas para cortar/quebrar/estender e comparar novas dimensões com o DXF original.
+- [ ] Conferir que as linhas removidas realmente são internas/auxiliares, sem perder canais, degraus e raios.
+- [ ] Verificar cantos/raios, roscas, cavidades e fixação; não liberar contorno editado sem revisão de engenharia e simulação.
