@@ -67,6 +67,17 @@
 #dxfPanel .pdf-projection{min-width:0}
 #dxfPanel #dxfProjected{max-height:520px}
 @media (max-width:900px){#dxfPanel.show-original .pdf-workspace{grid-template-columns:1fr}}
+</style><style>
+.dxf-primary-tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #bccfe0;margin-bottom:8px}
+.dxf-primary-tools strong{flex:1 1 100%;color:#1a5878}
+.dxf-primary-tools button{font-size:12px}
+.dxf-primary-tools button:disabled{opacity:.48}
+.dxf-edit-options{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:10px;background:#ecf5fb;border:1px solid #b8d6e8;border-radius:8px;margin:6px 0}
+.dxf-edit-options[hidden]{display:none}
+.dxf-dot.construction{border-radius:0;background:transparent;border-top:2px dashed #7891a0;width:14px;height:6px}
+#dxfProjected svg [data-cad-segment]{cursor:pointer;stroke-linecap:round;transition:stroke-width .08s ease}
+#dxfProjected svg [data-cad-segment][data-selected-focus="true"]{stroke:#e34e1b!important;stroke-width:6!important;filter:drop-shadow(0px 0px 2px #ff9d4b)}
+#dxfProjected svg [data-construction="true"]{pointer-events:none;stroke-dasharray:6 5;opacity:.5}
 </style></head>
 <body>
 <div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="loginTit">
@@ -277,8 +288,24 @@
  <label>Extensão (mm) <input id="dxfExtendAmount" type="number" min="0.001" max="10000" step="0.1" value="5"></label>
  <button class="btn primary" type="button" id="dxfExtendApply">Aplicar extensão</button>
 </div>
-<div id="dxfProjected" class="dxf-graphics" aria-label="Contorno CAD reconhecido automaticamente; clique para selecionar ou retirar linhas"></div>
-<div class="dxf-legend"><span><b class="dxf-dot recognized"></b> Perfil externo</span><span><b class="dxf-dot internal"></b> Perfil interno</span><span><b class="dxf-dot pending"></b> Outras linhas</span></div><div id="dxfEntityInfo" class="note" role="status">Clique numa linha colorida para incluí-la ou retirá-la do contorno. Se necessário, selecione uma correção abaixo.</div>
+<div id="dxfProjected" class="dxf-graphics" aria-label="Semiperfil CAD superior editável; inferior apenas projeção de construção"></div>
+<div class="dxf-primary-tools">
+ <strong id="dxfSelectedLabel">Clique numa linha superior para selecioná-la</strong>
+ <button class="btn primary" id="dxfDeleteSelected" type="button" disabled><span aria-hidden="true">✕</span> Excluir selecionada</button>
+ <button class="btn" id="dxfTrimSelected" type="button" disabled>Cortar até cruzamento</button>
+ <button class="btn" id="dxfBreakSelected" type="button" disabled>Quebrar nas conexões</button>
+ <button class="btn" id="dxfExtendToSelected" type="button" disabled>Estender até próxima linha</button>
+ <button class="btn" id="dxfExtendMeasureSelected" type="button" disabled>Estender por medida</button>
+</div>
+<div id="dxfEditOptions" class="dxf-edit-options" hidden>
+ <span id="dxfEditOptionsLabel">Escolha a extremidade da linha</span>
+ <label for="dxfKeepEnd">Extremidade</label>
+ <select id="dxfKeepEnd"><option value="ini">Inicial</option><option value="fim">Final</option></select>
+ <button class="btn primary" id="dxfConfirmGeometryEdit" type="button">Aplicar</button>
+ <button class="btn" id="dxfCancelGeometryEdit" type="button">Cancelar</button>
+ <span id="dxfEditPreviewText" class="note"></span>
+</div>
+<div class="dxf-legend"><span><b class="dxf-dot recognized"></b> Perfil externo (metade de cima)</span><span><b class="dxf-dot internal"></b> Perfil interno</span><span><b class="dxf-dot pending"></b> Outras linhas</span><span><b class="dxf-dot construction"></b> Metade inferior tracejada · construção</span></div><div id="dxfEntityInfo" class="note" role="status">Clique numa linha superior para selecioná-la; use os botões Excluir, Cortar, Quebrar ou Estender. A metade inferior é apenas construção.</div>
 <div id="dxfContext" class="dxf-context" hidden>
  <strong id="dxfContextTitle">Trecho selecionado</strong>
  <div class="toolbar">
@@ -614,6 +641,7 @@
 <script src="dxfchains.js"></script>
 <script src="dxfedit.js"></script>
 <script src="dxfassist.js"></script>
+<script src="dxfgeomedit.js"></script>
 <script src="dxfaudit.js"></script>
 <script src="dxfimport.js"></script>
 <script src="app.js"></script>
