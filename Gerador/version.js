@@ -1,1 +1,1 @@
-window.CNC_VERSAO = '2.20.2';
+window.CNC_VERSAO = '2.21.0';
