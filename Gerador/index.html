@@ -241,7 +241,82 @@
   </section>
 
   <!-- ===== DESENHO DA PEÇA ===== -->
-  <section id="view-desenho" hidden><div class="card" style="margin-bottom:12px"><div class="toolbar"><button class="btn" id="pdfModo" type="button">Importar desenho PDF</button><button class="btn primary" id="dxfModo" type="button">Importar CAD DXF (geometria real)</button><span class="note">Alternativa à montagem manual. Requer conferência de todas as cotas.</span></div></div>
+  <section id="view-desenho" hidden><div class="card" style="margin-bottom:12px"><div class="toolbar"><button class="btn" id="pdfModo" type="button">Importar desenho PDF</button><button class="btn primary" id="dxfModo" type="button">Importar CAD DXF (geometria real)</button><button class="btn primary" id="dxfWizardModo" type="button">Novo importador DXF · 3 etapas (teste)</button><span class="note">Alternativa à montagem manual. Requer conferência de todas as cotas.</span></div></div>
+<div id="dxfWizard" hidden>
+ <div class="card">
+  <div class="toolbar"><h2 style="margin:0">Assistente CAD experimental · 3 etapas</h2><button type="button" class="btn" id="wClose">Voltar ao desenho manual</button><span class="note">Independente do importador anterior. DXF original preservado.</span></div>
+  <div class="w-steps" role="group" aria-label="Etapas">
+   <button type="button" id="wStep1" data-go="1">1 · Arquivo e vista</button>
+   <button type="button" id="wStep2" data-go="2">2 · Editar perímetro</button>
+   <button type="button" id="wStep3" data-go="3">3 · Revisar e salvar</button>
+  </div>
+  <div id="wStatus" role="status" class="note">Comece selecionando um arquivo DXF.</div>
+ </div>
+ <div class="w-workspace">
+  <aside class="w-controls card">
+   <section data-w-step="1">
+    <h3>1 · Entrada do desenho</h3>
+    <label class="field">Arquivo DXF ASCII <input id="wFile" type="file" accept=".dxf,.DXF"></label>
+    <label class="field">Vista <select id="wView"><option value="">Importe um DXF</option></select></label>
+    <button type="button" class="btn" id="wRegion">Delimitar vista por retângulo</button>
+    <button type="button" class="btn" id="wFull">Ver desenho inteiro</button>
+    <label class="field">Eixo central Y (CAD mm) <input id="wAxis" type="number" step="any" placeholder="Eixo da seção"></label>
+    <label class="field">Comprimento nominal (mm) <input id="wLength" type="number" min="0" step="any" placeholder="Cota real da peça"></label>
+    <label class="field">Z0 (face da peça) <select id="wFace"><option value="">Pendente</option><option value="esquerda">Esquerda</option><option value="direita">Direita</option></select></label>
+    <div id="wFileInfo" class="note"></div>
+    <button type="button" class="btn primary" id="wNext1">Continuar para editar →</button>
+   </section>
+   <section data-w-step="2" hidden>
+    <h3>2 · Construir o contorno</h3>
+    <p class="note">Clique nas linhas e nos arcos da metade superior. Clique novamente para desmarcar. O CAD abaixo do eixo é apenas referência.</p>
+    <div class="w-actions">
+     <button class="btn" type="button" id="wSuggest">Sugerir contorno (revisar)</button>
+     <button class="btn primary" type="button" id="wPick">Marcar perímetro</button>
+     <button class="btn" type="button" id="wExtendMode">Estender uma linha</button>
+     <button class="btn" type="button" id="wClear">Limpar marcação</button>
+     <button class="btn" type="button" id="wUndo">Desfazer</button>
+    </div>
+    <div id="wSelected" class="note">Nenhum segmento marcado.</div>
+    <div class="w-extend" id="wExtendControls" hidden>
+     <strong>Estender linha selecionada</strong>
+     <div id="wExtTarget" class="note">Clique numa linha reta.</div>
+     <label class="field">Sentido <select id="wExtEnd"><option value="ini">Ponta inicial</option><option value="fim">Ponta final</option></select></label>
+     <button class="btn" type="button" id="wFlip">↔ Inverter sentido</button>
+     <label class="field">Comprimento em mm <input id="wExtMm" type="number" step="any" min=".001" value="1"></label>
+     <button class="btn primary" type="button" id="wApplyExtend">Aplicar extensão</button>
+     <button class="btn" type="button" id="wCancelExtend">Cancelar extensão</button>
+    </div>
+    <button class="btn primary" type="button" id="wBuild">Construir e isolar perímetro</button>
+    <label class="note"><input id="wRefs" type="checkbox" checked> Mostrar outras linhas como referência</label>
+    <div class="w-diagnostics">
+     <strong>Diagnóstico e reparos propostos</strong>
+     <div id="wProblems" role="status"></div>
+     <button class="btn" type="button" id="wAutoSafe">Reparar somente folgas pequenas e inequívocas (até 0,20 mm)</button>
+    </div>
+    <button class="btn primary" type="button" id="wNext2">Continuar para salvar →</button>
+   </section>
+   <section data-w-step="3" hidden>
+    <h3>3 · Revisar e salvar</h3>
+    <label class="field">Nome do desenho <input id="wName" placeholder="Ex.: Disco 7 - Empurrador P2"></label>
+    <div id="wSummary" class="note"></div>
+    <label class="note"><input type="checkbox" id="wReviewed"> Conferi o desenho e entendo que este rascunho NÃO está liberado para gerar G-code CNC.</label>
+    <button class="btn primary" type="button" id="wSave">Salvar rascunho do desenho</button>
+    <button class="btn" type="button" id="wExport">Exportar cópia JSON</button>
+    <button class="btn" type="button" id="wRestoreDraft">Reabrir último rascunho salvo</button>
+    <p class="note">Esta versão experimental salva apenas no navegador/JSON. Raios, roscas, Z0, cotas e percurso devem ser conferidos no editor CNC antes de produzir.</p>
+   </section>
+  </aside>
+  <div class="w-main card">
+   <div class="w-canvas-head"><strong id="wCanvasTitle">CAD original</strong><span id="wCanvasHint">Vista do DXF em escala uniforme</span></div>
+   <div id="wCanvas" class="dxf-graphics" aria-label="Desenho vetorial para seleção assistida"></div>
+   <div class="w-legend"> <span class="w-color" style="background:#149a6f"></span> Perfil selecionado
+   <span class="w-color" style="background:#e06a24"></span> Trecho em foco
+   <span class="w-color" style="background:#b83036"></span> Problema
+   <span>— Outros elementos: referência</span></div>
+  </div>
+ </div>
+</div>
+
 <div id="dxfPanel" hidden>
 <div class="card"><h2>Importação inteligente CAD</h2>
 <p class="note">Importe o DXF. O contorno aparece sugerido automaticamente; clique nas linhas para corrigir. Você pode trocar a vista a qualquer momento.</p>
@@ -645,6 +720,8 @@
 <script src="dxfgeomedit.js"></script>
 <script src="dxfaudit.js"></script>
 <script src="dxfimport.js"></script>
+<script src="dxfwizardgeom.js"></script>
+<script src="dxfwizard.js"></script>
 <script src="app.js"></script>
 <script src="acesso.js"></script>
 </body>
