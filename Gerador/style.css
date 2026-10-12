@@ -495,3 +495,53 @@ dialog h3{margin:0 0 12px}
 #dxfWizard .w-color{width:10px;height:10px;border-radius:3px;display:inline-block}
 #dxfWizard #wSummary p{margin:7px 0;border-bottom:1px solid var(--line);padding-bottom:7px}
 @media(max-width:850px){#dxfWizard .w-workspace{grid-template-columns:minmax(0,1fr)}#dxfWizard .w-controls{position:static;max-height:none}}
+
+/* v2.22 — quatro caminhos da seção Desenho da peça */
+#view-desenho #desenhoLanding[hidden],#view-desenho #desenhoModuleHeader[hidden],
+#view-desenho #desenhoUnicoPanel[hidden],#view-desenho #pdfManual[hidden],
+#view-desenho #pdfPanel[hidden],#view-desenho #dxfPanel[hidden],
+#view-desenho #dxfWizard[hidden],#view-desenho .ds-route-legacy[hidden]{
+  display:none!important
+}
+#view-desenho .ds-route-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px
+}
+#view-desenho .ds-route-card{
+  display:grid;grid-template-columns:42px minmax(0,1fr);grid-template-rows:auto auto 1fr auto;
+  text-align:left;gap:6px 13px;align-content:start;min-width:0;min-height:180px;
+  padding:18px;border-radius:12px;border:1px solid var(--line);
+  color:var(--ink);background:var(--field);font:inherit;cursor:pointer
+}
+#view-desenho .ds-route-card:hover,#view-desenho .ds-route-card:focus-visible{
+  outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)
+}
+#view-desenho .ds-route-card .ds-route-num{
+  grid-column:1;grid-row:1;font-weight:800;font-size:12px;color:var(--muted)
+}
+#view-desenho .ds-route-card .ds-route-icon{
+  grid-column:1;grid-row:2/5;width:36px;height:36px;display:grid;place-items:center;
+  background:var(--chip);border:1px solid var(--line);border-radius:9px;font-size:22px
+}
+#view-desenho .ds-route-card strong{
+  grid-column:2;grid-row:1;font-size:16px;align-self:center;
+}
+#view-desenho .ds-route-card>span:not(.ds-route-num):not(.ds-route-icon):not(.ds-route-link){
+  grid-column:2;grid-row:2;font-size:13px;color:var(--muted)
+}
+#view-desenho .ds-route-card .ds-route-link{
+  grid-column:2;grid-row:4;font-weight:650;font-size:13px;color:var(--accent);margin-top:10px
+}
+#view-desenho .ds-route-chip{
+  display:inline-block;vertical-align:middle;border-radius:999px;border:1px solid var(--line);
+  background:var(--panel);padding:3px 7px;font-size:11px;color:var(--muted);font-weight:500
+}
+#view-desenho .ds-route-future{border-style:dashed}
+#view-desenho .ds-route-top{
+  display:flex;align-items:center;flex-wrap:wrap;gap:12px;
+  margin-bottom:12px;padding:8px 0;border-bottom:1px solid var(--line)
+}
+#view-desenho .ds-route-top strong{font-size:14px}
+@media(max-width:800px){
+ #view-desenho .ds-route-grid{grid-template-columns:minmax(0,1fr)}
+ #view-desenho .ds-route-card{min-height:150px}
+}
