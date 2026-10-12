@@ -260,6 +260,7 @@
  <button type="button" class="btn" id="dxfPickRegion">Selecionar outra região no desenho original</button>
 </div>
 <div class="toolbar dxf-advanced-only"><button class="btn primary" id="dxfSuggest" type="button" disabled>Localizar vista principal sugerida</button><button class="btn" id="dxfSelect" type="button" disabled>Delimitar outra vista</button><button class="btn" id="dxfAll" type="button" disabled>Ver folha inteira</button></div>
+<div class="dxf-editor-layout"><aside class="dxf-command-sidebar" id="dxfEditorSidebar" aria-label="Ferramentas de edição CAD"><h3>Ferramentas do desenho</h3><p class="note">Escolha um comando à esquerda e clique no desenho à direita.</p><div id="dxfSidebarSections"></div></aside>
 <div class="pdf-workspace">
 <div class="pdf-original" id="dxfOriginalPane" hidden><div class="pdf-workspace-title"><strong>1 · Geometria CAD original</strong><span>Entidades LINE, ARC, CIRCLE, POLYLINE e SPLINE</span></div>
 <div id="dxfSource" class="dxf-graphics" aria-label="Desenho vetorial do DXF"></div><div class="note" id="dxfSelectionHint" role="status">Ao delimitar, o retângulo azul será visível durante o arraste. O CAD original não é alterado.</div>
@@ -300,7 +301,7 @@
 <div id="dxfEditOptions" class="dxf-edit-options" hidden>
  <span id="dxfEditOptionsLabel">Escolha a extremidade da linha</span>
  <label for="dxfKeepEnd">Extremidade</label>
- <select id="dxfKeepEnd"><option value="ini">Inicial</option><option value="fim">Final</option></select>
+ <select id="dxfKeepEnd"><option value="ini">Inicial</option><option value="fim">Final</option></select><button class="btn" type="button" id="dxfReverseEnd" title="Inverter o sentido do alongamento">⇄ Inverter sentido</button>
  <button class="btn primary" id="dxfConfirmGeometryEdit" type="button">Aplicar</button>
  <button class="btn" id="dxfCancelGeometryEdit" type="button">Cancelar</button>
  <span id="dxfEditPreviewText" class="note"></span>
@@ -327,7 +328,7 @@
   <div id="dxfChains" class="dxf-chain-list" aria-label="Cadeias vetoriais identificadas"></div>
 </div>
 <div id="dxfWarnings" class="note dxf-advanced-only" role="status">A geometria CAD aparece aqui antes da conversão. Clique nas linhas e nos arcos para definir o perfil.</div></div>
-</div>
+</div></div>
 <details id="dxfTechnicalDetails" class="card"><summary><strong>Ver cotas e detalhes técnicos do CAD</strong></summary><h3>Cotas e elementos reconhecidos</h3><div id="dxfMetrics" class="note"></div>
 <div id="dxfDimensions" class="dxf-measures" aria-label="Cotas CAD medidas por suas entidades"></div><div id="dxfAnnotations" class="dxf-measures" aria-label="Roscas notas e chamadas CAD" style="margin-top:8px"></div>
 </details><div class="card"><h3>Salvar desenho</h3><div class="note">O rascunho preserva a seleção CAD mesmo com Z0 indefinido. O envio ao Gerador é bloqueado se houver curvas, conexões abertas, detalhes ou medidas sem representação confirmada.</div>
