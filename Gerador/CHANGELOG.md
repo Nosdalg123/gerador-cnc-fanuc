@@ -8,6 +8,14 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.17.0 — 11/10/2026 — Semiperfil superior, edição por interseção e seleção explícita (branch isolada)
+- O painel de torneamento apresenta **só a metade superior** editável do CAD, com a metade inferior projetada como **construção tracejada não interativa** a partir das entidades selecionadas.
+- Clique sobre uma entidade **seleciona e realça**, sem excluir/desmarcar involuntariamente. Área sensível de clique ampliada; **Excluir selecionada** só atua após seleção.
+- Novas ferramentas **Cortar até cruzamento** (com prévia da ponta preservada), **Quebrar nas conexões** (gera linhas independentes em interseções geométricas) e **Estender até próxima linha** (LINE/ARC como destino, prévia em mm e confirmação). Continua disponível **Estender por medida**.
+- Todas as edições atuam em cópia de trabalho; o CAD fonte permanece íntegro, e rascunhos persistem também linhas substituídas por segmentos independentes.
+- Segurança: cortes/quebras disponíveis inicialmente para LINE. Não converter SPLINE, raios e roscas em G-code automaticamente; perfil editado exige revisão CNC completa.
+- Adicionados `dxfgeomedit.js`, `testdxfgeomedit.js` e teste de interação Chromium; documentação: `TESTE-SEMIPERFIL-2.17.md`.
+
 ## 2.16.0 — 11/10/2026 — Importador inteligente com fluxo de três etapas (branch isolada)
 - A importação CAD abre diretamente com **contorno externo/interno sugerido**, sem expor dezenas de comandos.
 - **Trocar vista** exibe miniaturas vetoriais da seção longitudinal, vista frontal e desenho completo; vista não longitudinal é referência, não gera perfil CNC.
