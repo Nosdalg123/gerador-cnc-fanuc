@@ -436,3 +436,8 @@ dialog h3{margin:0 0 12px}
 @media(max-width:580px){#dlgFerr .row{grid-template-columns:minmax(0,1fr)}#dlgFerr .group-title,#dlgFerr .row .full{grid-column:1}}
 .pv-thread{stroke:#c45f18;stroke-width:1.15;fill:none;stroke-linecap:round;pointer-events:none}
 .pv-thread-label{fill:#a85018;font-size:10px;pointer-events:none}
+
+/* Ilustrações esquemáticas de roscamento: visual apenas, tipo CNC permanece 'rosca'. */
+#dlgFerr .tipo-card svg .tip{fill:#e5b83a;stroke:#66501c;stroke-width:1.2}
+#dlgFerr .tipo-card svg .tip-hole{fill:var(--field);stroke:#66501c;stroke-width:1}
+#dlgFerr .tipo-card[data-tipo="rosca"] svg{width:80px;max-width:100%;height:55px}
