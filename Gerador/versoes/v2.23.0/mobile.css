@@ -1,0 +1,75 @@
+/* v2.23 — dimensões visuais e áreas de toque; medidas CAD/CNC intactas. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.w-touch-actions{display:none}
+#dxfWizard .w-zoom-buttons{justify-content:flex-end}
+#dxfWizard .w-zoom-buttons .btn{min-height:40px}
+#dxfWizard #wCanvas.w-selecting,#dxfWizard #wCanvas.w-selecting *{touch-action:none}
+@media(max-width:960px){
+ .content,main,section,.col,.saida,.field{min-width:0}
+ .shell{min-height:100dvh}
+ main{padding:12px 12px calc(24px + env(safe-area-inset-bottom))}
+ header{padding:10px 12px;gap:8px}
+ header h1{font-size:17px}
+ header .topnav{flex-wrap:wrap}
+ .card{padding:12px}
+ .row{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .grid,.pp-fields{min-width:0}
+ .toolbar{align-items:center}
+ .toolbar>*{max-width:100%;min-width:0}
+ .pvbox,.pvbox svg,.pp-pv,.simsvg{max-width:100%}
+ .tablewrap{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+ #dxfWizard .w-workspace{grid-template-columns:minmax(0,1fr)}
+ #dxfWizard .w-controls{position:static;max-height:none}
+ #dxfWizard .w-main{order:-1}
+ #dxfWizard #wCanvas{min-height:180px;max-height:65dvh;overscroll-behavior-x:contain;touch-action:auto}
+ #dxfWizard #wCanvas svg{min-width:0;max-width:none}
+ #dxfWizard .w-touch-actions{display:block;margin-top:10px}
+ #dxfWizard .w-touch-actions .toolbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:6px 0 0}
+ #dxfWizard .w-touch-actions .btn{white-space:normal;padding:8px 6px;font-size:14px}
+ #wTouchDelete{color:var(--err);border-color:var(--err)}
+ #dxfWizard .w-steps{gap:5px}
+ #dxfWizard .w-steps button{flex:1 1 0;min-width:0;font-size:12px;padding:8px 5px}
+ #dxfWizard .w-canvas-head span{font-size:12px}
+ #dxfPanel .dxf-graphics svg{min-width:0}
+ #pdfStage{height:clamp(240px,50dvh,460px)!important}
+ #pdfProfileSvg{min-height:180px}
+}
+@media(max-width:600px){
+ body{font-size:16px}
+ .side{padding:10px 12px;gap:8px;display:block}
+ .side .logo{width:112px;height:auto;margin-bottom:8px}
+ .menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+ .menu button{min-height:44px;font-size:14px;padding:8px;gap:7px}
+ header .topnav{width:100%;margin:0;gap:6px}
+ header .topnav button{flex:1 1 auto;font-size:13px;min-height:40px;padding:6px 8px}
+ main{padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+ input,select,textarea{font-size:16px;min-height:44px}
+ input[type="checkbox"],input[type="radio"]{min-height:20px;width:20px;height:20px;flex:none}
+ input[type="range"]{min-height:44px;padding:0}
+ .btn,.pp-btn .btn,.tr-btn .btn,.info{min-height:44px}
+ .btn{white-space:normal;overflow-wrap:anywhere}
+ .info{min-width:32px;font-size:13px}
+ .row,.pp-fields{grid-template-columns:minmax(0,1fr)}
+ .toolcard{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .topnav button[hidden],.menu button[hidden]{display:none}
+ .tabs{overflow-x:auto;flex-wrap:nowrap}
+ .tabs button{flex:none;min-height:44px}
+ .pp-row{grid-template-columns:18px 24px minmax(0,1fr)}
+ .pp-row .pp-btn{grid-column:3;flex-wrap:wrap}
+ .tr-campos{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .simbar{flex-wrap:wrap}
+ .simbar input[type="range"]{min-width:90px;flex:1}
+ dialog{max-width:calc(100vw - 20px);max-height:92dvh}
+ #dlgFerr .tipo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #dlgFerr .tipo-card{min-height:80px}
+ #dlgFerr h3{padding:12px}
+ #dlgFerr .row{padding:0 12px 12px}
+ #dlgFerr .dlg-actions{padding:10px 12px}
+ .login-box{width:min(100% - 24px,380px);padding:20px}
+ #view-desenho .ds-route-card{padding:14px;min-height:130px}
+}
+@media(pointer:coarse){
+ button{touch-action:manipulation;min-height:44px}
+ input,select,textarea{font-size:16px}
+ #dxfWizard #wCanvas [data-cad-hit]{vector-effect:non-scaling-stroke;stroke-width:24}
+}

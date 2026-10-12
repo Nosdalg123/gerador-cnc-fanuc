@@ -8,6 +8,13 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.23.0 — 12/10/2026 — Versão de teste Android no navegador
+- Interface adaptada para celular: navegação compacta, campos legíveis, botões de toque e formulários em uma coluna. Janela de ferramentas ajustada em retrato e paisagem.
+- DXF sem largura mínima de desktop no celular: 100% ajusta à tela, preservando a mesma escala nos dois eixos. Botões Ampliar/Diminuir/Ajustar à tela mantêm zoom de 100 a 400%, sem modificar medidas CAD.
+- Desenho aparece antes dos controles em telas pequenas; Selecionar, Excluir linha e Desfazer ficam junto ao desenho. Área de toque ampliada e delimitação de vista cancelável.
+- Teste Chromium emulado Android em 360×800, 390×844, 412×915 e 844×390 cobre login, quatro módulos, toque LINE/ARC, exclusão, zoom uniforme, fonte intacta, rascunho e janela de ferramentas.
+- Distribuição de teste por site privado, com mesmos dados locais e autenticação do aplicativo. Abrir no Chrome Android; importar arquivos pelo seletor do celular. Os DXFs/PDFs de fabricação não são publicados.
+
 ## 2.22.3 — 12/10/2026 — Excluir linha e corrigir janelas de ferramentas
 - Etapa 2 do DXF ganhou **Excluir linha selecionada**, com realce da entidade em foco, Desfazer e persistência das exclusões no rascunho/JSON. LINE, ARC e trechos individuais de polilinha são removidos da cópia de trabalho, preservando a fonte.
 - Cortar, quebrar, estender e sugerir contorno ignoram trechos excluídos, inclusive dentro de uma polilinha parcialmente mantida.

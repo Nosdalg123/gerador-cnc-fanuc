@@ -19,7 +19,7 @@ function setStep(n){
  if(n>1&&(!validRect(region)||!Number.isFinite(axis))){
   status('Escolha uma seção longitudinal e informe o eixo central Y antes de editar.',true);return;
  }
- step=n;tool='pick';focused=null;activeRepair=null;render();
+ step=n;tool='pick';focused=null;activeRepair=null;selectingRegion=false;render();
 }
 function capture(){
  undo.push({doc:clone(doc),chosen:[...chosen],hidden:[...hidden],built,editCount,log:log.slice(),repairMarks:clone(repairMarks)});
@@ -27,7 +27,7 @@ function capture(){
 }
 function clearWork(newFile=false){
  chosen.clear();built=false;focused=null;activeRepair=null;tool='pick';undo=[];
- if(newFile){hidden.clear();log=[];repairMarks=[];editCount=0;}
+ if(newFile){hidden.clear();log=[];repairMarks=[];editCount=0;selectingRegion=false;}
 }
 function svgPointer(evt,svg){
  const matrix=svg.getScreenCTM();
@@ -107,6 +107,8 @@ function applyRepair(repair){
 }
 function renderCanvas(){
  const host=$('#wCanvas');host.replaceChildren();
+ host.classList.toggle('w-selecting',selectingRegion&&step===1);
+ $('#wRegion').setAttribute('aria-pressed',String(selectingRegion&&step===1));
  if(!doc){host.textContent='Selecione um arquivo DXF para visualizar o CAD.';return}
  const source=step===1,sel=source?new Set():chosen;
  const parts=!source?allSegments():[],allowed=new Set(parts.map(s=>s.uid));
@@ -220,6 +222,11 @@ function render(){
  $('#wUndo').disabled=!undo.length;
  $('#wFocused').textContent=focus?'Selecionada: '+(focus.kind==='arc'?'arco R'+fmt(focus.r):'linha')+' · '+focused:
   'Clique numa linha para selecionar (realce laranja).';
+ $('#wTouchFocus').textContent=focus?$('#wFocused').textContent:'Toque numa linha ou arco para selecionar.';
+ $('#wTouchDelete').disabled=step!==2||!focus;
+ $('#wTouchUndo').disabled=step!==2||!undo.length;
+ $('#wTouchPick').disabled=step!==2;
+ $('#wZoomOut').disabled=zoom<=1;$('#wZoomIn').disabled=zoom>=4;
  $('#wBuild').disabled=chosen.size<2;
  $('#wAutoSafe').disabled=!G.proposal(graph()).some(x=>x.safe);
  syncExtend();renderCanvas();
@@ -264,7 +271,7 @@ $('#wView').onchange=function(){
 };
 $('#wFull').onclick=()=>{if(!original)return;const b=DX.bounds(original.geometry);setRegion(b,NaN,'completo');renderViews();status('Folha inteira. Use Delimitar vista antes de construir.')};
 $('#wRegion').onclick=()=>{if(!original){status('Carregue um DXF primeiro.',true);return}
- selectingRegion=true;status('Arraste um retângulo sobre a seção longitudinal do CAD original.')};
+ selectingRegion=!selectingRegion;renderCanvas();status(selectingRegion?'Arraste um retângulo sobre a seção longitudinal do CAD original. Toque novamente para cancelar.':'Seleção de vista cancelada.')};
 $('#wAxis').onchange=function(){axis=this.value===''?NaN:Number(this.value);clearWork();render()};
 $('#wFace').onchange=function(){face=this.value;resetReview();render()};
 $('#wLength').onchange=function(){resetReview();render()};
@@ -344,7 +351,18 @@ $('#wBuild').onclick=()=>{
  status('Perímetro isolado em '+g.ordered.length+' trechos (incluindo arcos). É um rascunho geométrico, NÃO um perfil CNC liberado.');
 };
 $('#wRefs').onchange=renderCanvas;
-$('#wZoom').oninput=function(){zoom=Number(this.value)/100;$('#wZoomValue').value=this.value+'%';renderCanvas()};
+function setZoom(value){
+ const range=$('#wZoom');range.value=Math.max(100,Math.min(400,value));zoom=Number(range.value)/100;
+ $('#wZoomValue').value=range.value+'%';renderCanvas();
+ $('#wZoomOut').disabled=zoom<=1;$('#wZoomIn').disabled=zoom>=4;
+}
+$('#wZoom').oninput=function(){setZoom(Number(this.value))};
+$('#wZoomOut').onclick=()=>setZoom(Number($('#wZoom').value)-25);
+$('#wZoomIn').onclick=()=>setZoom(Number($('#wZoom').value)+25);
+$('#wFit').onclick=()=>{setZoom(100);$('#wCanvas').scrollTo(0,0)};
+$('#wTouchPick').onclick=()=>$('#wPick').click();
+$('#wTouchDelete').onclick=()=>$('#wDeleteSelected').click();
+$('#wTouchUndo').onclick=()=>$('#wUndo').click();
 $('#wAutoSafe').onclick=()=>{
  const ops=G.proposal(graph()).filter(x=>x.safe);
  if(!ops.length){status('Não há folgas curtas inequívocas para corrigir automaticamente.');return}

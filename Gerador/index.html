@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#102a56">
 <title>Gerador CNC Torno</title>
 <script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("cnc.theme.v2")||"alumasa")}catch(e){document.documentElement.setAttribute("data-theme","alumasa")}</script>
 <link rel="stylesheet" href="style.css">
@@ -78,7 +79,7 @@
 #dxfProjected svg [data-cad-segment]{cursor:pointer;stroke-linecap:round;transition:stroke-width .08s ease}
 #dxfProjected svg [data-cad-segment][data-selected-focus="true"]{stroke:#e34e1b!important;stroke-width:6!important;filter:drop-shadow(0px 0px 2px #ff9d4b)}
 #dxfProjected svg [data-construction="true"]{pointer-events:none;stroke-dasharray:6 5;opacity:.5}
-</style></head>
+</style><link rel="stylesheet" href="mobile.css"></head>
 <body>
 <div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="loginTit">
   <form class="login-box" id="loginForm" autocomplete="off">
@@ -361,7 +362,20 @@
   <div class="w-main card">
    <div class="w-canvas-head"><strong id="wCanvasTitle">CAD original</strong><span id="wCanvasHint">Vista do DXF em escala uniforme</span></div>
    <label class="toolbar">Ampliar desenho <input id="wZoom" type="range" min="100" max="400" step="25" value="100"><output id="wZoomValue" for="wZoom">100%</output></label>
+   <div class="toolbar w-zoom-buttons" aria-label="Escala de visualização">
+    <button class="btn" type="button" id="wZoomOut" aria-label="Diminuir desenho">−</button>
+    <button class="btn" type="button" id="wFit">Ajustar à tela</button>
+    <button class="btn" type="button" id="wZoomIn" aria-label="Ampliar desenho">+</button>
+   </div>
    <div id="wCanvas" class="dxf-graphics" aria-label="Desenho vetorial para seleção assistida"></div>
+   <div class="w-touch-actions" aria-label="Comandos por toque">
+    <span id="wTouchFocus" class="note" role="status">Toque numa linha para selecionar.</span>
+    <div class="toolbar">
+     <button class="btn" id="wTouchPick" type="button">Selecionar</button>
+     <button class="btn" id="wTouchDelete" type="button" disabled>Excluir linha</button>
+     <button class="btn" id="wTouchUndo" type="button" disabled>Desfazer</button>
+    </div>
+   </div>
    <div class="w-legend"> <span class="w-color" style="background:#149a6f"></span> Perfil selecionado
    <span class="w-color" style="background:#e06a24"></span> Trecho em foco
    <span class="w-color" style="background:#b83036"></span> Problema

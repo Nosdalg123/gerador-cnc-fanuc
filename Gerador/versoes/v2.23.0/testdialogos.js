@@ -1,0 +1,17 @@
+'use strict';
+const fs=require('fs'), assert=require('assert'), vm=require('vm'), path=require('path');
+const read=n=>fs.readFileSync(path.join(__dirname,n),'utf8');
+const html=read('index.html'), desenho=read('desenho.js'), app=read('app.js'), pv=read('pecaview.js'), css=read('style.css');
+const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
+assert.equal(new Set(ids).size,ids.length,'Há identificadores HTML duplicados (botão pode acionar diálogo errado)');
+for(const name of ['dlgFerrCancel','dlgElementoCancel'])assert(ids.includes(name),'Falta botão '+name);
+assert(app.includes("$('#dlgFerrCancel').onclick"),'Cancelar ferramenta não ligado');
+assert(desenho.includes("$('#dlgElementoCancel').onclick"),'Cancelar elemento não ligado');
+assert(css.includes('#dlgFerr .row') && css.includes('minmax(0,1fr)'),'Layout de ferramentas não responsivo');
+const ctx={CNC:{fmt:String},CNCSim:{inPoly:()=>false}};ctx.window=ctx;vm.createContext(ctx);vm.runInContext(pv,ctx);
+const cena={protect:[[-40,0],[-40,20],[0,20],[0,0]],bruto:{d:50,z0:0,z1:-40},holes:[]};
+const svg=ctx.PecaView.previewSvg(cena,400,200,null,'pv',[{z0:0,z1:-20,r:20,passo:2,interno:false,nome:'M40×2'},{z0:-20,z1:-40,r:10,passo:1.5,interno:true,nome:'M20×1.5'}]);
+assert(svg.includes('pv-thread'), 'Representação visual da rosca ausente');
+assert(svg.includes('M40×2') && svg.includes('M20×1.5'),'Legenda da rosca ausente');
+assert(!svg.includes('NaN'),'Preview contém coordenada inválida');
+console.log('OK: IDs únicos, cancelar, layout e visual de roscas');
