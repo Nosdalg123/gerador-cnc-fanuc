@@ -287,8 +287,8 @@
         state.desenhoSel = $('#selDesenho').value;
         persist(); infoDesenho(); render();
       };
-      $('#dsEditar').onclick = function () { if (state.desenhoSel) CNCDesenhos.abrir(state.desenhoSel); showView('desenho'); root.CNCDrawingNavigator?.open('manual'); };
-      $('#dsNovoG').onclick = function () { CNCDesenhos.novo(); showView('desenho'); root.CNCDrawingNavigator?.open('manual'); };
+      $('#dsEditar').onclick = function () { if (state.desenhoSel) CNCDesenhos.abrir(state.desenhoSel); showView('desenho'); window.CNCDrawingNavigator?.open('manual'); };
+      $('#dsNovoG').onclick = function () { CNCDesenhos.novo(); showView('desenho'); window.CNCDrawingNavigator?.open('manual'); };
     }
     g.campos.forEach(function (c) { // caixas do desenho: valor inicial
       if (!c.pos) return; var el = $('#f_' + c.id); if (el) el.value = vals[c.id] != null ? vals[c.id] : c.def;
