@@ -40,7 +40,7 @@ try{
  assert.equal(await page.locator('#desenhoLanding').isVisible(),true);
  await page.locator('#desenhoImportarUnico').click();
  assert.equal(await page.locator('#desenhoUnicoPanel').isVisible(),true);
- assert.match(await page.locator('#desenhoUnicoPanel').innerText(),/Em construção/);
+ assert.match(await page.locator('#desenhoUnicoPanel').innerText(),/em construção/i);
  assert.equal(await page.locator('#desenhoUnicoPanel input[type=file]').count(),0,'Não implementar importação única antes das instruções');
  await page.locator('#desenhoUnicoVoltar').click();
  assert.equal(await page.locator('#desenhoLanding').isVisible(),true);
