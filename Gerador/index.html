@@ -241,10 +241,56 @@
   </section>
 
   <!-- ===== DESENHO DA PEÇA ===== -->
-  <section id="view-desenho" hidden><div class="card" style="margin-bottom:12px"><div class="toolbar"><button class="btn" id="pdfModo" type="button">Importar desenho PDF</button><button class="btn primary" id="dxfModo" type="button">Importar CAD DXF (geometria real)</button><button class="btn primary" id="dxfWizardModo" type="button">Novo importador DXF · 3 etapas (teste)</button><span class="note">Alternativa à montagem manual. Requer conferência de todas as cotas.</span></div></div>
+  <section id="view-desenho" hidden>
+<div id="desenhoLanding" class="ds-route-home">
+  <div class="card">
+    <h2>Desenho da peça · escolha como começar</h2>
+    <p class="note">Quatro caminhos independentes. Selecione um método; você poderá voltar a esta tela sem modificar os outros módulos.</p>
+    <div class="ds-route-grid">
+      <button class="ds-route-card" type="button" id="desenhoCriar" aria-label="1 Criar desenho manual">
+        <span class="ds-route-num">01</span><span class="ds-route-icon">✎</span>
+        <strong>Criar desenho</strong>
+        <span>Montar o perfil manualmente com cilindros, cones, raios, canais e roscas.</span>
+        <span class="ds-route-link">Abrir editor manual →</span>
+      </button>
+      <button class="ds-route-card" type="button" id="desenhoImportarPDF" aria-label="2 Importar PDF">
+        <span class="ds-route-num">02</span><span class="ds-route-icon">▤</span>
+        <strong>Importar PDF</strong>
+        <span>Importar desenho PDF, conferir cotas e revisar os elementos reconhecidos.</span>
+        <span class="ds-route-link">Abrir importador PDF →</span>
+      </button>
+      <button class="ds-route-card" type="button" id="desenhoImportarDXF" aria-label="3 Importar DXF com assistente de três etapas">
+        <span class="ds-route-num">03</span><span class="ds-route-icon">⌁</span>
+        <strong>Importar DXF</strong>
+        <span>Etapa 1: arquivo e vista. Etapa 2: editar e construir perímetro. Etapa 3: revisar e salvar.</span>
+        <span class="ds-route-link">Abrir assistente de 3 etapas →</span>
+      </button>
+      <button class="ds-route-card ds-route-future" type="button" id="desenhoImportarUnico" aria-label="4 Importar DXF único, em construção">
+        <span class="ds-route-num">04</span><span class="ds-route-icon">◇</span>
+        <strong>Importar DXF único <span class="ds-route-chip">Em construção</span></strong>
+        <span>Espaço reservado ao fluxo específico. As ferramentas ainda não foram definidas.</span>
+        <span class="ds-route-link">Ver módulo reservado →</span>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="ds-route-top" id="desenhoModuleHeader" hidden>
+ <button type="button" class="btn" id="desenhoInicio">← Voltar aos 4 caminhos</button>
+ <strong id="desenhoModuleTitle"></strong>
+</div>
+<div id="desenhoUnicoPanel" class="card" hidden>
+ <h2>Importar DXF único <span class="ds-route-chip">Em construção</span></h2>
+ <p class="note">Módulo reservado para a próxima definição. Nenhuma ferramenta de importação, conversão ou geração CNC foi ativada.</p>
+ <button class="btn" type="button" id="desenhoUnicoVoltar">Voltar aos 4 caminhos</button>
+</div>
+<div class="ds-route-legacy" hidden aria-hidden="true">
+ <button class="btn" id="pdfModo" type="button">Importar desenho PDF</button>
+ <button class="btn" id="dxfModo" type="button">Importar CAD DXF (anterior)</button>
+ <button class="btn" id="dxfWizardModo" type="button">Novo importador DXF · 3 etapas</button>
+</div>
 <div id="dxfWizard" hidden>
  <div class="card">
-  <div class="toolbar"><h2 style="margin:0">Assistente CAD experimental · 3 etapas</h2><button type="button" class="btn" id="wClose">Voltar ao desenho manual</button><span class="note">Independente do importador anterior. DXF original preservado.</span></div>
+  <div class="toolbar"><h2 style="margin:0">Assistente CAD experimental · 3 etapas</h2><button type="button" class="btn" id="wClose">Voltar aos 4 caminhos</button><span class="note">Independente do importador anterior. DXF original preservado.</span></div>
   <div class="w-steps" role="group" aria-label="Etapas">
    <button type="button" id="wStep1" data-go="1">1 · Arquivo e vista</button>
    <button type="button" id="wStep2" data-go="2">2 · Editar perímetro</button>
@@ -320,7 +366,7 @@
 <div id="dxfPanel" hidden>
 <div class="card"><h2>Importação inteligente CAD</h2>
 <p class="note">Importe o DXF. O contorno aparece sugerido automaticamente; clique nas linhas para corrigir. Você pode trocar a vista a qualquer momento.</p>
-<div class="toolbar"><button class="btn" id="dxfVoltar" type="button">Voltar ao editor manual</button><input id="dxfFile" type="file" accept=".dxf,.DXF"></div>
+<div class="toolbar"><button class="btn" id="dxfVoltar" type="button">Voltar aos 4 caminhos</button><input id="dxfFile" type="file" accept=".dxf,.DXF"></div>
 <div id="dxfStatus" class="note" role="status">Selecione um DXF em milímetros para começar.</div>
 <div id="dxfGuidance" class="dxf-guidance" role="status">1. Importe um DXF para reconhecer o contorno.</div>
 <div class="toolbar dxf-main-actions">
@@ -418,7 +464,7 @@
 </div></div></div>
 <div id="pdfPanel" hidden>
 <div class="card"><h2>Importação assistida de PDF</h2>
-<div class="toolbar"><button class="btn" id="pdfVoltar" type="button">Voltar ao editor manual</button><input type="file" id="pdfFile" accept=".pdf,application/pdf"></div>
+<div class="toolbar"><button class="btn" id="pdfVoltar" type="button">Voltar aos 4 caminhos</button><input type="file" id="pdfFile" accept=".pdf,application/pdf"></div>
 <div class="note" id="pdfStatus" role="status">Escolha um PDF. O texto vetorial é lido quando houver acesso ao PDF.js; documentos digitalizados exigem conferência manual.</div>
 <div class="toolbar" style="margin-top:10px"><button class="btn sm" id="pdfAnterior" type="button">Página anterior</button><span id="pdfPage">Página 1 / 1</span><button class="btn sm" id="pdfProxima" type="button">Próxima página</button><button class="btn sm" id="pdfMenos" type="button">− Zoom</button><button class="btn sm" id="pdfMais" type="button">+ Zoom</button><button class="btn sm" id="pdfGirar" type="button">Girar 90°</button><button class="btn sm" id="pdfReset" type="button">Centralizar</button></div>
 <div class="note" id="pdfTransform"></div>
@@ -456,7 +502,7 @@
 <div class="field"><label for="pdfEditLado">Lado</label><select id="pdfEditLado"><option value="1">Lado 1</option><option value="2">Lado 2</option></select></div>
 </div><div class="msg err" id="pdfEditError" hidden></div>
 <div class="dlg-actions"><button class="btn" type="button" id="pdfEditCancelar">Cancelar</button><button type="button" class="btn danger" id="pdfEditRemover">Remover trecho</button><button class="btn primary" id="pdfEditOk" value="ok">Aplicar cota</button></div></form></dialog>
-</div></div><div id="pdfManual">
+</div></div><div id="pdfManual" hidden>
     <div class="pp">
       <div>
         <div class="card">
@@ -722,6 +768,7 @@
 <script src="dxfimport.js"></script>
 <script src="dxfwizardgeom.js"></script>
 <script src="dxfwizard.js"></script>
+<script src="desenhoroutes.js"></script>
 <script src="app.js"></script>
 <script src="acesso.js"></script>
 </body>
