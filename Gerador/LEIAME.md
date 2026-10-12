@@ -2,6 +2,16 @@
 
 Abrir: dois cliques em `index.html` (Chrome ou Edge). O Gerador funciona localmente; a importação automática de texto do PDF precisa carregar a biblioteca PDF.js na primeira utilização.
 
+## Edição simples do semiperfil do torno — v2.17.0
+1. Importe o DXF. O **perfil acima do eixo X0** é o único editável no painel do torno; sua projeção espelhada abaixo aparece em **linhas tracejadas de construção**. O arquivo CAD completo fica disponível em Trocar vista.
+2. Clique na linha superior para **selecionar** (traço laranja destacado). Nenhuma linha é excluída apenas pelo clique.
+3. Use **Excluir selecionada** para apagar da cópia de trabalho. **Cortar até cruzamento** permite preservar a extremidade inicial ou final. **Quebrar nas conexões** separa os trechos onde a linha cruza outras entidades, possibilitando excluir só uma parte.
+4. **Estender até próxima linha** encontra uma interseção geométrica à frente e apresenta o comprimento calculado antes de confirmar. **Estender por medida** permite digitar o comprimento em milímetros. O editor mantém Desfazer e Restaurar original.
+5. Todos os comandos de corte e quebra trabalham com LINE; arcos e SPLINE não são descaracterizados. A linha inferior tracejada não gera elementos de torneamento.
+6. Salve o trabalho como rascunho (com Z0 pendente se necessário). Como há alterações geométricas, o Gerador mantém o bloqueio até a revisão completa e simulação.
+
+Detalhes e ensaios em `TESTE-SEMIPERFIL-2.17.md`.
+
 ## Importação inteligente CAD — v2.16.0
 1. Clique em **Importar CAD DXF (geometria real)** e selecione o desenho. A seção sugerida abre com um contorno verde (externo), azul (interno quando reconhecido) e linhas de referência em âmbar.
 2. **Trocar vista** mostra as miniaturas da seção principal, vista frontal e folha completa. A vista frontal é apenas referência. Se necessário, **Selecionar outra região** abre a seleção com retângulo visível no desenho original.
