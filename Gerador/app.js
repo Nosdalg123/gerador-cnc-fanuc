@@ -650,7 +650,7 @@
     dlg.showModal();
   }
   $('#ferrNova').onclick = function () { openDlg(null); };
-  $('#dlgCancel').onclick = function () { dlg.close(); };
+  $('#dlgFerrCancel').onclick = function () { dlg.close(); };
   frm.onsubmit = function (e) {
     e.preventDefault();
     if (!frm.reportValidity()) return;
