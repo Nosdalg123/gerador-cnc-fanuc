@@ -7,7 +7,7 @@ let doc=null,sourceDoc=null,rect=null,axis=NaN,suggest=null,active=false,start=n
  selected={externo:new Set(),interno:new Set()},chainInfo=null,hidden=new Set(),undo=[],pendingExtension=null,
  editCount=0,dragRect=null,projDrag=null,skipProjectedClick=false,activeView='lateral',views=[],contextId=null,focusIssue=null,quickRepairs=[],geometryAction=null,editSequence=0;
 
-let perimeterMode=false,perimeterPicked=new Set();
+let perimeterMode=false,perimeterPicked=new Set(),preferredExtendEnd='fim';
 function perimeterStatus(message){$('#dxfPerimeterStatus').textContent=message}
 function stopPerimeterMode(){perimeterMode=false;$('#dxfPerimeterBuild').disabled=true;$('#dxfPerimeterCancel').disabled=true;$('#dxfPerimeterStart').disabled=false}
 $('#dxfPerimeterStart').onclick=function(){
@@ -501,6 +501,11 @@ projected.addEventListener('click',function(e){
  if(skipProjectedClick){skipProjectedClick=false;return}
  const target=e.target.closest('[data-cad-segment],[data-cad-hit]');if(!target||!doc)return;
  const id=target.getAttribute('data-cad-segment')||target.getAttribute('data-cad-hit'),currentMode=mode();
+ const clickedLine=G.entityFor(doc.geometry,id),svgForEnd=projected.querySelector('svg');
+ if(clickedLine&&svgForEnd&&rect){
+  const to=E.viewTransform(rect,val('#dxfFace')),pt=viewPoint(e,svgForEnd),pa=to(clickedLine.a),pb=to(clickedLine.b);
+  preferredExtendEnd=Math.hypot(pt.x-pa[0],pt.y-pa[1])<Math.hypot(pt.x-pb[0],pt.y-pb[1])?'ini':'fim';
+ }
  contextId=id;$('#dxfContext').hidden=false;$('#dxfContextTitle').textContent='Trecho '+id+' selecionado · escolha uma correção';
  const entity=rect?P.segments(doc.geometry,rect,hidden).find(t=>t.uid===id):null;
  if(entity){
@@ -551,7 +556,7 @@ function beginGeometryEdit(op){
  $('#dxfEditOptions').hidden=false;
  $('#dxfEditOptionsLabel').textContent=op==='trim'?
   'Cortar na interseção: escolha a ponta que DEVE PERMANECER':'Estender até a próxima linha: escolha a ponta de saída';
- $('#dxfKeepEnd').value=op==='trim'?'ini':'fim';
+ $('#dxfKeepEnd').value=op==='trim'?'ini':preferredExtendEnd;
  updateGeometryPreview();
  $('#dxfEditOptions').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
@@ -565,7 +570,7 @@ function updateGeometryPreview(){
   (geometryAction==='trim'?'Cortar '+fmt(preview.cutMm)+' mm, mantendo a ponta '+(end==='ini'?'inicial':'final'):
   'Estender '+fmt(preview.mm)+' mm até '+preview.target):preview.reason;
  const svg=$('#dxfProjected svg');if(svg){
-  svg.querySelector('#dxfEditPreviewPath')?.remove();svg.querySelector('#dxfEditDirectionArrow')?.remove();
+  svg.querySelector('#dxfEditPreviewPath')?.remove();svg.querySelector('#dxfEditDirectionArrow')?.remove();svg.querySelector('#dxfDirectionToggle')?.remove();
   if(preview.ok){
    const entity=G.entityFor(doc.geometry,contextId),to=E.viewTransform(rect,val('#dxfFace'));
    if(entity&&to){
@@ -578,6 +583,13 @@ function updateGeometryPreview(){
     const tip=to(end==='ini'?entity.a:entity.b), other=to(end==='ini'?entity.b:entity.a);
     const angle=Math.atan2(tip[1]-other[1],tip[0]-other[0])*180/Math.PI;
     const arrow=document.createElementNS('http://www.w3.org/2000/svg','path');arrow.id='dxfEditDirectionArrow';arrow.setAttribute('d','M-11,-7 L0,0 L-11,7');arrow.setAttribute('stroke','#ed8b27');arrow.setAttribute('stroke-width','3');arrow.setAttribute('fill','none');arrow.setAttribute('transform','translate('+tip.join(',')+') rotate('+angle+')');svg.appendChild(arrow);
+    const control=document.createElementNS('http://www.w3.org/2000/svg','g');control.id='dxfDirectionToggle';
+    control.style.cursor='pointer';control.setAttribute('role','button');control.setAttribute('aria-label','Inverter sentido da extensão');
+    const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');circle.setAttribute('cx',String(tip[0]+20));circle.setAttribute('cy',String(tip[1]-20));
+    circle.setAttribute('r','14');circle.setAttribute('fill','#fff4df');circle.setAttribute('stroke','#db6e19');circle.setAttribute('stroke-width','2');
+    const sign=document.createElementNS('http://www.w3.org/2000/svg','text');sign.setAttribute('x',String(tip[0]+20));sign.setAttribute('y',String(tip[1]-15));sign.setAttribute('text-anchor','middle');sign.setAttribute('fill','#9b490d');sign.setAttribute('font-size','19');sign.textContent='↔';
+    control.append(circle,sign);control.addEventListener('click',function(event){event.preventDefault();event.stopPropagation();$('#dxfReverseEnd').click()});
+    svg.appendChild(control);
    }
   }
  }
@@ -590,7 +602,7 @@ $('#dxfExtendMeasureSelected').onclick=function(){if(contextId)contextEdit('exte
 $('#dxfConfirmGeometryEdit').onclick=applyCutOrBreak;
 $('#dxfCancelGeometryEdit').onclick=function(){geometryAction=null;$('#dxfEditOptions').hidden=true;renderProjection()};
 $('#dxfKeepEnd').onchange=updateGeometryPreview;
-$('#dxfReverseEnd').onclick=function(){const s=$('#dxfKeepEnd');s.value=s.value==='ini'?'fim':'ini';updateGeometryPreview()};
+$('#dxfReverseEnd').onclick=function(){const s=$('#dxfKeepEnd');s.value=s.value==='ini'?'fim':'ini';preferredExtendEnd=s.value;updateGeometryPreview()};
 function contextEdit(action){
  if(!contextId||!doc)return;
  if(action==='extend'){
