@@ -16,7 +16,7 @@ function show(which){
 }
 function open(which,{newDrawing=false}={}){
  if(which==='manual'){
-  if(newDrawing)root.CNCDesenhos?.novo();
+  if(newDrawing)$('#dsNovo').click(); // usa a confirmação existente para preservar alterações não salvas
   root.CNCDesenhos?.mostrar();
  }else if(which==='pdf')$('#pdfModo').click();
  else if(which==='dxf')$('#dxfWizardModo').click();
