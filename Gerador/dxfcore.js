@@ -12,6 +12,35 @@ function read(text){
  const ls=text.split(/\r\n|\n|\r/),data=[];for(let i=0;i+1<ls.length;i+=2){const code=Number(ls[i].trim());if(!Number.isInteger(code))continue;data.push([code,ls[i+1].trim()]);}
  const get=(g,n,d)=>{let a=g.find(p=>p[0]===n);return a?a[1]:d},num=(g,n,d=0)=>{let v=Number(get(g,n,d));return Number.isFinite(v)?v:d};
  const arr=(g,n)=>g.filter(p=>p[0]===n).map(p=>p[1]);
+ // Notas de INSERT (por exemplo M8 x50) podem estar dentro de BLOCKS.
+ // Extrair somente texto; não converter a geometria dos blocos em perfil.
+ const blocks=new Map();let block=null,blockSection='';
+ for(let at=0;at<data.length;at++){
+  if(data[at][0]!==0)continue;
+  let stop=at+1;while(stop<data.length&&data[stop][0]!==0)stop++;
+  const kind=data[at][1],g=data.slice(at+1,stop);at=stop-1;
+  if(kind==='SECTION'){blockSection=get(g,2,'');continue}
+  if(kind==='ENDSEC'){blockSection='';continue}
+  if(blockSection!=='BLOCKS')continue;
+  if(kind==='BLOCK'){block={base:[num(g,10),num(g,20)],records:[]};blocks.set(get(g,2,''),block)}
+  else if(kind==='ENDBLK')block=null;
+  else if(block&&['TEXT','MTEXT','INSERT'].includes(kind))block.records.push({kind,g});
+ }
+ const cleanText=raw=>raw.replace(/\\P/g,' ').replace(/\\[A-Za-z][^;]*;/g,' ').slice(0,800);
+ function insertedText(g,parent,transform=p=>p,depth=0,chain=[]){
+  const name=get(g,2,''),definition=blocks.get(name);
+  if(!definition||depth>6||chain.includes(name))return [];
+  const angle=num(g,50)*Math.PI/180,cs=Math.cos(angle),sn=Math.sin(angle),sx=num(g,41,1),sy=num(g,42,1);
+  const to=p=>{const x=(p[0]-definition.base[0])*sx,y=(p[1]-definition.base[1])*sy;
+   return transform([num(g,10)+cs*x-sn*y,num(g,20)+sn*x+cs*y])};
+  return definition.records.flatMap(({kind,g:record},index)=>{
+   const id=parent+'/text/'+get(record,5,String(index));
+   if(kind==='INSERT')return insertedText(record,id,to,depth+1,chain.concat(name));
+   const raw=kind==='MTEXT'?arr(record,3).join('')+get(record,1,''):get(record,1,'');
+   return [{id,type:kind,layer:get(record,8,'0'),at:to([num(record,10),num(record,20)]),
+    text:cleanText(raw),height:num(record,40,2.5)*Math.abs(sy),fromBlock:name}];
+  });
+ }
  let section='',units=0,ents=[],unsupported={},i=0,entities=0,dimensions=[];
  while(i<data.length){
   const [code,value]=data[i];
@@ -50,8 +79,9 @@ function read(text){
   }
   if(typ==='TEXT'||typ==='MTEXT'){
    let raw=typ==='MTEXT'?arr(g,3).join('')+get(g,1,''):get(g,1,'');
-   put({at:[num(g,10),num(g,20)],text:raw.replace(/\\P/g,' ').replace(/\\[A-Za-z][^;]*;/g,' ').slice(0,800),height:num(g,40,2.5)});continue;
+   put({at:[num(g,10),num(g,20)],text:cleanText(raw),height:num(g,40,2.5)});continue;
   }
+  if(typ==='INSERT')ents.push(...insertedText(g,common.id));
   if(['HATCH','INSERT','SOLID','LEADER','POINT','OLE2FRAME','POLYLINE','VERTEX','SEQEND','3DFACE'].includes(typ)){
    unsupported[typ]=(unsupported[typ]||0)+1;continue;
   }

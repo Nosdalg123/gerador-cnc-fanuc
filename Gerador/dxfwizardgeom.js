@@ -1,9 +1,9 @@
 /* Assistente experimental v2.21: grafo por extremidades reais de LINE/ARC.
    Nenhuma sugestão geométrica pode liberar CNC automaticamente. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./dxfcore.js'),require('./dxfprofile.js'));
- else root.CNCDXFWizardGeom=factory(root.CNCDXF,root.CNCDXFPerfil);
-})(typeof self!=='undefined'?self:this,function(DX,P){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./dxfcore.js'),require('./dxfprofile.js'),require('./dxfgeomedit.js'));
+ else root.CNCDXFWizardGeom=factory(root.CNCDXF,root.CNCDXFPerfil,root.CNCDXFGeomEdit);
+})(typeof self!=='undefined'?self:this,function(DX,P,F){
 'use strict';
 const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const good=p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite);
@@ -33,9 +33,13 @@ function analyze(segments,selection,tolerance=.16){
  const branches=nodes.filter(n=>n.edges.length>2).map(n=>n.p),
   tips=nodes.map((n,i)=>({...n,index:i})).filter(n=>n.edges.length===1),
   duplicates=[];
- const seenEdges=new Set();
+ const seenEdges=new Map();
  for(const e of edges){const key=Math.min(e.a,e.b)+':'+Math.max(e.a,e.b);
-  if(seenEdges.has(key))duplicates.push(e.uid);else seenEdges.add(key);
+  const prior=seenEdges.get(key)||[],s=e.segment;
+  if(prior.some(q=>q.kind===s.kind&&(s.kind==='line'||
+   dist(q.c,s.c)<.001&&Math.abs(q.r-s.r)<.001&&
+   dist(DX.sample(q,2)[1],DX.sample(s,2)[1])<tolerance)))duplicates.push(e.uid);
+  prior.push(s);seenEdges.set(key,prior);
  }
  let components=0;const seen=new Set(),groups=[];
  for(let i=0;i<nodes.length;i++){if(seen.has(i))continue;components++;const stack=[i],group=[];
@@ -43,18 +47,15 @@ function analyze(segments,selection,tolerance=.16){
    for(const ei of nodes[j].edges){const e=edges[ei];stack.push(e.a===j?e.b:e.a)}
   }groups.push(group);
  }
- // Interseção interna entre retas: não ocultar uma bifurcação não dividida.
- const crossings=[],cross=(u,v)=>u[0]*v[1]-u[1]*v[0];
+ // Também detectar LINE/ARC, ARC/ARC e uma ponta tocando o meio de outra entidade.
+ const crossings=[];
  for(let i=0;i<edges.length;i++)for(let j=i+1;j<edges.length;j++){
   const x=edges[i],y=edges[j];
-  if(x.segment.kind!=='line'||y.segment.kind!=='line')continue;
-  const p=x.segment.start,q=y.segment.start,
-   a=[x.segment.end[0]-p[0],x.segment.end[1]-p[1]],
-   b=[y.segment.end[0]-q[0],y.segment.end[1]-q[1]], den=cross(a,b);
-  if(Math.abs(den)<1e-9)continue;
-  const delta=[q[0]-p[0],q[1]-p[1]],t=cross(delta,b)/den,u=cross(delta,a)/den;
-  if(t>.0001&&t<.9999&&u>.0001&&u<.9999)
-   crossings.push({point:[p[0]+t*a[0],p[1]+t*a[1]],uids:[x.uid,y.uid]});
+  for(const point of F.intersections(x.segment,y.segment)){
+   const endX=Math.min(dist(point,x.segment.start),dist(point,x.segment.end))<=tolerance,
+    endY=Math.min(dist(point,y.segment.start),dist(point,y.segment.end))<=tolerance;
+   if(!endX||!endY)crossings.push({point,uids:[x.uid,y.uid]});
+  }
  }
  const groupOf=new Map();groups.forEach((group,index)=>group.forEach(id=>groupOf.set(id,index)));
  const gaps=[];
@@ -84,6 +85,7 @@ function analyze(segments,selection,tolerance=.16){
   if(ordered.length!==edges.length)ordered=[];
  }
  return {ok,chosen,invalid,branches,tips,gaps,duplicates,crossings,components,ordered,
+  minX:Number.isFinite(minX)?minX:null,maxX:Number.isFinite(maxX)?maxX:null,
   span:Number.isFinite(minX)?maxX-minX:0,hasArc:chosen.some(s=>s.kind==='arc')};
 }
 function proposal(graph,limit=.20){

@@ -97,8 +97,24 @@ try{
     'Estender ponta visual não pode modificar ponta inferior do CAD');
    await page.locator('#wStep3').click();
    assert(await page.locator('#wExtendControls').isHidden(),'Trocar etapa fecha extensão');
+   assert(await page.locator('#wAudit [data-review-code="axial_coverage"]').count(),
+    '105 mm não pode parecer o comprimento total de 109,50 mm');
    await page.locator('#wStep2').click();
    assert(await page.locator('#wExtendControls').isHidden(),'Retorno não reabre extensão');
+   await page.locator('#wTrimMode').click();
+   await clickSegment('#wCanvas','F2:0',.1);
+   await page.locator('#wExtEnd').selectOption('ini');
+   await page.locator('#wApplyTrim').click();
+   assert.match(await page.locator('#wStatus').innerText(),/cortada/);
+   for(const id of ['EA:0','ED:0','F1:0']){
+    await clickSegment('#wCanvas',id);
+    assert((await selected()).includes(id),'Face curva não selecionada: '+id);
+    spec.ids.push(id);
+   }
+   spec.length=109.5;
+   await page.locator('#wStep1').click();
+   await page.locator('#wLength').fill('109.5');await page.locator('#wLength').dispatchEvent('change');
+   await page.locator('#wStep2').click();
   }
   await page.locator('#wBuild').click();
   assert.match(await page.locator('#wStatus').innerText(),/Perímetro isolado/,spec.name+' precisa construir');
@@ -113,11 +129,36 @@ try{
   assert(!await page.locator('#wCanvas svg path').evaluateAll(els=>els.some(e=>/NaN|Infinity/.test(e.getAttribute('d')||''))));
   await page.locator('#wRefs').uncheck();
   assert.equal(await page.locator('#wCanvas [data-cad-segment]').count(),spec.ids.length);
+  assert.equal(await page.locator('#wCanvas [data-cad-reference]').count(),0,'Isolar não pode deixar SPLINE de referência na vista');
   await page.locator('#wNext2').click();
+  const auditText=await page.locator('#wAudit').innerText();
+  if(i===0){assert.match(auditText,/M39 P2/);assert.match(auditText,/M8 X50/);
+   assert.equal(await page.locator('#wAudit [data-review-code="axial_coverage"]').count(),0);
+  }else{assert.match(auditText,/M64 P4/);assert.match(auditText,/M10/);
+   assert.match(auditText,/79,104/);assert.match(auditText,/curva/);
+   const modelBefore=await page.evaluate(()=>JSON.stringify(window.CNCDXFWizard.getState().doc));
+   await page.locator('[data-review-locate="diameter_reference"]').click();
+   assert.match(await page.locator('#wStatus').innerText(),/destacada/);
+   assert.match(await page.locator('#wCanvas svg').textContent(),/Cota Ø79,104/);
+   assert.equal(await page.evaluate(()=>JSON.stringify(window.CNCDXFWizard.getState().doc)),modelBefore);
+   await page.locator('#wStep3').click();
+   await page.locator('[data-review-locate="special_curve"]').click();
+   assert.match(await page.locator('#wCanvas svg').textContent(),/Curva 110/);
+   assert(await page.locator('#wCanvas [data-cad-reference="110"]').count(),'Localizar curva mostra a referência CAD real');
+   await page.locator('#wStep3').click();
+  }
+  if(process.env.CNC_REVIEW_SCREENSHOT_DIR){
+   fs.mkdirSync(process.env.CNC_REVIEW_SCREENSHOT_DIR,{recursive:true});
+   await page.screenshot({path:path.join(process.env.CNC_REVIEW_SCREENSHOT_DIR,spec.name+'.png')});
+  }
   await page.locator('#wReviewed').check();
   await page.locator('#wSave').click();
   assert.match(await page.locator('#wStatus').innerText(),/salvo neste navegador/);
   const draft=await page.evaluate(()=>JSON.parse(localStorage.getItem('cnc_dxf_assistente_221')));
+  assert.equal(draft.review.cncReady,false,'Revisão geométrica não libera CNC');
+  assert.equal(draft.review.geometryConsistent,i===0,'Copo mantém a discrepância de cota e SPLINE para revisão');
+  assert(Math.abs(draft.review.faceReferenceX-(i===0?199.0407756872:291.2483983558))<.001,
+   'Face Z0 precisa usar a extremidade real do contorno, sem margem do recorte');
   assert.equal(draft.sourceDoc.geometry.length,i===0?116:190,'CAD fonte completo preservado');
   if(i===0){
    const line=draft.sourceDoc.geometry.find(x=>x.id==='F3');

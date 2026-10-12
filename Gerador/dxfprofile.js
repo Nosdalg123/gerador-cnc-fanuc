@@ -182,8 +182,9 @@ function svg(doc,rect,options){
   }
   let source=DX.explode(e);
   if(!source.length&&e.type==='SPLINE'){
+   if(options.hideReferences)return;
    const pts=DX.splinePoints(e,120),pieces=options.upperOnly?upperChunks(pts,options.axis):[pts];
-   for(const piece of pieces)if(piece.length>1)out+='<path d="'+polyPath(piece,pos)+'" fill="none" stroke="#a88db8" stroke-dasharray="5 4" stroke-width="1.5"/>';
+   for(const piece of pieces)if(piece.length>1)out+='<path data-cad-reference="'+esc(e.id)+'" d="'+polyPath(piece,pos)+'" fill="none" stroke="#a88db8" stroke-dasharray="5 4" stroke-width="1.5"/>';
    return;
   }
   source.forEach((part,i)=>{
@@ -207,20 +208,20 @@ function svg(doc,rect,options){
   });
  });
  if(Number.isFinite(options.axis)){
-  let ya=pos([b.x1,options.axis])[1];out+='<path d="M10,'+ya.toFixed(2)+'H890" stroke="#d36a2b" stroke-width="1" stroke-dasharray="7 4"/>';
-  out+='<text x="14" y="'+(ya-5).toFixed(2)+'" font-size="13" fill="#b75a2f">X0 · eixo</text>';
+  let ya=pos([b.x1,options.axis])[1];out+='<path d="M10,'+ya.toFixed(2)+'H890" stroke="#d36a2b" stroke-width="1" stroke-dasharray="7 4" pointer-events="none"/>';
+  out+='<text x="14" y="'+(ya-5).toFixed(2)+'" font-size="13" fill="#b75a2f" pointer-events="none">X0 · eixo</text>';
  }
  if(rect&&['esquerda','direita'].includes(options.face)){
-  const cadX=options.face==='esquerda'?rect.x1:rect.x2;
+  const cadX=Number.isFinite(options.faceX)?options.faceX:options.face==='esquerda'?rect.x1:rect.x2;
   const screen=pos([cadX,Number.isFinite(options.axis)?options.axis:(rect.y1+rect.y2)/2]);
   // A ponta exata ainda depende da confirmação da face e do perfil. Marcador de referência visual.
-  out+='<line x1="'+screen[0].toFixed(2)+'" y1="12" x2="'+screen[0].toFixed(2)+'" y2="'+(H-12)+'" stroke="#db4b16" stroke-width="2" stroke-dasharray="7 4"/>'+
-   '<text x="'+(screen[0]>W/2?W-140:35)+'" y="22" fill="#b33c0a" font-size="16" font-weight="bold">Z0 · face '+(options.face==='esquerda'?'esquerda':'direita')+'</text>';
+  out+='<line data-face-cad-x="'+cadX+'" x1="'+screen[0].toFixed(2)+'" y1="12" x2="'+screen[0].toFixed(2)+'" y2="'+(H-12)+'" stroke="#db4b16" stroke-width="2" stroke-dasharray="7 4" pointer-events="none"/>'+
+   '<text x="'+(screen[0]>W/2?W-140:35)+'" y="22" fill="#b33c0a" font-size="16" font-weight="bold" pointer-events="none">Z0 · face '+(options.face==='esquerda'?'esquerda':'direita')+'</text>';
  }
  if(options.dimensions)options.dimensions.slice(0,75).forEach(d=>{
   if(options.upperOnly&&Number.isFinite(options.axis)&&d.position[1]<options.axis-.001)return;
   let p=pos(d.position);if(p[0]>=10&&p[0]<=W-15&&p[1]>=15&&p[1]<=H-15){
-    out+='<text x="'+p[0].toFixed(2)+'" y="'+p[1].toFixed(2)+'" font-size="11" fill="#6d4983">'+
+    out+='<text x="'+p[0].toFixed(2)+'" y="'+p[1].toFixed(2)+'" font-size="11" fill="#6d4983" pointer-events="none">'+
     (d.diameter||d.kind===5?'Ø':d.kind===4?'R':'')+(d.measure===null?esc(d.text):fmt(d.measure))+'</text>';
   }
  });

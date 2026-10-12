@@ -36,3 +36,11 @@ assert(!svg.includes('data-cad-segment="lower:0"'),'Linha inferior original não
 assert(svg.includes('data-cad-hit="outer:0"'),'Área de clique ampliada');
 assert(!svg.includes('NaN'),'Escala permanece válida');
 console.log('Perfil superior: cortar, quebrar, extensão automática, seleção explícita e construção inferior aprovados.');
+{
+ const line=L('tangent',[9.999998,15],[9.999998,-15]),arc={id:'r',type:'ARC',c:[6.5,0],r:3.5,start:0,end:90};
+ const hit=G.trimAtIntersection([line,arc],'tangent:0','ini',NaN,null);
+ assert(hit.ok&&Math.abs(hit.point[1])<1e-8,'Corte quase tangente preserva coordenada nativa da ponta');
+ const quarter={id:'q',type:'ARC',c:[0,0],r:100,start:0,end:90};
+ assert(!G.hitsOnLine(L('outside',[99,-1],[101,-1]),[quarter],NaN,null).length,
+  'Amostragem não pode aceitar ponto fora do arco grande');
+}

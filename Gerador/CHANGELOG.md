@@ -8,6 +8,14 @@ Cada melhoria gera uma versão (`MAIOR.MENOR.CORREÇÃO`, ex.: 1.1.1). Uma cópi
 
 ---
 
+## 2.22.2 — 12/10/2026 — Revisão completa de importação e conferência de cotas
+- Teste real do Disco cobre a face curva completa: 9 trechos, 4 arcos, 109,50 mm. Cortes F3/EB e F2/EA preservam extremidades nativas, inclusive tangência com ruído micrométrico.
+- Conferência da etapa 3 detecta comprimento parcial, texto de cota divergente, referência de diâmetro sem vértice correspondente, roscas na DIMENSION e notas em INSERT. A seleção não aprova CNC.
+- Copo mantém a discrepância da cota Ø79,104 e SPLINE superior 110 visíveis e localizáveis, sem ajustar medidas por aproximação.
+- Interseções LINE/ARC, ARC/ARC, conexões T e sobreposição parcial entram no diagnóstico. Arcos opostos com mesmas pontas não são duplicatas.
+- Face Z0 da prévia usa a extremidade do contorno selecionado, sem a margem artificial do recorte. Referências SPLINE respeitam a opção de isolar e reaparecem ao localizar a curva.
+- `dxfreview.js` e `testdxfreview.js`; regressões reais de cliques, revisão, localizar cota/curva, fonte preservada e rascunho atualizadas. Relatório `REVISAO-COMPLETA-2.22.2.md`.
+
 ## 2.22.1 — 12/10/2026 — DXFs reais e correção da seleção
 - ARC nativo fornece extremos válidos ao construtor de perímetro anterior. LINE/ARC que atravessam o eixo permanecem selecionáveis como semiperfil superior, com recorte analítico e fonte intacta.
 - Seleção usa a posição fracionária do ponteiro e distância ao traço para evitar que áreas sensíveis de linhas auxiliares interceptem raios pequenos.

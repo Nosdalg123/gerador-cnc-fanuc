@@ -11,6 +11,15 @@ const subtract=(a,b)=>[a[0]-b[0],a[1]-b[1]];
 const cross=(a,b)=>a[0]*b[1]-a[1]*b[0];
 const add=(a,b,t)=>[a[0]+b[0]*t,a[1]+b[1]*t];
 const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+function onArc(arc,point){
+ const ends=DX.sample(arc,1);if(ends.length!==2||!(arc.r>0))return false;
+ const sign=arc.sweep===undefined||arc.sweep>0?1:-1;
+ const start=Math.atan2(ends[0][1]-arc.c[1],ends[0][0]-arc.c[0]);
+ const offset=p=>{let v=sign*(Math.atan2(p[1]-arc.c[1],p[0]-arc.c[0])-start);
+  while(v<0)v+=2*Math.PI;return v};
+ const span=offset(ends[1]),along=offset(point);
+ return along<=span+1e-7||Math.abs(along-2*Math.PI)<1e-7;
+}
 function entityFor(geometry,uid){
  const id=String(uid||'').split(':').slice(0,-1).join(':');
  const index=Number(String(uid||'').split(':').slice(-1)[0]);
@@ -35,19 +44,49 @@ function hitsOnLine(s,others,axis,rect,excluded){
     const p=add(s.a,unit,distanceAlong);
     if(eligible(p))results.push({point:p,distance:distanceAlong,target:other.id,kind:'LINE'});
    } else if(t.kind==='arc'){
+    // Pontas quase tangentes do DXF podem diferir em micrômetros. Preservar
+    // a coordenada nativa da ponta, em vez de criar duas raízes a 0,003 mm.
+    const endpoints=DX.sample(t,1),nativeHits=[];
+    for(const endpoint of endpoints){
+     const delta=subtract(endpoint,s.a),distanceAlong=delta[0]*unit[0]+delta[1]*unit[1];
+     if(Math.abs(cross(unit,delta))<=.00001){
+      const p=add(s.a,unit,distanceAlong);
+      if(eligible(p)){results.push({point:p,distance:distanceAlong,target:other.id,kind:'ARC'});nativeHits.push(p)}
+     }
+    }
     const f=subtract(s.a,t.c),dot=unit[0]*f[0]+unit[1]*f[1],disc=dot*dot-(f[0]*f[0]+f[1]*f[1]-t.r*t.r);
     if(disc<-1e-9)continue;
     for(const distanceAlong of [-dot-Math.sqrt(Math.max(0,disc)),-dot+Math.sqrt(Math.max(0,disc))]){
      const p=add(s.a,unit,distanceAlong);
-     // Confirma que a posição pertence ao trecho ARC e não apenas à circunferência.
-     const sweep=DX.sample(t,96);
-     if(!sweep.some(q=>dist(q,p)<=Math.max(.02,t.r*.016)))continue;
+     if(nativeHits.some(q=>dist(q,p)<.01)||!onArc(t,p))continue;
      if(eligible(p))results.push({point:p,distance:distanceAlong,target:other.id,kind:'ARC'});
     }
    }
   }
  }
  return results.filter((r,i)=>!results.slice(0,i).some(x=>Math.abs(x.distance-r.distance)<1e-4));
+}
+function intersections(a,b){
+ if(a.kind==='line'){
+  if(b.kind==='line'){
+   const direction=subtract(a.b,a.a),other=subtract(b.b,b.a),length=dist(a.a,a.b);
+   if(length>EPS&&Math.abs(cross(direction,other))<EPS&&Math.abs(cross(direction,subtract(b.a,a.a)))/length<.00001){
+    const unit=direction.map(x=>x/length),projection=p=>{const delta=subtract(p,a.a);return delta[0]*unit[0]+delta[1]*unit[1]},
+     lo=Math.max(0,Math.min(projection(b.a),projection(b.b))),hi=Math.min(length,Math.max(projection(b.a),projection(b.b)));
+    return hi-lo>.00001?[add(a.a,unit,(lo+hi)/2)]:[];
+   }
+  }
+  const s={...a,type:'LINE',id:'selected-a'},other={...b,id:'selected-b',type:b.kind==='arc'?'ARC':'LINE'};
+  const len=dist(a.a,a.b);
+  return hitsOnLine(s,[other],NaN,null).filter(h=>h.distance>=-EPS&&h.distance<=len+EPS).map(h=>h.point);
+ }
+ if(b.kind==='line')return intersections(b,a);
+ if(a.kind!=='arc'||b.kind!=='arc')return [];
+ const d=dist(a.c,b.c);if(d<EPS||d>a.r+b.r+EPS||d<Math.abs(a.r-b.r)-EPS)return [];
+ const along=(a.r*a.r-b.r*b.r+d*d)/(2*d),height=Math.sqrt(Math.max(0,a.r*a.r-along*along));
+ const unit=subtract(b.c,a.c).map(x=>x/d),center=add(a.c,unit,along),normal=[-unit[1],unit[0]];
+ return [add(center,normal,height),add(center,normal,-height)]
+  .filter((p,i,ps)=>onArc(a,p)&&onArc(b,p)&&(!i||dist(p,ps[0])>EPS));
 }
 function nearestForward(geometry,uid,end,axis,rect,hidden,limit=10000){
  const e=entityFor(geometry,uid);
@@ -110,5 +149,5 @@ function applySplit(geometry,uid,sections,idPrefix){
  geometry.splice(n,1,...kids);
  return {ok:true,removed:uid,added:kids.map(q=>q.id+':0')};
 }
-return {entityFor,hitsOnLine,nearestForward,splitAtIntersections,trimAtIntersection,applySplit};
+return {entityFor,hitsOnLine,nearestForward,splitAtIntersections,trimAtIntersection,applySplit,onArc,intersections};
 });

@@ -78,3 +78,14 @@ console.log('PASSOU: ARC nativo, grafo, folgas 0.18/3.500/9.849, cruzamentos, so
   'Área sensível da linha vizinha não pode interceptar o clique sobre arco');
 }
 console.log('PASSOU: semiperfil LINE/ARC analítico, fonte imutável e clique no traço mais próximo.');
+{
+ const a=model([arc('upper',[10,10],5,0,180),arc('lower',[10,10],5,180,360)]);
+ const g=W.analyze(a.parts,a.selection);
+ assert(g.ok&&!g.duplicates.length,'Arcos opostos com as mesmas pontas formam uma curva fechada, não duplicatas');
+ const t=model([line('a',[0,10],[20,10]),line('b',[10,0],[10,10])]);
+ assert(W.analyze(t.parts,t.selection).crossings.length,'Conexão T no meio de linha deve ser detectada');
+ const c=model([line('a',[0,15],[30,15]),arc('r',[15,10],10,0,180)]);
+ assert(W.analyze(c.parts,c.selection).crossings.length,'LINE cruzando ARC precisa impedir construção');
+ const overlap=model([line('a',[0,10],[20,10]),line('b',[10,10],[30,10]),line('c',[20,10],[10,10])]);
+ assert(!W.analyze(overlap.parts,overlap.selection).ok,'Cadeia topológica com sobreposição parcial não é perímetro válido');
+}
