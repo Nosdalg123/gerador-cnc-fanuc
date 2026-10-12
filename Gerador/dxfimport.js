@@ -592,10 +592,13 @@ $('#dxfSaveDraft').onclick=function(){
   const old=originals.get(e.id);
   return e.type==='LINE'&&old&&(JSON.stringify(e.a)!==JSON.stringify(old.a)||JSON.stringify(e.b)!==JSON.stringify(old.b));
  }).map(e=>({id:e.id,a:e.a,b:e.b}));
- // Guardar o CAD uma só vez + alterações em delta evita duplicar DXFs grandes no localStorage.
+ const addedLines=doc.geometry.filter(e=>e.type==='LINE'&&!originals.has(e.id));
+ const existingIds=new Set(doc.geometry.map(e=>e.id));
+ const removedLineIds=[...originals.keys()].filter(id=>!existingIds.has(id));
+ // Delta completo de edição: extensão, corte, quebra, ocultação e classificação.
  let draft={nome,data:new Date().toLocaleString('pt-BR'),fileName,sourceDoc,rect,axis:val('#dxfAxis'),
   face:val('#dxfFace'),length:val('#dxfLength'),externo:[...selected.externo],interno:[...selected.interno],
-  hidden:[...hidden],lineEdits,editCount};
+  hidden:[...hidden],lineEdits,addedLines,removedLineIds,editCount};
  try{
   let ls=draftList();ls.unshift(draft);localStorage.setItem(KEY,JSON.stringify(ls.slice(0,8)));refreshDrafts();
   $('#dxfSaved').textContent='Rascunho "'+nome+'" salvo localmente, sem liberar CNC.';
@@ -606,12 +609,14 @@ $('#dxfOpenDraft').onclick=function(){
  let id=Number(val('#dxfDraftList')),entry=draftList()[id];if(!entry)return;
  sourceDoc=clone(entry.sourceDoc||entry.doc);
  doc=clone(sourceDoc);
+ if(entry.removedLineIds?.length){const removed=new Set(entry.removedLineIds);doc.geometry=doc.geometry.filter(e=>!removed.has(e.id))}
+ if(entry.addedLines?.length)doc.geometry.push(...clone(entry.addedLines));
  (entry.lineEdits||[]).forEach(edit=>{
   const line=doc.geometry.find(e=>e.type==='LINE'&&e.id===edit.id);
   if(line){line.a=edit.a;line.b=edit.b}
  });
  rect=entry.rect;fileName=entry.fileName;zoom=1;
- hidden=new Set(entry.hidden||[]);editCount=entry.editCount||0;undo=[];pendingExtension=null;
+ hidden=new Set(entry.hidden||[]);editCount=entry.editCount||0;undo=[];pendingExtension=null;contextId=null;geometryAction=null;$('#dxfEditOptions').hidden=true;
  $('#dxfUndo').disabled=true;$('#dxfRestore').disabled=false;
  $('#dxfNome').value=entry.nome;$('#dxfAxis').value=entry.axis||'';
  $('#dxfFace').value=entry.face||'';$('#dxfLength').value=entry.length||'';
